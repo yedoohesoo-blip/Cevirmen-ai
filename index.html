@@ -149,7 +149,6 @@ nav.bnav button svg{width:20px;height:20px}
 nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 18%,transparent)}
 nav.bnav button.active svg{color:var(--accent)}
 
-/* FULLSCREEN READER */
 .reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#07050c);color:var(--r-fg,#ece6f7)}
 .reader.open{display:flex}
 .reader.t-night{--r-bg:#07050c;--r-fg:#ece6f7;--r-bar:#110b1cf5;--r-bd:#2a1f3d;--r-mut:#9a8fb0}
@@ -205,7 +204,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <button class="hdr-model" id="hdrModelBtn"><span>⚡</span><span id="hdrModelName">Model seçilmedi</span><span>▾</span></button>
   </div>
   <div class="hdr-actions">
-    <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Ekran Çevirisi (Oyun/Uygulama Üstü)">🫧</button>
+    <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Ekran Çevirisi">🫧</button>
     <button class="icon-btn" id="openQuotesBtn" title="Alıntı Defteri">🖍️</button>
     <button class="icon-btn" id="openHistBtn" title="Geçmiş">📜</button>
   </div>
@@ -274,11 +273,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </div>
     </div>
 
-    <!-- Yüzen Ekran Çevirisi Kartı -->
     <div class="card">
-      <div class="card-head">
-        <h2>🫧 Ekran Üstü Yüzen Çeviri (Oyun & Diğer Uygulamalar)</h2>
-      </div>
+      <div class="card-head"><h2>🫧 Ekran Üstü Yüzen Çeviri (Oyun & Diğer Uygulamalar)</h2></div>
       <p class="hint" style="margin-top:0;margin-bottom:10px">
         Başlattığında ekranın kenarında mor bir <b>Ç</b> topu çıkar. Oyunlarda, Instagram'da veya başka herhangi bir uygulamada <b>Tam Ekran</b>, <b>Bölge Seç</b> veya <b>Canlı Çeviri</b> yapabilirsin!
       </p>
@@ -315,7 +311,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <div class="bm-grid" id="mangaSitesGrid"></div>
     </div>
 
-    <!-- Baloncuk Stili & Çizgi Roman Yazı Tipi -->
     <div class="card">
       <h2>🎨 Manga Baloncuk Stili</h2>
       <label>Okuma Yönü</label>
@@ -343,7 +338,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 4. KÜTÜPHANE (.EPUB / .PDF / .TXT / .CBZ / .HTML) -->
+  <!-- 4. KÜTÜPHANE -->
   <section id="view-library" class="view">
     <div class="stats-strip">
       <div class="stat-box"><b id="stTotal">0</b><span>Kitap</span></div>
@@ -418,7 +413,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 6. AYARLAR (API + TOKEN SAYACI + TEMA STÜDYOSU + YEDEK) -->
+  <!-- 6. AYARLAR -->
   <section id="view-settings" class="view">
     <div class="card">
       <h2>Yapay Zeka API Ayarları</h2>
@@ -434,7 +429,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <div class="status" id="apiStatus"></div>
     </div>
 
-    <!-- Token & Hız İstatistikleri -->
     <div class="card">
       <div class="card-head">
         <h2>🪙 Token & Hız Sayacı</h2>
@@ -448,7 +442,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </div>
     </div>
 
-    <!-- Tema & Vurgu Rengi Stüdyosu -->
     <div class="card">
       <h2>🎨 Tema & Vurgu Rengi Stüdyosu</h2>
       <div class="row" id="appThemeRow">
@@ -613,7 +606,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   </div>
 </div>
 
-<!-- Kitap Ayarları + TOPLU EPUB BÖLÜM ÇEVİRİCİ -->
 <div class="modal" id="editBookModal">
   <div class="sheet">
     <div class="sheet-head"><h3>⚙ Kitap Ayarları</h3><button class="btn small" data-close="editBookModal">✕</button></div>
@@ -630,7 +622,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <label class="switch"><span>⭐ Favoriler</span><input type="checkbox" id="ebFav"></label>
     <div class="row" style="margin-top:12px"><button class="btn primary grow" id="ebSaveBtn">Kaydet</button></div>
 
-    <!-- Toplu EPUB / Kitap Bölüm Çevirici -->
     <div class="card" style="margin-top:14px;padding:12px">
       <h2 style="font-size:14px;color:var(--accent);margin-bottom:8px">⚡ Toplu Bölüm Çevirici (Resimler Korunur)</h2>
       <div class="row">
@@ -745,10 +736,7 @@ let S = (() => {
       tabs:raw.tabs?.length?raw.tabs:d.tabs, glossary:raw.glossary||[], history:raw.history||[], highlights:raw.highlights||[]};
   } catch { return defaultState(); }
 })();
-function saveState(){
-  localStorage.setItem(STORE_KEY, JSON.stringify(S));
-  syncNativeConfig();
-}
+function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(S)); syncNativeConfig(); }
 function syncNativeConfig(){
   if (!isNative() || !window.AndroidBridge.syncConfig) return;
   window.AndroidBridge.syncConfig(JSON.stringify({
@@ -757,10 +745,7 @@ function syncNativeConfig(){
     mangaBgAlpha:S.mangaStyle.alpha, mangaBorder:S.mangaStyle.border
   }));
 }
-
-function applyAppTheme(){
-  document.body.className = S.appTheme && S.appTheme !== "default" ? "th-"+S.appTheme : "";
-}
+function applyAppTheme(){ document.body.className = S.appTheme && S.appTheme !== "default" ? "th-"+S.appTheme : ""; }
 
 function switchView(name){
   $$(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+name));
@@ -782,7 +767,7 @@ function initLangs(){
   $("#swapLang").onclick=()=>{if(S.srcLang==="auto")return toast("Otomatik algılama hedef olamaz"); [S.srcLang,S.tgtLang]=[S.tgtLang,S.srcLang]; sEl.value=S.srcLang; tEl.value=S.tgtLang; saveState();};
 }
 
-/* ===================== YAPAY ZEKA MOTORU + TOKEN SAYACI ===================== */
+/* ===================== YAPAY ZEKA MOTORU (GÜVENLİ JSON & STREAM) ===================== */
 let activeCtrl = null;
 function buildSystemPrompt(extra=""){
   const prof=S.prompts.find(p=>p.id===S.activePromptId)||S.prompts[0];
@@ -831,8 +816,22 @@ async function callAI(userContent, {system, onDelta, signal, streamOverride=null
       if([429,500,502,503,504].includes(res.status)&&a<2){await sleep(1200*(a+1));continue;}
       if(!res.ok) throw new Error(`API (${res.status}): ${(await res.text().catch(()=>"")).slice(0,160)}`);
       if(!useStream||!res.body){
-        const j=await res.json(), c=j?.choices?.[0]?.message?.content||"";
-        if(onDelta)onDelta(c); recordUsage(inChars, c.length, performance.now()-t0); return c;
+        const rawTxt = (await res.text()).trim();
+        if(!rawTxt){ if(a<2){ await sleep(900*(a+1)); continue; } throw new Error("API boş yanıt döndürdü"); }
+        let c = "";
+        if(rawTxt.startsWith("data:")){
+          for(const l of rawTxt.split("\n")){
+            const t=l.trim(); if(!t.startsWith("data:")) continue;
+            const p=t.slice(5).trim(); if(p==="[DONE]") continue;
+            try{ const j=JSON.parse(p); c += j?.choices?.[0]?.delta?.content ?? j?.choices?.[0]?.message?.content ?? ""; }catch{}
+          }
+        } else {
+          const j = JSON.parse(rawTxt);
+          c = j?.choices?.[0]?.message?.content || "";
+        }
+        if(onDelta) onDelta(c);
+        recordUsage(inChars, c.length, performance.now()-t0);
+        return c;
       }
       const reader=res.body.getReader(), dec=new TextDecoder(); let buf="", full="";
       while(true){
@@ -845,6 +844,40 @@ async function callAI(userContent, {system, onDelta, signal, streamOverride=null
     }catch(e){ if(e.name==="AbortError")throw e; lastErr=e; if(a<2)await sleep(900*(a+1)); }
   }
   throw lastErr||new Error("Bağlantı hatası");
+}
+
+// YARIM KESİLEN VEYA MARKDOWN'LI JSON'LARI BİLE HATASIZ KURTARAN BALONCUK ÇÖZÜCÜ
+function parseBubblesSafe(raw){
+  if(!raw) return [];
+  const cleaned = String(raw).replace(/```json\s*/gi,"").replace(/```/g,"").trim();
+  const norm = b => ({
+    x:Math.max(1,Math.min(86,Number(b.x)||10)),
+    y:Math.max(1,Math.min(92,Number(b.y)||10)),
+    w:Math.max(12,Math.min(94,Number(b.w)||26)),
+    h:Math.max(5,Math.min(45,Number(b.h)||10)),
+    type:b.type||"speech",
+    tr:String(b.tr||"").trim()
+  });
+
+  // 1) Normal dizi parse dene
+  const s = cleaned.indexOf("["), e = cleaned.lastIndexOf("]");
+  if(s >= 0 && e > s){
+    try{
+      const arr = JSON.parse(cleaned.slice(s, e+1));
+      if(Array.isArray(arr)) return arr.filter(b=>b&&b.tr).map(norm);
+    }catch{}
+  }
+  // 2) Yarım kesildiyse her tamamlanmış {...} baloncuğunu tek tek kurtar
+  const rescued = [];
+  const objRe = /\{[^{}]*"tr"\s*:\s*"(?:[^"\\]|\\.)*"[^{}]*\}/g;
+  let m;
+  while((m = objRe.exec(cleaned)) !== null){
+    try{
+      const obj = JSON.parse(m[0]);
+      if(obj && obj.tr) rescued.push(norm(obj));
+    }catch{}
+  }
+  return rescued;
 }
 
 async function translateText(text, {extra="", onProgress, onUpdate, signal}){
@@ -939,14 +972,12 @@ function renderMangaSites(){
 $("#mSiteGoBtn").onclick=()=>{const q=$("#mSiteInput").value.trim(); openRealBrowser(q||"https://mangadex.org");};
 $("#mSiteInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("#mSiteGoBtn").click();});
 
-// Manga stil ayarları
 $("#mDirSel").onchange=e=>{S.mangaStyle.dir=e.target.value;saveState();};
 $("#mFontSel").onchange=e=>{S.mangaStyle.font=e.target.value;saveState();};
 $("#mFsRange").oninput=e=>{S.mangaStyle.scale=Number(e.target.value);$("#mFsVal").textContent=S.mangaStyle.scale.toFixed(2);saveState();};
 $("#mOpRange").oninput=e=>{S.mangaStyle.alpha=Number(e.target.value);$("#mOpVal").textContent=Math.round(S.mangaStyle.alpha*100);saveState();};
 $$("#mBorderRow button").forEach(b=>b.onclick=()=>{S.mangaStyle.border=b.dataset.bc;saveState();toast("Kenarlık rengi güncellendi");});
 
-// TARAYICIDA SEÇ-ÇEVİR BALONCUĞU
 window.__onNativeQuickSelect = async b64 => {
   const txt = b64DecodeUtf8(b64);
   try{
@@ -955,34 +986,29 @@ window.__onNativeQuickSelect = async b64 => {
   }catch(e){ if(isNative()) window.AndroidBridge.showQuickSelectResult("Hata: "+e.message); }
 };
 
-// CANLI MANGA YAKALAMA (TÜM EKRAN VEYA SEÇİLİ ALAN)
 window.__onNativeMangaCapture = async b64Jpeg => {
   if(!isNative())return;
   activeCtrl?.abort(); activeCtrl=new AbortController();
-  window.AndroidBridge.setBrowserStatus("�� Yapay zeka manga baloncuklarını okuyor…");
+  window.AndroidBridge.setBrowserStatus("💬 Yapay zeka manga baloncuklarını okuyor…");
   try{
     const dir = S.mangaStyle.dir==="manga"?"Manga (sağdan sola, yukarıdan aşağıya)":"Webtoon (yukarıdan aşağıya)";
     const sys = `Sen uzman bir manga/webtoon çevirmenisin. Görseldeki TÜM konuşma baloncuklarını, düşünce baloncuklarını, anlatıcı kutularını ve önemli efektleri (SFX) tespit et ve ${langName(S.tgtLang)} diline doğal çevir.
 Okuma sırası: ${dir}.
 ${S.glossEnabled&&S.glossary.length?"Terim Sözlüğü:\n"+S.glossary.map(g=>`- ${g.src} => ${g.tgt}`).join("\n"):""}
-SADECE GEÇERLİ JSON DİZİSİ VER: [{"x":12,"y":15,"w":22,"h":10,"type":"speech","tr":"Türkçe çeviri"}] (x,y,w,h yüzde 0-100; yazı yoksa []).`;
+SADECE GEÇERLİ JSON DİZİSİ VER (başka hiçbir yazı veya markdown ekleme):
+[{"x":12,"y":15,"w":22,"h":10,"type":"speech","tr":"Türkçe çeviri"}]
+Kurallar: x,y,w,h yüzde 0-100; yazı yoksa [] döndür.`;
     const raw = await callAI([
       {type:"text",text:"Bu manga/webtoon görselindeki baloncukları tespit et ve JSON olarak çevir."},
       {type:"image_url",image_url:{url:"data:image/jpeg;base64,"+b64Jpeg}}
     ], {system:sys, signal:activeCtrl.signal, streamOverride:false, temperature:0.2});
-    const mJson = raw.match(/$$[\s\S]*$$/);
-    const arr = mJson ? JSON.parse(mJson[0]).filter(b=>b&&b.tr).map(b=>({
-      x:Math.max(1,Math.min(86,Number(b.x)||10)), y:Math.max(1,Math.min(92,Number(b.y)||10)),
-      w:Math.max(12,Math.min(94,Number(b.w)||26)), h:Math.max(5,Math.min(45,Number(b.h)||10)),
-      type:b.type||"speech", tr:String(b.tr).trim()
-    })) : [];
+    const arr = parseBubblesSafe(raw);
     if(!arr.length){ window.AndroidBridge.setBrowserStatus("Çevrilecek baloncuk bulunamadı."); return; }
     window.AndroidBridge.applyMangaBubbles(JSON.stringify(arr));
     window.AndroidBridge.setBrowserStatus(`✅ ${arr.length} baloncuk çevrildi!`);
   }catch(e){ window.AndroidBridge.setBrowserStatus("❌ Hata (Vision model seçili mi?): "+e.message); }
 };
 
-// CANLI TARAYICI METİN ÇEVİRİSİ
 window.__onNativePageExtract = async (t64, u64, b64) => {
   const title=b64DecodeUtf8(t64), url=b64DecodeUtf8(u64), blocks=JSON.parse(b64DecodeUtf8(b64)||"[]");
   N.title=title; N.url=url; N.trText="";
@@ -998,7 +1024,7 @@ window.__onNativePageExtract = async (t64, u64, b64) => {
     for(let g=0;g<groups.length;g++){
       window.AndroidBridge.setBrowserStatus(`🌐 Çevriliyor (${g+1}/${groups.length})…`);
       let acc=""; await callAI(groups[g].map(x=>x.line).join("\n\n"),{system:sys,signal:activeCtrl.signal,onDelta:d=>acc+=d});
-      const re=/$$\[(\d+)$$\]\s*([\s\S]*?)(?=$$\[\d+$$\]|$)/g; let m, matched=0; const batchMap={};
+      const re=/\[\[(\d+)\]\]\s*([\s\S]*?)(?=\[\[\d+\]\]|$)/g; let m, matched=0; const batchMap={};
       while((m=re.exec(acc))!==null){batchMap[m[1]]=m[2].trim();allTr[m[1]]=m[2].trim();matched++;}
       if(!matched&&groups[g].length){const parts=acc.split(/\n{2,}/);groups[g].forEach((x,idx)=>{const v=(parts[idx]||(idx===0?acc:"")).trim();if(v){batchMap[x.i]=v;allTr[x.i]=v;}});}
       window.AndroidBridge.applyPageTranslations(JSON.stringify(batchMap));
@@ -1013,19 +1039,16 @@ window.__onNativeSaveBook=async()=>{if(!N.trText)return toast("Önce çevir");co
 window.__onNativeReadFs=()=>N.trText?openQuickReader(N.title||"Web Sayfası",N.trText):toast("Önce çevir");
 function guessBookName(url, title){ const clean=(title||"").replace(/\s*[-|–:]\s*(Chapter|Bölüm|Ch\.?|Ep\.?).*$/i,"").trim(); if(clean&&clean.length>2)return clean.slice(0,55); try{return new URL(url).hostname;}catch{return "Web Kitabı";} }
 
-// TARAYICIDAN DİREKT KÜTÜPHANEYE İNDİRİLEN DOSYAYI AL!
 window.__onNativeFileImport = async (fn64, b64) => {
   try{
-    const name = b64DecodeUtf8(fn64);
-    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    const name = b64DecodeUtf8(fn64), bin = atob(b64), u8 = new Uint8Array(bin.length);
     for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
-    const file = new File([u8], name);
-    await importBookFile(file);
+    await importBookFile(new File([u8], name));
     renderLibrary();
   }catch(e){ toast("Dosya içe aktarılamadı: "+e.message); }
 };
 
-/* ===================== 4. KÜTÜPHANE (EPUB / PDF / TXT / HTML / CBZ) ===================== */
+/* ===================== 4. KÜTÜPHANE ===================== */
 let dbP=null;
 const getDB=()=>dbP||(dbP=new Promise((res,rej)=>{const r=indexedDB.open("CevirmenAI_Lib_v2",1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("books"))r.result.createObjectStore("books",{keyPath:"id"});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}));
 const dbAll=async()=>new Promise((res,rej)=>getDB().then(db=>{const r=db.transaction("books","readonly").objectStore("books").getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>rej(r.error);}));
@@ -1090,24 +1113,19 @@ async function unzipEntries(buf){
 const joinPath=(base,rel)=>{const out=[];for(const p of (base.split("/").slice(0,-1).join("/")+"/"+rel).split("/")){if(!p||p===".")continue;if(p==="..")out.pop();else out.push(p);}return out.join("/");};
 const bytesToDataUrl=(u8,mime)=>new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(new Blob([u8],{type:mime}));});
 
-// .CBZ (ÇİZGİ ROMAN / MANGA ARŞİVİ) ÇÖZÜCÜ
 async function parseCbzFile(file, fb){
   const zip = await unzipEntries(await file.arrayBuffer());
-  const imgNames = [...zip.files.keys()].filter(n => /\.(jpe?g|png|webp|gif)$/i.test(n) && !n.startsWith("__MACOSX"))
-    .sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
+  const imgNames = [...zip.files.keys()].filter(n => /\.(jpe?g|png|webp|gif)$/i.test(n) && !n.startsWith("__MACOSX")).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}));
   if(!imgNames.length) throw new Error("CBZ içinde görsel bulunamadı");
   const chapters = []; let cover = "";
-  const perChap = 20;
-  for(let i=0; i<imgNames.length; i+=perChap){
-    const slice = imgNames.slice(i, i+perChap); let html = "";
+  for(let i=0; i<imgNames.length; i+=20){
+    const slice = imgNames.slice(i, i+20); let html = "";
     for(const nm of slice){
       const bytes = await zip.readBytes(nm); if(!bytes) continue;
-      const mime = /\.png$/i.test(nm)?"image/png":/\.webp$/i.test(nm)?"image/webp":"image/jpeg";
-      const durl = await bytesToDataUrl(bytes, mime);
-      if(!cover) cover = durl;
-      html += `<img src="${durl}" alt="${esc(nm)}">`;
+      const durl = await bytesToDataUrl(bytes, /\.png$/i.test(nm)?"image/png":/\.webp$/i.test(nm)?"image/webp":"image/jpeg");
+      if(!cover) cover = durl; html += `<img src="${durl}" alt="${esc(nm)}">`;
     }
-    chapters.push({id:uid(), title:`Sayfa ${i+1}–${Math.min(i+perChap,imgNames.length)}`, html});
+    chapters.push({id:uid(), title:`Sayfa ${i+1}–${Math.min(i+20,imgNames.length)}`, html});
   }
   return makeBookObj(fb, "CBZ Manga", "cbz", chapters, cover);
 }
@@ -1142,7 +1160,6 @@ async function parsePdfFile(file, fb){
   return makeBookObj(fb,"PDF","pdf",chapters);
 }
 
-/* ---------- BÖLÜM ÇEVİRİ MOTORU (TEK + TOPLU EPUB) ---------- */
 async function translateBookChapterObj(chap, signal, onStep){
   const doc=new DOMParser().parseFromString(chap.html,"text/html");
   const nodes=[...doc.body.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(n=>!n.querySelector("p,h1,h2,h3")&&(n.textContent||"").trim().length>1);
@@ -1154,7 +1171,7 @@ async function translateBookChapterObj(chap, signal, onStep){
   for(let g=0;g<groups.length;g++){
     if(onStep) onStep(g+1, groups.length);
     let acc=""; await callAI(groups[g].map(x=>x.line).join("\n\n"),{system:sys,signal,onDelta:d=>acc+=d});
-    const re=/$$\[(\d+)$$\]\s*([\s\S]*?)(?=$$\[\d+$$\]|$)/g; let m, matched=0;
+    const re=/\[\[(\d+)\]\]\s*([\s\S]*?)(?=\[\[\d+\]\]|$)/g; let m, matched=0;
     while((m=re.exec(acc))!==null){trMap[Number(m[1])]=m[2].trim();matched++;}
     if(!matched&&groups[g].length){const parts=acc.split(/\n{2,}/);groups[g].forEach((x,idx)=>trMap[x.i]=(parts[idx]||(idx===0?acc:"")).trim());}
   }
@@ -1167,7 +1184,6 @@ async function translateBookChapterObj(chap, signal, onStep){
   return true;
 }
 
-/* KİTAP DÜZENLEME + TOPLU BÖLÜM ÇEVİRİCİ + RESİMLİ EPUB */
 let editingBook=null, ebBatchRunning=false;
 async function openEditBook(id){
   editingBook=await dbGet(id); if(!editingBook)return;
@@ -1237,7 +1253,7 @@ $("#ebExpEpub").onclick=()=>{
 };
 $("#ebExpHtml").onclick=()=>{if(!editingBook)return;const hidden=new Set(editingBook.hiddenChapters||[]);const body=editingBook.chapters.filter((_,i)=>!hidden.has(i)).map(c=>`<section><h2>${esc(c.title)}</h2>${c.trHtml||c.html}</section>`).join("<hr>");const html=`<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(editingBook.title)}</title><style>body{background:#090612;color:#ece6f7;font:18px/1.8 Georgia,serif;max-width:740px;margin:0 auto;padding:24px}h1,h2{color:#c084fc}hr{border:none;border-top:1px solid #2a1f3d;margin:36px 0}img{max-width:100%}</style></head><body><h1>${esc(editingBook.title)}</h1>${body}</body></html>`;downloadBlob(new Blob([html],{type:"text/html;charset=utf-8"}),editingBook.title.replace(/[^\w\s-]/g,"").trim()+".html");};
 
-/* ===================== KINDLE OKUYUCU + SESLİ KİTAP + UYKU ZAMANLAYICI ===================== */
+/* ===================== KINDLE OKUYUCU ===================== */
 const R={book:null,visChaps:[],chapIdx:0,quickMode:false,viewMode:"tr",autoScrollOn:false,scrollRaf:null,statTimer:null,sleepTimer:null,sleepMins:0,countedChaps:new Set()};
 function applyReaderPrefs(){
   const p=S.reader, r=$("#reader"), b=$("#rBody");
@@ -1254,10 +1270,7 @@ function startReadingStats(){
   if(S.stats.lastDay!==today){const prev=S.stats.lastDay?new Date(S.stats.lastDay):null;const diff=prev?Math.round((new Date(today)-prev)/86400000):0;S.stats.streak=diff===1?(S.stats.streak||0)+1:1;S.stats.lastDay=today;saveState();}
   R.statTimer=setInterval(()=>{if($("#reader").classList.contains("open")){S.stats.totalSecs=(S.stats.totalSecs||0)+5;saveState();}},5000);
 }
-function stopReadingStats(){
-  clearInterval(R.statTimer); R.statTimer=null;
-  if(isNative() && window.AndroidBridge.setKeepScreenOn) window.AndroidBridge.setKeepScreenOn(false);
-}
+function stopReadingStats(){ clearInterval(R.statTimer); R.statTimer=null; if(isNative() && window.AndroidBridge.setKeepScreenOn) window.AndroidBridge.setKeepScreenOn(false); }
 function openQuickReader(title,txt){R.book=null;R.quickMode=true;R.visChaps=[{title,html:txt.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,"<br>")}</p>`).join("")}];R.chapIdx=0;$("#rBot").style.display="none";$("#rTocBtn").style.display="none";$("#rBmBtn").style.display="none";$("#rTransChapBtn").style.display="none";$("#rRecapBtn").style.display="none";$("#rViewModeBtn").style.display="none";$("#reader").classList.add("open");applyReaderPrefs();renderReaderChap();startReadingStats();}
 async function openBookReader(id){const book=await dbGet(id);if(!book)return;R.book=book;R.quickMode=false;R.countedChaps.clear();const hidden=new Set(book.hiddenChapters||[]);R.visChaps=book.chapters.map((c,i)=>({...c,origIdx:i})).filter(c=>!hidden.has(c.origIdx));if(!R.visChaps.length)return toast("Bölüm yok");R.chapIdx=Math.min(book.curChap||0,R.visChaps.length-1);$("#rBot").style.display="flex";$("#rTocBtn").style.display="";$("#rBmBtn").style.display="";$("#rTransChapBtn").style.display="";$("#rRecapBtn").style.display="";$("#reader").classList.add("open");applyReaderPrefs();renderReaderChap(book.scrollPct||0);startReadingStats();}
 function renderReaderChap(pct=0){
@@ -1299,23 +1312,15 @@ $("#rRecapBtn").onclick=async()=>{
   catch(e){$("#recapStatus").className="status error";$("#recapStatus").textContent=e.message;}
 };
 
-// UYKU ZAMANLAYICISI (SLEEP TIMER)
 const SLEEP_STEPS = [0, 10, 15, 30, 45, 60];
 $("#rSleepBtn").onclick = () => {
   const nextIdx = (SLEEP_STEPS.indexOf(R.sleepMins) + 1) % SLEEP_STEPS.length;
-  R.sleepMins = SLEEP_STEPS[nextIdx];
-  clearTimeout(R.sleepTimer);
-  if (R.sleepMins === 0){
-    $("#rSleepBtn").textContent = "⏰ Uyku"; $("#rSleepBtn").classList.remove("on");
-    toast("Uyku zamanlayıcısı kapatıldı");
-  } else {
+  R.sleepMins = SLEEP_STEPS[nextIdx]; clearTimeout(R.sleepTimer);
+  if (R.sleepMins === 0){ $("#rSleepBtn").textContent = "⏰ Uyku"; $("#rSleepBtn").classList.remove("on"); toast("Uyku zamanlayıcısı kapatıldı"); }
+  else {
     $("#rSleepBtn").textContent = `⏰ ${R.sleepMins}dk`; $("#rSleepBtn").classList.add("on");
-    toast(`${R.sleepMins} dakika sonra sesli okuma ve kaydırma duracak`);
-    R.sleepTimer = setTimeout(() => {
-      stopTTS(); stopAutoScroll(); R.sleepMins = 0;
-      $("#rSleepBtn").textContent = "⏰ Uyku"; $("#rSleepBtn").classList.remove("on");
-      toast("Uyku zamanlayıcısı tamamlandı 🌙");
-    }, R.sleepMins * 60000);
+    toast(`${R.sleepMins} dakika sonra duracak`);
+    R.sleepTimer = setTimeout(() => { stopTTS(); stopAutoScroll(); R.sleepMins = 0; $("#rSleepBtn").textContent = "⏰ Uyku"; $("#rSleepBtn").classList.remove("on"); toast("Uyku zamanlayıcısı tamamlandı 🌙"); }, R.sleepMins * 60000);
   }
 };
 
@@ -1368,7 +1373,6 @@ $("#rTtsModeSel").onchange=e=>{S.reader.ttsMode=e.target.value;saveState();};
 $("#rVoiceSel").onchange=e=>{S.reader.voiceName=e.target.value;saveState();};
 $("#rTtsRange").oninput=e=>{S.reader.ttsRate=Number(e.target.value);saveState();applyReaderPrefs();};
 
-/* ---------- GELİŞMİŞ SESLİ KİTAP (CİHAZ SESİ + DOĞAL AI TTS) ---------- */
 let ttsOn=false, ttsBtn=null, aiAudio=null;
 function populateVoices(){
   const sel=$("#rVoiceSel");
@@ -1386,8 +1390,6 @@ async function toggleTTS(text, btn){
   if(ttsOn){ stopTTS(); return; }
   const clean=(text||"").trim(); if(!clean) return toast("Okunacak metin yok");
   ttsOn=true; ttsBtn=btn; btn.textContent="⏹";
-
-  // AI Doğal Sesli Kitap (OpenAI /audio/speech)
   if(S.reader.ttsMode==="ai" && S.apiKey){
     const parts = splitChunks(clean, 1500);
     for(let i=0; i<parts.length && ttsOn; i++){
@@ -1409,8 +1411,6 @@ async function toggleTTS(text, btn){
     }
     stopTTS(); return;
   }
-
-  // Gelişmiş Cihaz Sesi (En iyi Türkçe sesi otomatik seçer)
   if(!("speechSynthesis" in window)){ stopTTS(); return toast("Sesli okuma desteklenmiyor"); }
   const voices = speechSynthesis.getVoices();
   const targetLang = S.tgtLang==="tr"?"tr-TR":S.tgtLang;
@@ -1429,7 +1429,6 @@ async function toggleTTS(text, btn){
 }
 $("#rTtsBtn").onclick = () => toggleTTS($("#rBody").innerText, $("#rTtsBtn"));
 
-/* SEÇİM & VURGULAMA */
 let selTxt="", hlColor="purple";
 document.addEventListener("selectionchange",()=>{if(!$("#reader").classList.contains("open"))return;const s=window.getSelection()?.toString().trim()||"";if(s.length>1){selTxt=s;$("#selBar").classList.add("show");}else $("#selBar").classList.remove("show");});
 $("#selCloseBtn").onclick=()=>{window.getSelection()?.removeAllRanges();$("#selBar").classList.remove("show");};
@@ -1442,7 +1441,6 @@ $("#openQuotesBtn").onclick=()=>{renderQuotes();openModal("quotesModal");}; $("#
 async function openSelTranslate(txt){$("#selBar").classList.remove("show");$("#selSrcBox").textContent=txt;$("#selOutBox").textContent="";$("#selStatus").className="status";$("#selStatus").textContent="Çevriliyor…";openModal("selModal");activeCtrl?.abort();activeCtrl=new AbortController();try{await translateText(txt,{signal:activeCtrl.signal,onUpdate:f=>$("#selOutBox").textContent=f});$("#selStatus").className="status ok";$("#selStatus").textContent="Tamamlandı";}catch(e){$("#selStatus").className="status error";$("#selStatus").textContent=e.message;}}
 $("#selCopyBtn").onclick=()=>copyText($("#selOutBox").textContent); $("#selCloseModal").onclick=()=>{activeCtrl?.abort();closeModal("selModal");};
 
-/* GEÇMİŞ, STÜDYO, AYARLAR, TOKEN & TEMA */
 function addHistory(src,tr,type){S.history.unshift({id:uid(),date:Date.now(),type,src:src.slice(0,1500),tr:tr.slice(0,4000)});if(S.history.length>40)S.history.length=40;saveState();}
 function renderHistory(q=""){const list=$("#histList"),items=S.history.filter(h=>!q||(h.src+h.tr).toLowerCase().includes(q.toLowerCase()));if(!items.length){list.innerHTML=`<div class="hint" style="text-align:center;padding:20px">Geçmiş boş.</div>`;return;}list.innerHTML=items.map(h=>`<div class="list-item"><div class="list-item-body" data-hopen="${h.id}" style="cursor:pointer"><div class="list-item-title">${esc(h.tr.slice(0,80))}</div><div class="list-item-sub">${h.type} · ${new Date(h.date).toLocaleString("tr")}</div></div><button class="btn small danger" data-hdel="${h.id}">✕</button></div>`).join("");list.querySelectorAll("[data-hopen]").forEach(el=>el.onclick=()=>{const it=S.history.find(x=>x.id===el.dataset.hopen);if(!it)return;srcInput.value=it.src;txtOut.textContent=it.tr;srcInput.oninput();closeModal("histModal");switchView("text");});list.querySelectorAll("[data-hdel]").forEach(el=>el.onclick=()=>{S.history=S.history.filter(x=>x.id!==el.dataset.hdel);saveState();renderHistory($("#histSearch").value);});}
 $("#openHistBtn").onclick=()=>{renderHistory();openModal("histModal");}; $("#histSearch").oninput=e=>renderHistory(e.target.value);
@@ -1494,31 +1492,14 @@ function renderModelModal(){const list=$("#mFavList"),favs=S.favModels.length?S.
 $("#hdrModelBtn").onclick=()=>{renderModelModal();openModal("modelModal");};
 $("#mAddFavBtn").onclick=()=>{const m=$("#mAddInput").value.trim();if(!m)return;if(!S.favModels.includes(m))S.favModels.unshift(m);S.model=m;$("#mAddInput").value="";saveState();syncSettingsUI();renderModelModal();};
 
-$("#exportBackupBtn").onclick=async()=>{const books=await dbAll();downloadBlob(new Blob([JSON.stringify({version:4,state:S,books})],{type:"application/json"}),`cevirmen-ai-yedek-${todayKey()}.json`);
-};
+$("#exportBackupBtn").onclick=async()=>{const books=await dbAll();downloadBlob(new Blob([JSON.stringify({version:4,state:S,books})],{type:"application/json"}),`cevirmen-ai-yedek-${todayKey()}.json`);};
 $("#importBackupBtn").onclick=()=>$("#backupFileInput").click();
-$("#backupFileInput").onchange=async e=>{
-  const f=e.target.files[0]; if(!f)return;
-  try{
-    const d=JSON.parse(await f.text());
-    if(d.state){ S={...defaultState(),...d.state}; saveState(); }
-    if(Array.isArray(d.books)) for(const b of d.books) await dbPut(b);
-    initAll(); toast("Yedek geri yüklendi!");
-  }catch(err){ toast("Hata: "+err.message); }
-  e.target.value="";
-};
+$("#backupFileInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(d.state){S={...defaultState(),...d.state};saveState();}if(Array.isArray(d.books))for(const b of d.books)await dbPut(b);initAll();toast("Yedek geri yüklendi!");}catch(err){toast("Hata: "+err.message);}e.target.value="";};
 
-function openLightbox(src){ $("#lbImg").src=src; $("#lightbox").classList.add("open"); }
+function openLightbox(src){$("#lbImg").src=src;$("#lightbox").classList.add("open");}
 $("#lightbox").onclick=()=>$("#lightbox").classList.remove("open");
 
-function initAll(){
-  initLangs();
-  syncSettingsUI();
-  renderBookmarks();
-  renderMangaSites();
-  renderTabs();
-  applyReaderPrefs();
-}
+function initAll(){initLangs();syncSettingsUI();renderBookmarks();renderMangaSites();renderTabs();applyReaderPrefs();}
 initAll();
 })();
 </script>
