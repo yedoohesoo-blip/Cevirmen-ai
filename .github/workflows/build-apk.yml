@@ -1,0 +1,551 @@
+name: APK Oluştur
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dosyaları Al
+        uses: actions/checkout@v4
+
+      - name: Java 17 Kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Gradle Kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+
+      - name: Android Projesini Hazırla
+        run: |
+          mkdir -p android_app/app/src/main/java/com/cevirmen/ai
+          mkdir -p android_app/app/src/main/assets
+          mkdir -p android_app/app/src/main/res/drawable
+          cp index.html android_app/app/src/main/assets/index.html
+
+          cat << 'EOF' > android_app/settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "CevirmenAI"
+          include ':app'
+          EOF
+
+          cat << 'EOF' > android_app/build.gradle
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
+
+          cat << 'EOF' > android_app/gradle.properties
+          org.gradle.jvmargs=-Xmx2048m
+          android.useAndroidX=false
+          EOF
+
+          cat << 'EOF' > android_app/app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+          android {
+              namespace 'com.cevirmen.ai'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.cevirmen.ai"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "2.0"
+              }
+              buildTypes {
+                  release { minifyEnabled false }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+          EOF
+
+          cat << 'EOF' > android_app/app/src/main/res/drawable/ic_launcher.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp" android:height="108dp"
+              android:viewportWidth="108" android:viewportHeight="108">
+              <path android:fillColor="#110b1c" android:pathData="M0,0h108v108h-108z"/>
+              <path android:fillColor="#8b5cf6" android:pathData="M24,24h60a14,14 0 0,1 14,14v32a14,14 0 0,1 -14,14h-60a14,14 0 0,1 -14,-14v-32a14,14 0 0,1 14,-14z"/>
+              <path android:fillColor="#ffffff" android:pathData="M62,42c-4,-4 -12,-4 -16,0c-5,5 -5,15 0,20c4,4 12,4 16,0l5,5c-7,7 -19,7 -26,0c-8,-8 -8,-22 0,-30c7,-7 19,-7 26,0z"/>
+              <path android:fillColor="#d946ef" android:pathData="M51,70h6v6h-6z"/>
+          </vector>
+          EOF
+
+          cat << 'EOF' > android_app/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <application
+                  android:label="Çevirmen AI"
+                  android:icon="@drawable/ic_launcher"
+                  android:usesCleartextTraffic="true"
+                  android:hardwareAccelerated="true"
+                  android:theme="@android:style/Theme.Material.NoActionBar">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:windowSoftInputMode="adjustResize">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat << 'EOF' > android_app/app/src/main/java/com/cevirmen/ai/MainActivity.java
+          package com.cevirmen.ai;
+
+          import android.app.Activity;
+          import android.content.ContentValues;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.graphics.drawable.GradientDrawable;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import android.view.Gravity;
+          import android.view.KeyEvent;
+          import android.view.View;
+          import android.view.inputmethod.EditorInfo;
+          import android.webkit.CookieManager;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.Button;
+          import android.widget.EditText;
+          import android.widget.FrameLayout;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+          import android.widget.Toast;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
+          import java.net.URLEncoder;
+          import java.nio.charset.StandardCharsets;
+
+          public class MainActivity extends Activity {
+              private WebView appWebView;
+              private WebView browserWebView;
+              private LinearLayout browserContainer;
+              private EditText urlBar;
+              private TextView statusBar;
+              private Button modeBtn;
+              private ValueCallback<Uri[]> filePathCallback;
+              private static final int FILE_REQ = 1001;
+              private String curTransMode = "tr"; // tr | bi | orig
+
+              private int dp(int v) {
+                  return Math.round(v * getResources().getDisplayMetrics().density);
+              }
+
+              private GradientDrawable pillBg(int fill, int stroke, int radDp) {
+                  GradientDrawable d = new GradientDrawable();
+                  d.setColor(fill);
+                  d.setCornerRadius(dp(radDp));
+                  if (stroke != 0) d.setStroke(dp(1), stroke);
+                  return d;
+              }
+
+              private Button makeBtn(String label, int bg, int textColor) {
+                  Button b = new Button(this);
+                  b.setText(label);
+                  b.setAllCaps(false);
+                  b.setTextColor(textColor);
+                  b.setTextSize(12.5f);
+                  b.setBackground(pillBg(bg, Color.parseColor("#2a1f3d"), 10));
+                  b.setPadding(dp(10), dp(6), dp(10), dp(6));
+                  b.setMinHeight(0);
+                  b.setMinimumHeight(dp(34));
+                  b.setMinWidth(0);
+                  b.setMinimumWidth(dp(36));
+                  return b;
+              }
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  getWindow().setStatusBarColor(Color.parseColor("#07050c"));
+                  getWindow().setNavigationBarColor(Color.parseColor("#0b0712"));
+
+                  FrameLayout root = new FrameLayout(this);
+                  root.setBackgroundColor(Color.parseColor("#07050c"));
+
+                  // 1. ANA UYGULAMA WEBVIEW (index.html)
+                  appWebView = new WebView(this);
+                  WebSettings as = appWebView.getSettings();
+                  as.setJavaScriptEnabled(true);
+                  as.setDomStorageEnabled(true);
+                  as.setDatabaseEnabled(true);
+                  as.setAllowFileAccess(true);
+                  as.setAllowFileAccessFromFileURLs(true);
+                  as.setAllowUniversalAccessFromFileURLs(true);
+                  as.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+                  appWebView.addJavascriptInterface(new AppBridge(), "AndroidBridge");
+                  appWebView.setWebViewClient(new WebViewClient());
+                  appWebView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> cb, FileChooserParams params) {
+                          if (filePathCallback != null) filePathCallback.onReceiveValue(null);
+                          filePathCallback = cb;
+                          Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                          i.addCategory(Intent.CATEGORY_OPENABLE);
+                          i.setType("*/*");
+                          i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                          startActivityForResult(Intent.createChooser(i, "Dosya Seç"), FILE_REQ);
+                          return true;
+                      }
+                  });
+                  appWebView.loadUrl("file:///android_asset/index.html");
+                  root.addView(appWebView, new FrameLayout.LayoutParams(
+                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+                  // 2. GERÇEK CHROME TARAYICI KATMANI (BOT KORUMASINA TAKILMAZ)
+                  browserContainer = new LinearLayout(this);
+                  browserContainer.setOrientation(LinearLayout.VERTICAL);
+                  browserContainer.setBackgroundColor(Color.parseColor("#07050c"));
+                  browserContainer.setVisibility(View.GONE);
+
+                  // Üst Araç Çubuğu
+                  LinearLayout topBar = new LinearLayout(this);
+                  topBar.setOrientation(LinearLayout.HORIZONTAL);
+                  topBar.setGravity(Gravity.CENTER_VERTICAL);
+                  topBar.setBackgroundColor(Color.parseColor("#110b1c"));
+                  topBar.setPadding(dp(8), dp(8), dp(8), dp(8));
+
+                  Button closeBr = makeBtn("←", Color.parseColor("#1a1229"), Color.WHITE);
+                  closeBr.setOnClickListener(v -> browserContainer.setVisibility(View.GONE));
+
+                  Button backBtn = makeBtn("◀", Color.parseColor("#1a1229"), Color.WHITE);
+                  backBtn.setOnClickListener(v -> { if (browserWebView.canGoBack()) browserWebView.goBack(); });
+
+                  Button fwdBtn = makeBtn("▶", Color.parseColor("#1a1229"), Color.WHITE);
+                  fwdBtn.setOnClickListener(v -> { if (browserWebView.canGoForward()) browserWebView.goForward(); });
+
+                  urlBar = new EditText(this);
+                  urlBar.setHint("Google'da ara veya URL...");
+                  urlBar.setHintTextColor(Color.parseColor("#9a8fb0"));
+                  urlBar.setTextColor(Color.WHITE);
+                  urlBar.setTextSize(13.5f);
+                  urlBar.setSingleLine(true);
+                  urlBar.setImeOptions(EditorInfo.IME_ACTION_GO);
+                  urlBar.setBackground(pillBg(Color.parseColor("#07050c"), Color.parseColor("#2a1f3d"), 18));
+                  urlBar.setPadding(dp(12), dp(6), dp(12), dp(6));
+                  urlBar.setOnEditorActionListener((v, actionId, ev) -> {
+                      if (actionId == EditorInfo.IME_ACTION_GO || (ev != null && ev.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                          loadInBrowser(urlBar.getText().toString());
+                          return true;
+                      }
+                      return false;
+                  });
+
+                  Button relBtn = makeBtn("↻", Color.parseColor("#1a1229"), Color.WHITE);
+                  relBtn.setOnClickListener(v -> browserWebView.reload());
+
+                  LinearLayout.LayoutParams lpBtn = new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                  lpBtn.setMargins(dp(2), 0, dp(2), 0);
+                  LinearLayout.LayoutParams lpUrl = new LinearLayout.LayoutParams(0, dp(36), 1f);
+                  lpUrl.setMargins(dp(4), 0, dp(4), 0);
+
+                  topBar.addView(closeBr, lpBtn);
+                  topBar.addView(backBtn, lpBtn);
+                  topBar.addView(fwdBtn, lpBtn);
+                  topBar.addView(urlBar, lpUrl);
+                  topBar.addView(relBtn, lpBtn);
+                  browserContainer.addView(topBar, new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                  // Durum Şeridi
+                  statusBar = new TextView(this);
+                  statusBar.setTextColor(Color.parseColor("#c084fc"));
+                  statusBar.setBackgroundColor(Color.parseColor("#140d22"));
+                  statusBar.setTextSize(12f);
+                  statusBar.setPadding(dp(12), dp(4), dp(12), dp(4));
+                  statusBar.setVisibility(View.GONE);
+                  browserContainer.addView(statusBar, new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                  // Gerçek WebView
+                  browserWebView = new WebView(this);
+                  WebSettings bs = browserWebView.getSettings();
+                  bs.setJavaScriptEnabled(true);
+                  bs.setDomStorageEnabled(true);
+                  bs.setDatabaseEnabled(true);
+                  bs.setSupportZoom(true);
+                  bs.setBuiltInZoomControls(true);
+                  bs.setDisplayZoomControls(false);
+                  bs.setUseWideViewPort(true);
+                  bs.setLoadWithOverviewMode(true);
+                  bs.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+                  String ua = bs.getUserAgentString().replace("; wv", "").replace("Version/4.0 ", "");
+                  bs.setUserAgentString(ua);
+
+                  CookieManager cm = CookieManager.getInstance();
+                  cm.setAcceptCookie(true);
+                  cm.setAcceptThirdPartyCookies(browserWebView, true);
+
+                  browserWebView.addJavascriptInterface(new BrowserBridge(), "BrowserBridge");
+                  browserWebView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
+                          String u = req.getUrl().toString();
+                          if (u.startsWith("http://") || u.startsWith("https://")) return false;
+                          return true;
+                      }
+                      @Override
+                      public void onPageFinished(WebView view, String url) {
+                          urlBar.setText(url);
+                      }
+                  });
+                  browserContainer.addView(browserWebView, new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+                  // Alt Google-Çeviri Tarzı Bar
+                  LinearLayout botBar = new LinearLayout(this);
+                  botBar.setOrientation(LinearLayout.HORIZONTAL);
+                  botBar.setGravity(Gravity.CENTER_VERTICAL);
+                  botBar.setBackgroundColor(Color.parseColor("#110b1c"));
+                  botBar.setPadding(dp(8), dp(8), dp(8), dp(8));
+
+                  Button trBtn = makeBtn("🌐 Sayfayı Çevir", Color.parseColor("#8b5cf6"), Color.WHITE);
+                  trBtn.setOnClickListener(v -> triggerPageExtract("translate"));
+
+                  modeBtn = makeBtn("Çeviri", Color.parseColor("#1a1229"), Color.parseColor("#c084fc"));
+                  modeBtn.setOnClickListener(v -> {
+                      if (curTransMode.equals("tr")) { curTransMode = "bi"; modeBtn.setText("İki Dilli"); }
+                      else if (curTransMode.equals("bi")) { curTransMode = "orig"; modeBtn.setText("Orijinal"); }
+                      else { curTransMode = "tr"; modeBtn.setText("Çeviri"); }
+                      browserWebView.evaluateJavascript("window.__caiSetMode && window.__caiSetMode('" + curTransMode + "');", null);
+                  });
+
+                  Button readBtn = makeBtn("📖 Oku", Color.parseColor("#1a1229"), Color.WHITE);
+                  readBtn.setOnClickListener(v -> {
+                      browserContainer.setVisibility(View.GONE);
+                      appWebView.evaluateJavascript("window.__onNativeReadFs && window.__onNativeReadFs();", null);
+                  });
+
+                  Button saveBtn = makeBtn("📚 Kaydet", Color.parseColor("#18332a"), Color.parseColor("#6ee7b7"));
+                  saveBtn.setOnClickListener(v -> appWebView.evaluateJavascript("window.__onNativeSaveBook && window.__onNativeSaveBook();", null));
+
+                  LinearLayout.LayoutParams lpGrow = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+                  lpGrow.setMargins(dp(3), 0, dp(3), 0);
+                  botBar.addView(trBtn, lpGrow);
+                  botBar.addView(modeBtn, lpBtn);
+                  botBar.addView(readBtn, lpBtn);
+                  botBar.addView(saveBtn, lpBtn);
+                  browserContainer.addView(botBar, new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+                  root.addView(browserContainer, new FrameLayout.LayoutParams(
+                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+                  setContentView(root);
+              }
+
+              private void loadInBrowser(String input) {
+                  String q = input == null ? "" : input.trim();
+                  if (q.isEmpty()) q = "https://www.google.com";
+                  String url;
+                  if (q.startsWith("http://") || q.startsWith("https://")) {
+                      url = q;
+                  } else if (!q.contains(" ") && q.contains(".")) {
+                      url = "https://" + q;
+                  } else {
+                      try { url = "https://www.google.com/search?q=" + URLEncoder.encode(q, "UTF-8"); }
+                      catch (Exception e) { url = "https://www.google.com"; }
+                  }
+                  urlBar.setText(url);
+                  browserWebView.loadUrl(url);
+              }
+
+              private void triggerPageExtract(String action) {
+                  String js = "(function(){"
+                      + "if(!window.__caiState){window.__caiState={els:[],orig:[],tr:[]};}"
+                      + "var st=window.__caiState;"
+                      + "if(!st.els.length){"
+                      + "  var skip={SCRIPT:1,STYLE:1,NOSCRIPT:1,SVG:1,NAV:1,HEADER:1,FOOTER:1,BUTTON:1,INPUT:1,TEXTAREA:1,SELECT:1};"
+                      + "  var root=document.querySelector('article,main,[role=main],.chapter-content,.cha-words,#chapter-content,.entry-content')||document.body;"
+                      + "  var nodes=root.querySelectorAll('p,h1,h2,h3,h4,li,blockquote');"
+                      + "  if(nodes.length<3){nodes=document.body.querySelectorAll('p,h1,h2,h3,div');}"
+                      + "  var seen=new Set();"
+                      + "  for(var i=0;i<nodes.length;i++){"
+                      + "    var el=nodes[i];"
+                      + "    if(skip[el.tagName]||el.closest('nav,header,footer,script,style'))continue;"
+                      + "    if(el.tagName==='DIV'&&el.querySelector('p,div'))continue;"
+                      + "    var t=(el.innerText||'').replace(/\\s+/g,' ').trim();"
+                      + "    if(t.length<4||seen.has(el))continue;"
+                      + "    seen.add(el);"
+                      + "    var idx=st.els.length;"
+                      + "    el.setAttribute('data-cai-id',idx);"
+                      + "    st.els.push(el);st.orig.push(el.innerHTML);st.tr.push('');"
+                      + "  }"
+                      + "}"
+                      + "window.__caiSetMode=function(m){"
+                      + "  for(var i=0;i<st.els.length;i++){"
+                      + "    var el=st.els[i],tr=st.tr[i];"
+                      + "    if(!tr||m==='orig'){el.innerHTML=st.orig[i];}"
+                      + "    else if(m==='bi'){el.innerHTML='<div style=\"opacity:.65;font-size:.88em;margin-bottom:4px\">'+st.orig[i]+'</div><div>'+tr.replace(/</g,'&lt;').replace(/\\n/g,'<br>')+'</div>';}"
+                      + "    else{el.innerText=tr;}"
+                      + "  }"
+                      + "};"
+                      + "window.__caiApply=function(b64,m){"
+                      + "  try{var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);"
+                      + "  var map=JSON.parse(new TextDecoder().decode(bytes));"
+                      + "  for(var k in map){var idx=Number(k);if(st.els[idx]){st.tr[idx]=map[k];}}"
+                      + "  window.__caiSetMode(m||'tr');}catch(e){}"
+                      + "};"
+                      + "var out=st.els.map(function(el,i){return {i:i,t:(el.innerText||'').replace(/\\s+/g,' ').trim()};});"
+                      + "BrowserBridge.onPageExtracted(document.title||location.href, location.href, JSON.stringify(out));"
+                      + "})();";
+                  browserWebView.evaluateJavascript(js, null);
+              }
+
+              private class AppBridge {
+                  @JavascriptInterface
+                  public boolean isNative() { return true; }
+
+                  @JavascriptInterface
+                  public void openBrowser(final String urlOrQuery) {
+                      runOnUiThread(() -> {
+                          browserContainer.setVisibility(View.VISIBLE);
+                          statusBar.setVisibility(View.GONE);
+                          curTransMode = "tr";
+                          modeBtn.setText("Çeviri");
+                          loadInBrowser(urlOrQuery);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void setBrowserStatus(final String msg) {
+                      runOnUiThread(() -> {
+                          if (msg == null || msg.isEmpty()) {
+                              statusBar.setVisibility(View.GONE);
+                          } else {
+                              statusBar.setText(msg);
+                              statusBar.setVisibility(View.VISIBLE);
+                          }
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void applyPageTranslations(final String jsonMap) {
+                      runOnUiThread(() -> {
+                          String b64 = Base64.encodeToString(jsonMap.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          browserWebView.evaluateJavascript("window.__caiApply && window.__caiApply('" + b64 + "','" + curTransMode + "');", null);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void saveFile(final String filename, final String base64Data, final String mimeType) {
+                      runOnUiThread(() -> {
+                          try {
+                              byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
+                              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                  ContentValues cv = new ContentValues();
+                                  cv.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+                                  cv.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+                                  cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                                  Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                                  if (uri != null) {
+                                      try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(bytes); }
+                                  }
+                              } else {
+                                  File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), filename);
+                                  try (FileOutputStream fos = new FileOutputStream(f)) { fos.write(bytes); }
+                              }
+                              Toast.makeText(MainActivity.this, "İndirildi: " + filename, Toast.LENGTH_LONG).show();
+                          } catch (Exception e) {
+                              Toast.makeText(MainActivity.this, "İndirme hatası: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                          }
+                      });
+                  }
+              }
+
+              private class BrowserBridge {
+                  @JavascriptInterface
+                  public void onPageExtracted(final String title, final String url, final String jsonBlocks) {
+                      runOnUiThread(() -> {
+                          String t64 = Base64.encodeToString((title == null ? "" : title).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String u64 = Base64.encodeToString((url == null ? "" : url).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String b64 = Base64.encodeToString((jsonBlocks == null ? "[]" : jsonBlocks).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          appWebView.evaluateJavascript("window.__onNativePageExtract && window.__onNativePageExtract('" + t64 + "','" + u64 + "','" + b64 + "');", null);
+                      });
+                  }
+              }
+
+              @Override
+              protected void onActivityResult(int req, int res, Intent data) {
+                  if (req == FILE_REQ && filePathCallback != null) {
+                      Uri[] results = null;
+                      if (res == RESULT_OK && data != null) {
+                          if (data.getClipData() != null) {
+                              int n = data.getClipData().getItemCount();
+                              results = new Uri[n];
+                              for (int i = 0; i < n; i++) results[i] = data.getClipData().getItemAt(i).getUri();
+                          } else if (data.getData() != null) {
+                              results = new Uri[]{ data.getData() };
+                          }
+                      }
+                      filePathCallback.onReceiveValue(results);
+                      filePathCallback = null;
+                  }
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (browserContainer.getVisibility() == View.VISIBLE) {
+                      if (browserWebView.canGoBack()) browserWebView.goBack();
+                      else browserContainer.setVisibility(View.GONE);
+                      return;
+                  }
+                  if (appWebView.canGoBack()) { appWebView.goBack(); return; }
+                  super.onBackPressed();
+              }
+          }
+          EOF
+
+      - name: APK Derle
+        working-directory: android_app
+        run: gradle assembleDebug
+
+      - name: APK Dosyasını Yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Cevirmen-AI-APK
+          path: android_app/app/build/outputs/apk/debug/app-debug.apk
