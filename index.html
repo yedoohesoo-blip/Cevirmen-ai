@@ -28,10 +28,11 @@ body{
 button,input,textarea,select{font:inherit;color:inherit}
 a{color:var(--accent)}
 
+/* ---------- HEADER ---------- */
 header{
   position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;
-  padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));
-  background:#07050ce0;backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
+  padding:12px 14px;padding-top:calc(12px + env(safe-area-inset-top));
+  background:#07050ce6;backdrop-filter:blur(16px);border-bottom:1px solid var(--border);
 }
 .logo{
   width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
@@ -40,22 +41,23 @@ header{
   box-shadow:0 6px 22px #8b5cf655;
 }
 .hdr-mid{flex:1;min-width:0}
-.hdr-mid h1{font-size:17px;letter-spacing:.2px;line-height:1.15}
+.hdr-mid h1{font-size:16.5px;letter-spacing:.2px;line-height:1.15}
 .hdr-model{
   display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-size:12px;font-weight:500;
   background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:999px;
-  margin-top:3px;cursor:pointer;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-top:3px;cursor:pointer;max-width:56vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .hdr-model:active{transform:scale(.97);border-color:var(--primary)}
 .hdr-actions{display:flex;gap:6px;flex:0 0 auto}
 .icon-btn{
-  width:36px;height:36px;border-radius:11px;border:1px solid var(--border);
+  width:35px;height:35px;border-radius:11px;border:1px solid var(--border);
   background:var(--surface2);color:var(--text);display:grid;place-items:center;
-  cursor:pointer;transition:.15s;font-size:16px;
+  cursor:pointer;transition:.15s;font-size:15px;
 }
 .icon-btn:active{transform:scale(.94);border-color:var(--primary)}
 
-main{max-width:860px;margin:0 auto;padding:14px}
+/* ---------- LAYOUT & CARDS ---------- */
+main{max-width:880px;margin:0 auto;padding:14px}
 .view{display:none;animation:fadeIn .18s ease}
 .view.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -63,10 +65,10 @@ main{max-width:860px;margin:0 auto;padding:14px}
 .card{
   background:linear-gradient(180deg,var(--surface),#0d0816);
   border:1px solid var(--border);border-radius:var(--radius);
-  padding:16px;margin-bottom:14px;box-shadow:0 8px 30px #00000030;
+  padding:15px;margin-bottom:13px;box-shadow:0 8px 30px #00000030;
 }
 .card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.card-head h2{font-size:15px;color:var(--accent);font-weight:600;flex:1;min-width:120px}
+.card-head h2{font-size:15px;color:var(--accent);font-weight:650;flex:1;min-width:110px}
 label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 6px}
 input,textarea,select{
   width:100%;background:var(--surface2);color:var(--text);
@@ -79,11 +81,11 @@ select{cursor:pointer}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .row > .grow{flex:1;min-width:0}
 
+/* ---------- BUTTONS ---------- */
 .btn{
   flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);color:var(--text);
   padding:10px 14px;border-radius:12px;font-size:13.5px;font-weight:600;cursor:pointer;
-  transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  white-space:nowrap;
+  transition:.15s;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;
 }
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.45;pointer-events:none}
@@ -91,6 +93,7 @@ select{cursor:pointer}
 .btn.pink{background:linear-gradient(135deg,var(--primary2),var(--pink));border:none;color:#fff;box-shadow:0 6px 20px #d946ef44}
 .btn.danger{background:#f43f5e20;border-color:#f43f5e55;color:#fda4af}
 .btn.ok{background:#34d39920;border-color:#34d39955;color:#6ee7b7}
+.btn.warn{background:#fbbf2420;border-color:#fbbf2455;color:#fde68a}
 .btn.small{padding:7px 11px;font-size:12.5px;border-radius:10px}
 .btn.pill{border-radius:999px}
 .btn.grow{flex:1}
@@ -129,22 +132,28 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
 
 .seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px;margin-bottom:12px}
-.seg button{flex:1;border:none;background:none;color:var(--muted);padding:8px 10px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.seg button{flex:1;border:none;background:none;color:var(--muted);padding:8px 8px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
 .seg button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 3px 12px #8b5cf644}
 
+/* ---------- TARAYICI & ÇOKLU SEKME ---------- */
 .native-banner{
   background:linear-gradient(135deg,#8b5cf626,#d946ef22);
-  border:1px solid var(--primary);border-radius:14px;padding:12px 14px;margin-bottom:12px;
-  font-size:13px;line-height:1.5;
+  border:1px solid var(--primary);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:13px;
 }
-.b-hero{text-align:center;padding:14px 10px 10px}
-.b-hero h2{
-  font-size:23px;font-weight:800;
-  background:linear-gradient(135deg,#fff,var(--accent),var(--pink));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+.tabs-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
+.tabs-strip::-webkit-scrollbar{display:none}
+.tab-chip{
+  flex:0 0 auto;max-width:190px;display:flex;align-items:center;gap:6px;
+  padding:8px 11px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface2);cursor:pointer;transition:.15s;
 }
-.b-hero p{font-size:13px;color:var(--muted);margin-top:6px}
-.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;margin-top:12px}
+.tab-chip.active{border-color:var(--primary);background:#8b5cf624;box-shadow:0 4px 14px #8b5cf626}
+.tab-chip-title{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:125px}
+.tab-chip-x{
+  width:19px;height:19px;border-radius:50%;border:none;background:#ffffff18;color:#fda4af;
+  font-size:11px;display:grid;place-items:center;cursor:pointer;flex:0 0 19px;
+}
+.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px;margin-top:10px}
 .bm-tile{
   background:var(--surface2);border:1px solid var(--border);border-radius:14px;
   padding:12px 8px;text-align:center;cursor:pointer;position:relative;transition:.15s;
@@ -152,8 +161,7 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .bm-tile:active{transform:scale(.96);border-color:var(--primary)}
 .bm-ico{
   width:38px;height:38px;border-radius:12px;margin:0 auto 7px;display:grid;place-items:center;
-  font-weight:800;font-size:16px;color:#fff;
-  background:linear-gradient(135deg,var(--primary),var(--pink));
+  font-weight:800;font-size:16px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink));
 }
 .bm-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bm-del{
@@ -161,19 +169,66 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
   border:none;background:#0008;color:#fda4af;font-size:11px;cursor:pointer;display:grid;place-items:center;
 }
 
-.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:10px;text-align:center}
-.stat-box b{display:block;font-size:18px;color:var(--accent)}
-.stat-box span{font-size:11.5px;color:var(--muted)}
+/* ---------- MANGA / WEBTOON ÇEVİRİCİ ---------- */
+.manga-thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-top:10px}
+.manga-thumbs::-webkit-scrollbar{display:none}
+.m-thumb{
+  flex:0 0 64px;height:86px;border-radius:10px;overflow:hidden;position:relative;
+  border:2px solid var(--border);cursor:pointer;background:#000;
+}
+.m-thumb.active{border-color:var(--pink);box-shadow:0 0 0 2px #d946ef55}
+.m-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.m-thumb-badge{
+  position:absolute;bottom:3px;right:3px;background:#07050cdd;color:#fff;
+  font-size:10px;font-weight:700;padding:1px 5px;border-radius:6px;
+}
+.m-thumb-done{
+  position:absolute;top:3px;left:3px;background:var(--ok);color:#042419;
+  font-size:9px;font-weight:800;padding:1px 4px;border-radius:5px;
+}
+
+.manga-stage{
+  position:relative;width:100%;background:#000;border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);margin-top:10px;
+}
+.manga-stage img{width:100%;height:auto;display:block;user-select:none}
+.manga-overlay{position:absolute;inset:0;pointer-events:none}
+.m-bubble{
+  position:absolute;pointer-events:auto;cursor:pointer;
+  background:rgba(255,255,255,0.95);color:#110b1c;
+  border:2px solid #8b5cf6;border-radius:12px;
+  padding:4px 6px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-weight:700;line-height:1.2;word-break:break-word;overflow:hidden;
+  box-shadow:0 4px 14px #00000055;transition:transform .12s;
+}
+.m-bubble:active{transform:scale(.97)}
+.m-bubble.t-thought{border-style:dashed;border-color:#a855f7;border-radius:18px;background:rgba(246,240,255,0.95);font-style:italic}
+.m-bubble.t-narration{border-radius:4px;background:rgba(17,11,28,0.92);color:#f4eeff;border-color:#c084fc}
+.m-bubble.t-sfx{background:rgba(217,70,239,0.88);color:#fff;border-color:#fff;font-weight:800;letter-spacing:.3px;text-transform:uppercase}
+
+.m-dialog-card{
+  background:var(--surface2);border:1px solid var(--border);border-radius:12px;
+  padding:11px 13px;margin-bottom:8px;
+}
+.m-tag{
+  display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;
+  background:#8b5cf628;color:var(--accent);margin-right:6px;text-transform:uppercase;
+}
+
+/* ---------- KÜTÜPHANE & İSTATİSTİKLER ---------- */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:9px 6px;text-align:center}
+.stat-box b{display:block;font-size:16.5px;color:var(--accent)}
+.stat-box span{font-size:10.5px;color:var(--muted)}
 .shelf-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px}
 .shelf-bar::-webkit-scrollbar{display:none}
 .shelf-pill{
-  flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--border);
+  flex:0 0 auto;padding:7px 12px;border-radius:999px;border:1px solid var(--border);
   background:var(--surface2);color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;
 }
 .shelf-pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
 
-.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:12px}
 .book-card{
   background:var(--surface);border:1px solid var(--border);border-radius:15px;
   overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:.16s;position:relative;
@@ -188,8 +243,7 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .book-badge{
   position:absolute;top:8px;left:8px;z-index:2;font-size:10px;font-weight:700;
-  padding:3px 7px;border-radius:7px;background:#07050ccc;border:1px solid #ffffff26;color:#fff;
-  text-transform:uppercase;
+  padding:3px 7px;border-radius:7px;background:#07050ccc;border:1px solid #ffffff26;color:#fff;text-transform:uppercase;
 }
 .book-fav{
   position:absolute;top:7px;right:7px;z-index:3;width:28px;height:28px;border-radius:50%;
@@ -209,46 +263,63 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .list-item-title{font-size:14px;font-weight:650;word-break:break-word}
 .list-item-sub{font-size:12px;color:var(--muted);margin-top:2px;word-break:break-word}
 
+/* ---------- BOTTOM NAV (6 SEKME) ---------- */
 nav.bnav{
   position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;
-  padding:8px 6px calc(8px + env(safe-area-inset-bottom));
+  padding:7px 4px calc(7px + env(safe-area-inset-bottom));
   background:#0b0712f2;backdrop-filter:blur(16px);border-top:1px solid var(--border);
 }
 nav.bnav button{
-  flex:1;max-width:96px;background:none;border:none;color:var(--muted);font-size:10.5px;font-weight:600;
-  display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;border-radius:12px;cursor:pointer;
+  flex:1;background:none;border:none;color:var(--muted);font-size:10px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 1px;border-radius:11px;cursor:pointer;
 }
-nav.bnav button svg{width:21px;height:21px}
+nav.bnav button svg{width:20px;height:20px}
 nav.bnav button.active{color:#fff;background:#8b5cf624}
 nav.bnav button.active svg{color:var(--accent)}
 
+/* ---------- FULLSCREEN READER (KINDLE SEVİYESİ) ---------- */
 .reader{
   position:fixed;inset:0;z-index:100;display:none;flex-direction:column;
   background:var(--r-bg,#07050c);color:var(--r-fg,#ece6f7);
 }
 .reader.open{display:flex}
-.reader.t-night{--r-bg:#07050c;--r-fg:#ece6f7;--r-bar:#110b1cf0;--r-bd:#2a1f3d;--r-mut:#9a8fb0}
-.reader.t-amoled{--r-bg:#000000;--r-fg:#e5e5e5;--r-bar:#0a0a0af0;--r-bd:#222;--r-mut:#888}
+.reader.t-night{--r-bg:#07050c;--r-fg:#ece6f7;--r-bar:#110b1cf5;--r-bd:#2a1f3d;--r-mut:#9a8fb0}
+.reader.t-amoled{--r-bg:#000000;--r-fg:#e5e5e5;--r-bar:#0a0a0af5;--r-bd:#222;--r-mut:#888}
 .reader.t-sepia{--r-bg:#f4ecd8;--r-fg:#33281d;--r-bar:#ebe0c7f5;--r-bd:#d6c7a9;--r-mut:#7c6a53}
 .reader.t-day{--r-bg:#ffffff;--r-fg:#1a1a1f;--r-bar:#f5f5f7f5;--r-bd:#e2e2e8;--r-mut:#666}
 
 .r-top{
-  display:flex;align-items:center;gap:6px;padding:10px 12px;
-  padding-top:calc(10px + env(safe-area-inset-top));
+  display:flex;align-items:center;gap:5px;padding:9px 10px;
+  padding-top:calc(9px + env(safe-area-inset-top));
   background:var(--r-bar);border-bottom:1px solid var(--r-bd);backdrop-filter:blur(12px);
 }
-.r-title{flex:1;min-width:0;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-title{flex:1;min-width:0;font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .r-btn{
   border:1px solid var(--r-bd);background:transparent;color:var(--r-fg);
-  padding:6px 9px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;flex:0 0 auto;
+  padding:6px 8px;border-radius:9px;font-size:12.5px;font-weight:600;cursor:pointer;flex:0 0 auto;
 }
+.r-btn.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.r-subbar{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;overflow-x:auto;
+  background:var(--r-bar);border-bottom:1px solid var(--r-bd);
+}
+.r-subbar::-webkit-scrollbar{display:none}
 .r-prog{height:3px;background:var(--r-bd)}
 .r-prog > div{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:width .2s}
-.r-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:24px 18px 60px}
+.r-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:22px 18px 70px}
 .r-body{margin:0 auto;word-wrap:break-word}
 .r-body p{margin-bottom:1.1em}
 .r-body img{max-width:100%;height:auto;border-radius:10px;display:block;margin:12px auto;cursor:zoom-in}
 .r-body h1,.r-body h2,.r-body h3{margin:1.2em 0 .6em;line-height:1.3}
+.r-bi-orig{opacity:.62;font-size:.86em;margin-bottom:5px;line-height:1.5}
+.r-bi-tr{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--r-bd)}
+
+/* Vurgulamalar (Highlights) */
+mark.hl-purple{background:#8b5cf655;color:inherit;padding:1px 3px;border-radius:4px}
+mark.hl-yellow{background:#fbbf2455;color:inherit;padding:1px 3px;border-radius:4px}
+mark.hl-green{background:#34d39948;color:inherit;padding:1px 3px;border-radius:4px}
+mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4px}
+
 .r-next-card{
   margin:36px auto 10px;padding:16px;border-radius:14px;border:1px solid var(--r-bd);
   text-align:center;cursor:pointer;max-width:420px;background:#8b5cf614;
@@ -262,12 +333,13 @@ nav.bnav button.active svg{color:var(--accent)}
 
 .sel-bar{
   position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));
-  transform:translateX(-50%);z-index:130;display:none;gap:6px;align-items:center;
-  background:#1c1230f5;border:1px solid var(--primary);padding:7px 10px;border-radius:999px;
-  box-shadow:0 10px 30px #00000099;
+  transform:translateX(-50%);z-index:130;display:none;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;
+  background:#1c1230f5;border:1px solid var(--primary);padding:7px 10px;border-radius:18px;
+  box-shadow:0 10px 30px #00000099;max-width:94vw;
 }
 .sel-bar.show{display:flex}
 
+/* ---------- MODALS ---------- */
 .modal{
   position:fixed;inset:0;z-index:150;background:#000000aa;backdrop-filter:blur(5px);
   display:none;align-items:flex-end;justify-content:center;
@@ -311,14 +383,14 @@ nav.bnav button.active svg{color:var(--accent)}
     </button>
   </div>
   <div class="hdr-actions">
+    <button class="icon-btn" id="openQuotesBtn" title="Alıntı Defteri">🖍️</button>
     <button class="icon-btn" id="openHistBtn" title="Çeviri Geçmişi">📜</button>
-    <button class="icon-btn" id="openGlossQuick" title="Sözlük">📖</button>
   </div>
 </header>
 
 <main>
 
-  <!-- 1. METİN ÇEVİRİSİ -->
+  <!-- ==================== 1. METİN ÇEVİRİSİ ==================== -->
   <section id="view-text" class="view active">
     <div class="card">
       <div class="lang-bar">
@@ -355,25 +427,28 @@ nav.bnav button.active svg{color:var(--accent)}
     </div>
   </section>
 
-  <!-- 2. GERÇEK CHROME TARAYICI -->
+  <!-- ==================== 2. ÇOKLU SEKMELİ TARAYICI ==================== -->
   <section id="view-browser" class="view">
     <div id="nativeBadge" class="native-banner" style="display:none">
-      <b>🚀 Gerçek Android Tarayıcı Aktif!</b> WebNovel, Cloudflare ve tüm bot korumalı sitelere sıfır engelle girip alttaki <b>🌐 Sayfayı Çevir</b> tuşuyla Google Çeviri gibi doğrudan sayfa içinde çevirebilirsin.
+      <b>🚀 Gerçek Android Tarayıcı Aktif!</b> İstediğin kadar sekme aç, bot korumalı sitelere sıfır engelle gir ve alttaki <b>🌐 Sayfayı Çevir</b> ile Google Çeviri gibi çevir.
     </div>
 
-    <div class="card">
-      <div class="b-hero">
-        <h2>Çevirmen Tarayıcı</h2>
-        <p>Google'da ara ya da istediğin site adresini yazıp özgürce gezin.</p>
+    <!-- Çoklu Sekme Çubuğu -->
+    <div class="card" style="padding:12px">
+      <div class="card-head" style="margin-bottom:8px">
+        <h2>📑 Açık Sekmeler (<span id="tabCount">1</span>)</h2>
+        <button class="btn primary small" id="newTabBtn">+ Yeni Sekme</button>
       </div>
-      <div class="row" style="margin-top:8px">
+      <div class="tabs-strip" id="tabsStrip"></div>
+
+      <div class="row" style="margin-top:6px">
         <input id="bUrlInput" class="grow" placeholder="Google'da ara veya URL yapıştır..." style="border-radius:999px">
         <button class="btn pink pill" id="bGoBtn">🌐 Aç</button>
       </div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn small grow" id="bOpenGoogle">🔍 Google'ı Aç</button>
-        <button class="btn small" id="bPasteGo">📋 Yapıştır & Aç</button>
-        <button class="btn small" id="addBmManual">+ Site Ekle</button>
+      <div class="row" style="margin-top:9px">
+        <button class="btn small grow" id="bOpenGoogle">🔍 Google</button>
+        <button class="btn small" id="bPasteGo">📋 Yapıştır</button>
+        <button class="btn small" id="addBmManual">+ Yer İmi</button>
       </div>
     </div>
 
@@ -390,16 +465,85 @@ nav.bnav button.active svg{color:var(--accent)}
         <span>Sayfayı çevirince otomatik Kütüphaneye kaydet</span>
         <input type="checkbox" id="bAutoSave">
       </label>
-      <p class="hint">Açık olursa, tarayıcıda <b>🌐 Sayfayı Çevir</b> dediğinde çevrilen bölüm otomatik olarak serinin kitabına eklenir.</p>
     </div>
   </section>
 
-  <!-- 3. KÜTÜPHANE -->
+  <!-- ==================== 3. MANGA / WEBTOON ÇEVİRİCİSİ ==================== -->
+  <section id="view-manga" class="view">
+    <div class="card">
+      <div class="card-head">
+        <h2>💬 Manga & Webtoon Çeviricisi (Vision AI)</h2>
+        <button class="btn primary small" id="mAddImgBtn">+ Sayfa Seç</button>
+        <input type="file" id="mFileInput" multiple accept="image/*" style="display:none">
+      </div>
+      <p class="hint" style="margin-top:0">
+        Galeriden manga veya uzun webtoon sayfalarını seç. Yapay zeka konuşma baloncuklarını konumlarıyla tespit eder, doğrudan sayfanın üzerine temiz Türkçe baloncuklar yerleştirir. <i>(Gemini Flash / GPT-4o gibi görsel destekli bir model seçili olmalı.)</i>
+      </p>
+
+      <div class="row" style="margin-top:10px">
+        <select id="mDirSel" class="grow" style="padding:8px 10px;font-size:13px">
+          <option value="webtoon">📜 Webtoon (Yukarıdan Aşağıya)</option>
+          <option value="manga">📖 Manga (Sağdan Sola)</option>
+        </select>
+        <select id="mViewSel" style="width:auto;padding:8px 10px;font-size:13px">
+          <option value="overlay">💬 Baloncuk Üstü</option>
+          <option value="list">📋 Diyalog Listesi</option>
+          <option value="orig">🖼️ Orijinal</option>
+        </select>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn pink grow" id="mTransCurBtn"><span class="spin"></span>Bu Sayfayı Çevir</button>
+        <button class="btn primary" id="mTransAllBtn">⚡ Tümünü Çevir</button>
+        <button class="btn danger" id="mStopBtn" style="display:none">Durdur</button>
+      </div>
+
+      <div class="progress" id="mProg"><div></div></div>
+      <div class="status" id="mStatus"></div>
+
+      <div class="manga-thumbs" id="mThumbs"></div>
+    </div>
+
+    <!-- Aktif Manga Sayfası Sahnesi -->
+    <div id="mWorkArea" style="display:none">
+      <div class="card" style="padding:12px">
+        <div class="row">
+          <button class="btn small" id="mPrevPage">◀</button>
+          <span class="meta grow" id="mPageInfo" style="text-align:center">Sayfa 1 / 1</span>
+          <button class="btn small" id="mNextPage">▶</button>
+          <button class="btn small ok" id="mDlPngBtn" title="Çevrilmiş sayfayı PNG indir">⬇ PNG</button>
+          <button class="btn small" id="mSaveLibBtn" title="Kütüphaneye kaydet">📚 Kaydet</button>
+          <button class="btn small danger" id="mClearBtn" title="Tümünü temizle">🗑</button>
+        </div>
+
+        <!-- Baloncuk Görünüm İnce Ayarı -->
+        <div class="row" style="margin-top:10px">
+          <span class="meta">Yazı Boyutu:</span>
+          <input type="range" id="mFontScale" min="0.7" max="1.6" step="0.05" value="1" class="grow">
+          <span class="meta">Opaklık:</span>
+          <input type="range" id="mBgAlpha" min="0.6" max="1" step="0.05" value="0.95" style="width:85px">
+        </div>
+
+        <!-- Görsel + Üzerine Oturan Baloncuklar -->
+        <div class="manga-stage" id="mStage">
+          <img id="mStageImg" alt="">
+          <div class="manga-overlay" id="mOverlay"></div>
+        </div>
+
+        <!-- Diyalog Listesi Modu -->
+        <div id="mDialogList" style="display:none;margin-top:12px"></div>
+        <p class="hint" id="mEditHint" style="text-align:center;margin-top:8px">İpucu: Herhangi bir baloncuğa dokunarak metnini veya konumunu elle düzeltebilirsin.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 4. KÜTÜPHANE (KINDLE SEVİYESİ) ==================== -->
   <section id="view-library" class="view">
     <div class="stats-strip">
       <div class="stat-box"><b id="stTotal">0</b><span>Kitap</span></div>
-      <div class="stat-box"><b id="stReading">0</b><span>Okunuyor</span></div>
-      <div class="stat-box"><b id="stDone">0</b><span>Bitirilen</span></div>
+      <div class="stat-box"><b id="stStreak">0</b><span>Gün Seri 🔥</span></div>
+      <div class="stat-box"><b id="stMins">0</b><span>Dakika ⏱</span></div>
+      <div class="stat-box"><b id="stWords">0</b><span>Kelime 📖</span></div>
     </div>
 
     <div class="card" style="padding:12px">
@@ -407,7 +551,7 @@ nav.bnav button.active svg{color:var(--accent)}
         <input id="libSearch" class="grow" placeholder="🔍 Kitap veya yazar ara..." style="padding:9px 12px;font-size:14px">
         <select id="libSort" style="width:auto;padding:9px 10px;font-size:13px">
           <option value="recent">Son Okunan</option>
-          <option value="title">A-Z Ad</option>
+          <option value="title">A-Z</option>
           <option value="prog">İlerleme</option>
         </select>
         <button class="btn primary small" id="addBookBtn">+ Kitap Ekle</button>
@@ -424,11 +568,11 @@ nav.bnav button.active svg{color:var(--accent)}
 
     <div class="book-grid" id="bookGrid"></div>
     <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:34px 16px;display:none">
-      Henüz kitap yok. <b>+ Kitap Ekle</b> ile EPUB, PDF, TXT, HTML yükleyebilir ya da <b>Tarayıcı</b>'dan çevirdiğin bölümleri kaydedebilirsin.
+      Henüz kitap yok. <b>+ Kitap Ekle</b> ile EPUB, PDF, TXT, HTML yükleyebilir (okurken sayfa sayfa kalıcı çevirebilir!), Tarayıcı veya Manga sekmesinden kayıt yapabilirsin.
     </div>
   </section>
 
-  <!-- 4. STÜDYO (PROMPT + SÖZLÜK) -->
+  <!-- ==================== 5. STÜDYO (PROMPT + SÖZLÜK) ==================== -->
   <section id="view-studio" class="view">
     <div class="seg" id="studioSeg">
       <button class="active" data-sub="prompts">✨ Prompt Profilleri</button>
@@ -445,7 +589,7 @@ nav.bnav button.active svg{color:var(--accent)}
         <label>Profil Adı</label>
         <input id="promptName">
         <label>Sistem Talimatı (System Prompt)</label>
-        <textarea id="promptText" style="min-height:190px"></textarea>
+        <textarea id="promptText" style="min-height:185px"></textarea>
         <div class="row" style="margin-top:12px">
           <button class="btn primary" id="savePromptBtn">Kaydet</button>
           <button class="btn" id="resetPromptBtn">Varsayılana Dön</button>
@@ -463,9 +607,6 @@ nav.bnav button.active svg{color:var(--accent)}
             <input type="checkbox" id="glossEnabled">
           </label>
         </div>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">
-          Karakter isimleri ve özel terimler her bölümde aynı çevrilsin diye buraya ekle.
-        </p>
         <div class="row">
           <input id="glossSrc" class="grow" placeholder="Orijinal (örn: Cultivation)">
           <input id="glossTgt" class="grow" placeholder="Çevirisi (örn: Yetişim)">
@@ -476,7 +617,7 @@ nav.bnav button.active svg{color:var(--accent)}
     </div>
   </section>
 
-  <!-- 5. AYARLAR -->
+  <!-- ==================== 6. AYARLAR ==================== -->
   <section id="view-settings" class="view">
     <div class="card">
       <h2>Yapay Zeka API Ayarları (OpenAI Uyumlu)</h2>
@@ -488,7 +629,7 @@ nav.bnav button.active svg{color:var(--accent)}
       <label>Base URL</label>
       <input id="baseUrl" placeholder="https://api.literouter.com/v1">
       <label>Model</label>
-      <input id="modelInput" list="modelDatalist" placeholder="Model adı...">
+      <input id="modelInput" list="modelDatalist" placeholder="Örn: gemini-2.5-flash veya gpt-4o-mini">
       <datalist id="modelDatalist"></datalist>
       <div class="row" style="margin-top:12px">
         <button class="btn" id="fetchModelsBtn">Modelleri Getir</button>
@@ -521,6 +662,7 @@ nav.bnav button.active svg{color:var(--accent)}
 
 </main>
 
+<!-- ==================== BOTTOM NAV (6 SEKME) ==================== -->
 <nav class="bnav" id="bottomNav">
   <button class="active" data-view="text">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>
@@ -529,6 +671,10 @@ nav.bnav button.active svg{color:var(--accent)}
   <button data-view="browser">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
     <span>Tarayıcı</span>
+  </button>
+  <button data-view="manga">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10h8M8 14h5"/></svg>
+    <span>Manga</span>
   </button>
   <button data-view="library">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
@@ -544,16 +690,23 @@ nav.bnav button.active svg{color:var(--accent)}
   </button>
 </nav>
 
-<!-- FULLSCREEN READER -->
+<!-- ==================== FULLSCREEN KINDLE READER ==================== -->
 <div class="reader t-night" id="reader">
   <div class="r-top">
     <button class="r-btn" id="rClose">←</button>
     <div class="r-title" id="rTitle">Okuyucu</div>
-    <button class="r-btn" id="rTtsBtn">🔊</button>
-    <button class="r-btn" id="rSelAll">☑</button>
-    <button class="r-btn" id="rBmBtn">🔖</button>
-    <button class="r-btn" id="rTocBtn">☰</button>
-    <button class="r-btn" id="rAaBtn">Aa</button>
+    <button class="r-btn" id="rTtsBtn" title="Sesli Oku">🔊</button>
+    <button class="r-btn" id="rBmBtn" title="Yer İmi">🔖</button>
+    <button class="r-btn" id="rTocBtn" title="İçindekiler">☰</button>
+    <button class="r-btn" id="rAaBtn" title="Görünüm & Auto-Scroll">Aa</button>
+  </div>
+  <!-- Kindle Süper Araç Çubuğu: Kalıcı Çeviri, Nerde Kalmıştım, Auto-Scroll -->
+  <div class="r-subbar" id="rSubBar">
+    <button class="r-btn on" id="rTransChapBtn">🌐 Bölümü Çevir</button>
+    <button class="r-btn" id="rViewModeBtn" style="display:none">Görünüm: Çeviri</button>
+    <button class="r-btn" id="rRecapBtn">🔄 Nerde Kalmıştım?</button>
+    <button class="r-btn" id="rAutoScrollBtn">📜 Oto-Kaydır</button>
+    <button class="r-btn" id="rSelAll">☑ Tümünü Çevir</button>
   </div>
   <div class="r-prog"><div id="rProgBar"></div></div>
   <div class="r-scroll" id="rScroll">
@@ -570,13 +723,16 @@ nav.bnav button.active svg{color:var(--accent)}
   </div>
 </div>
 
+<!-- Seçim Çevirisi & Vurgulama Yüzen Barı -->
 <div class="sel-bar" id="selBar">
   <button class="btn primary small pill" id="selTransBtn">🌐 Çevir</button>
-  <button class="btn small pill" id="selAllBtn">Tümünü Seç</button>
+  <button class="btn warn small pill" id="selHlBtn">🖍️ Vurgula</button>
   <button class="btn small pill" id="selCloseBtn">✕</button>
 </div>
 
-<!-- MODALS -->
+<!-- ==================== MODALS ==================== -->
+
+<!-- 1. Hızlı Model Değiştirici -->
 <div class="modal" id="modelModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -592,10 +748,11 @@ nav.bnav button.active svg{color:var(--accent)}
   </div>
 </div>
 
+<!-- 2. Okuyucu Görünüm, TTS & Auto-Scroll Ayarları -->
 <div class="modal" id="aaModal">
   <div class="sheet">
     <div class="sheet-head">
-      <h3>Aa Okuma Görünümü & Ses</h3>
+      <h3>Aa Okuma, Ses & Oto-Kaydırma</h3>
       <button class="btn small" data-close="aaModal">✕</button>
     </div>
     <label>Tema</label>
@@ -628,11 +785,14 @@ nav.bnav button.active svg{color:var(--accent)}
       <option value="left">Sola Yaslı</option>
       <option value="justify">İki Yana Yaslı</option>
     </select>
+    <label>Otomatik Kaydırma Hızı: <b id="rScrollVal">3</b></label>
+    <input type="range" id="rScrollRange" min="1" max="10" step="1">
     <label>Sesli Okuma Hızı: <b id="rTtsVal">1.0</b>x</label>
     <input type="range" id="rTtsRange" min="0.7" max="2.0" step="0.1">
   </div>
 </div>
 
+<!-- 3. İçindekiler & Yer İmleri -->
 <div class="modal" id="tocModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -647,6 +807,19 @@ nav.bnav button.active svg{color:var(--accent)}
   </div>
 </div>
 
+<!-- 4. Nerde Kalmıştım? Özeti -->
+<div class="modal" id="recapModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>🔄 Nerde Kalmıştım? (Bölüm Hatırlatıcı)</h3>
+      <button class="btn small" data-close="recapModal">✕</button>
+    </div>
+    <div class="out-box" id="recapBox" style="min-height:120px"></div>
+    <div class="status" id="recapStatus"></div>
+  </div>
+</div>
+
+<!-- 5. Seçim Çevirisi -->
 <div class="modal" id="selModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -660,6 +833,62 @@ nav.bnav button.active svg{color:var(--accent)}
   </div>
 </div>
 
+<!-- 6. Alıntı & Vurgu Ekleme -->
+<div class="modal" id="hlModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>🖍️ Alıntıyı Vurgula & Not Ekle</h3>
+      <button class="btn small" data-close="hlModal">✕</button>
+    </div>
+    <div id="hlPreview" style="padding:10px;border-radius:10px;background:var(--surface2);font-size:13.5px;margin-bottom:10px"></div>
+    <label>Renk</label>
+    <div class="row" id="hlColors">
+      <button class="btn small grow" data-c="purple" style="background:#8b5cf644">Mor</button>
+      <button class="btn small grow" data-c="yellow" style="background:#fbbf2444">Sarı</button>
+      <button class="btn small grow" data-c="green" style="background:#34d39944">Yeşil</button>
+      <button class="btn small grow" data-c="pink" style="background:#f43f5e44">Pembe</button>
+    </div>
+    <label>Kişisel Not (İsteğe bağlı)</label>
+    <input id="hlNoteInput" placeholder="Bu sahneyle ilgili notun...">
+    <button class="btn primary" id="hlSaveBtn" style="width:100%;margin-top:12px">Alıntı Defterine Kaydet</button>
+  </div>
+</div>
+
+<!-- 7. Alıntı Defteri -->
+<div class="modal" id="quotesModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>🖍️ Alıntı Defterim</h3>
+      <button class="btn small" data-close="quotesModal">✕</button>
+    </div>
+    <input id="quoteSearch" placeholder="🔍 Alıntılarda ara..." style="margin-bottom:10px;padding:9px 12px;font-size:14px">
+    <div id="quotesList"></div>
+  </div>
+</div>
+
+<!-- 8. Manga Baloncuk Düzenleyici -->
+<div class="modal" id="bubbleModal">
+  <div class="sheet">
+    <div class="sheet-head">
+      <h3>💬 Baloncuk Düzenle</h3>
+      <button class="btn small danger" id="bDelBubble">Sil</button>
+      <button class="btn small" data-close="bubbleModal">✕</button>
+    </div>
+    <div class="meta" id="bOrigLabel" style="margin-bottom:8px"></div>
+    <label>Türkçe Çeviri</label>
+    <textarea id="bEditText" style="min-height:90px"></textarea>
+    <label>Baloncuk Türü</label>
+    <select id="bEditType">
+      <option value="speech">Konuşma</option>
+      <option value="thought">Düşünce</option>
+      <option value="narration">Anlatıcı Kutusu</option>
+      <option value="sfx">Efekt (SFX)</option>
+    </select>
+    <button class="btn primary" id="bSaveBubble" style="width:100%;margin-top:12px">Güncelle</button>
+  </div>
+</div>
+
+<!-- 9. Kitap Ayarları & Dışa Aktarma -->
 <div class="modal" id="editBookModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -670,7 +899,7 @@ nav.bnav button.active svg{color:var(--accent)}
       <button class="btn small" id="ebCoverFileBtn">🖼 Galeriden Kapak</button>
       <input type="file" id="ebCoverInput" accept="image/*" style="display:none">
       <button class="btn small" id="ebCoverUrlBtn">🔗 URL ile Kapak</button>
-      <button class="btn small danger" id="ebCoverDelBtn">Kapağı Kaldır</button>
+      <button class="btn small danger" id="ebCoverDelBtn">Kaldır</button>
     </div>
     <label>Kitap Adı</label>
     <input id="ebTitle">
@@ -691,7 +920,7 @@ nav.bnav button.active svg{color:var(--accent)}
       <button class="btn primary grow" id="ebSaveBtn">Değişiklikleri Kaydet</button>
     </div>
     <div class="row" style="margin-top:10px">
-      <button class="btn ok grow" id="ebExpEpub">⬇ .EPUB İndir</button>
+      <button class="btn ok grow" id="ebExpEpub">⬇ .EPUB İndir (Resimli)</button>
       <button class="btn grow" id="ebExpHtml">⬇ .HTML İndir</button>
       <button class="btn danger" id="ebDelBtn">Sil</button>
     </div>
@@ -702,6 +931,7 @@ nav.bnav button.active svg{color:var(--accent)}
   </div>
 </div>
 
+<!-- 10. Geçmiş -->
 <div class="modal" id="histModal">
   <div class="sheet">
     <div class="sheet-head">
@@ -721,11 +951,13 @@ nav.bnav button.active svg{color:var(--accent)}
 (() => {
 "use strict";
 
+/* ===================== TEMEL YARDIMCILAR ===================== */
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const todayKey = () => new Date().toISOString().slice(0,10);
 const isNative = () => !!(window.AndroidBridge && window.AndroidBridge.isNative && window.AndroidBridge.isNative());
 const b64DecodeUtf8 = b64 => {
   const bin = atob(b64), bytes = new Uint8Array(bin.length);
@@ -738,7 +970,6 @@ function toast(msg){
   const el = $("#toast"); el.textContent = msg; el.classList.add("show");
   clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
 }
-
 async function copyText(txt){
   if (!txt) return toast("Kopyalanacak metin yok");
   try { await navigator.clipboard.writeText(txt); toast("Panoya kopyalandı"); }
@@ -748,13 +979,11 @@ async function copyText(txt){
     toast("Panoya kopyalandı");
   }
 }
-
 async function shareText(title, text){
   if (!text) return toast("Paylaşılacak metin yok");
   if (navigator.share) { try { await navigator.share({title, text}); return; } catch {} }
   copyText(text);
 }
-
 async function downloadBlob(blob, filename){
   if (isNative() && window.AndroidBridge.saveFile){
     const fr = new FileReader();
@@ -770,19 +999,18 @@ async function downloadBlob(blob, filename){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
-
 function openModal(id){ $("#"+id).classList.add("open"); }
 function closeModal(id){ $("#"+id).classList.remove("open"); }
 $$("[data-close]").forEach(b => b.onclick = () => closeModal(b.dataset.close));
 $$(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open"); }));
 
+/* ===================== DURUM & AYARLAR ===================== */
 const LANGS = [
-  ["auto","Otomatik Algıla"],["tr","Türkçe"],["en","İngilizce"],["de","Almanca"],
+  ["auto","Otomatik Algıla"],["tr","Türkçe"],["en","İngilizce"],["ja","Japonca"],["ko","Korece"],
+  ["zh-CN","Çince (Basitleştirilmiş)"],["zh-TW","Çince (Geleneksel)"],["de","Almanca"],
   ["fr","Fransızca"],["es","İspanyolca"],["it","İtalyanca"],["pt","Portekizce"],
   ["ru","Rusça"],["uk","Ukraynaca"],["pl","Lehçe"],["nl","Hollandaca"],
-  ["el","Yunanca"],["ar","Arapça"],["fa","Farsça"],["hi","Hintçe"],
-  ["ja","Japonca"],["ko","Korece"],["zh-CN","Çince (Basitleştirilmiş)"],
-  ["zh-TW","Çince (Geleneksel)"],["az","Azerbaycan Türkçesi"]
+  ["el","Yunanca"],["ar","Arapça"],["fa","Farsça"],["hi","Hintçe"],["az","Azerbaycan Türkçesi"]
 ];
 const langName = c => (LANGS.find(l => l[0] === c) || [c,c])[1];
 
@@ -792,17 +1020,16 @@ const DEFAULT_PROMPTS = [
   {id:"lit", name:"Edebi Roman (Akıcı & Doğal)", builtIn:true, text:"Sen edebi bir çevirmensin. Metnin duygusunu, üslubunu ve deyimlerini hedef dilde en doğal biçimde yeniden kur. Sadece çeviriyi yaz."},
   {id:"lit2", name:"Birebir / Sadık Çeviri", builtIn:true, text:"Metni ekleme veya çıkarma yapmadan, cümle yapısına ve terimlere sadık kalarak çevir. Sadece çeviriyi yaz."}
 ];
-
 const DEFAULT_BOOKMARKS = [
   {id:"bm0", name:"Google", url:"https://www.google.com"},
   {id:"bm1", name:"WebNovel", url:"https://www.webnovel.com"},
   {id:"bm2", name:"NovelBin", url:"https://novelbin.com"},
   {id:"bm3", name:"RoyalRoad", url:"https://www.royalroad.com"},
-  {id:"bm4", name:"Wikipedia", url:"https://en.wikipedia.org"},
-  {id:"bm5", name:"AO3", url:"https://archiveofourown.org"}
+  {id:"bm4", name:"MangaDex", url:"https://mangadex.org"},
+  {id:"bm5", name:"Wikipedia", url:"https://en.wikipedia.org"}
 ];
 
-const STORE_KEY = "cevirmen_ai_native_v2";
+const STORE_KEY = "cevirmen_ai_native_v3";
 const defaultState = () => ({
   apiKey:"", baseUrl:"https://api.literouter.com/v1", model:"",
   favModels:[], cachedModels:[],
@@ -811,19 +1038,28 @@ const defaultState = () => ({
   prompts: structuredClone(DEFAULT_PROMPTS), activePromptId:"def",
   glossary:[], glossEnabled:true,
   bookmarks: structuredClone(DEFAULT_BOOKMARKS),
-  bAutoSave:true, history:[],
-  reader:{theme:"night", font:"Georgia,serif", size:18, lh:1.8, width:"760px", align:"left", ttsRate:1.0}
+  tabs:[{id:"tab1", title:"Google", url:"https://www.google.com"}], activeTabId:"tab1",
+  bAutoSave:true, history:[], highlights:[],
+  stats:{totalSecs:0, totalWords:0, streak:0, lastDay:""},
+  reader:{theme:"night", font:"Georgia,serif", size:18, lh:1.8, width:"760px", align:"left", ttsRate:1.0, scrollSpeed:3}
 });
 
 let S = (() => {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    const raw = JSON.parse(localStorage.getItem(STORE_KEY) || localStorage.getItem("cevirmen_ai_native_v2") || "null");
     if (!raw) return defaultState();
     const d = defaultState();
-    return {...d, ...raw, reader:{...d.reader, ...(raw.reader||{})},
+    return {
+      ...d, ...raw,
+      reader:{...d.reader, ...(raw.reader||{})},
+      stats:{...d.stats, ...(raw.stats||{})},
       prompts: raw.prompts?.length ? raw.prompts : d.prompts,
       bookmarks: raw.bookmarks || d.bookmarks,
-      glossary: raw.glossary || [], history: raw.history || []};
+      tabs: raw.tabs?.length ? raw.tabs : d.tabs,
+      glossary: raw.glossary || [],
+      history: raw.history || [],
+      highlights: raw.highlights || []
+    };
   } catch { return defaultState(); }
 })();
 const saveState = () => localStorage.setItem(STORE_KEY, JSON.stringify(S));
@@ -833,6 +1069,7 @@ function switchView(name){
   $$("#bottomNav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
   if (name === "library") renderLibrary();
   if (name === "studio"){ renderPromptUI(); renderGlossary(); }
+  if (name === "browser") renderTabs();
 }
 $$("#bottomNav button").forEach(b => b.onclick = () => switchView(b.dataset.view));
 
@@ -850,7 +1087,7 @@ function initLangs(){
   };
 }
 
-/* ===================== YAPAY ZEKA MOTORU ===================== */
+/* ===================== YAPAY ZEKA MOTORU (METİN + VISION) ===================== */
 let activeCtrl = null;
 
 function buildSystemPrompt(extra = ""){
@@ -889,13 +1126,16 @@ function splitChunks(text, limit){
   return chunks.length ? chunks : [text];
 }
 
-async function callAI(userText, {system, onDelta, signal}){
+async function callAI(userContent, {system, onDelta, signal, streamOverride=null, temperature=null}){
   if (!S.apiKey) throw new Error("API Anahtarı eksik! Ayarlar sekmesinden gir.");
   if (!S.model) throw new Error("Model seçilmemiş! Üstteki model butonundan seç.");
   const url = S.baseUrl.replace(/\/+$/,"") + "/chat/completions";
+  const useStream = streamOverride !== null ? streamOverride : !!S.stream;
   const body = {
-    model: S.model, temperature: Number(S.temp) || 0.3, stream: !!S.stream,
-    messages: [{role:"system", content:system}, {role:"user", content:userText}]
+    model: S.model,
+    temperature: temperature !== null ? temperature : (Number(S.temp) || 0.3),
+    stream: useStream,
+    messages: [{role:"system", content:system}, {role:"user", content:userContent}]
   };
   let lastErr;
   for (let a = 0; a < 3; a++){
@@ -906,8 +1146,8 @@ async function callAI(userText, {system, onDelta, signal}){
         body:JSON.stringify(body), signal
       });
       if ([429,500,502,503,504].includes(res.status) && a < 2){ await sleep(1200*(a+1)); continue; }
-      if (!res.ok) throw new Error(`API Hatası (${res.status}): ${(await res.text().catch(()=>"")).slice(0,150)}`);
-      if (!S.stream || !res.body){
+      if (!res.ok) throw new Error(`API Hatası (${res.status}): ${(await res.text().catch(()=>"")).slice(0,180)}`);
+      if (!useStream || !res.body){
         const j = await res.json();
         const c = j?.choices?.[0]?.message?.content || "";
         if (onDelta) onDelta(c);
@@ -1001,15 +1241,59 @@ $("#txtSaveLibBtn").onclick = async () => {
   toast("Kütüphaneye kaydedildi 📚");
 };
 
-/* ===================== 2. GERÇEK CHROME TARAYICI KÖPRÜSÜ ===================== */
+/* ===================== 2. ÇOKLU SEKMELİ TARAYICI ===================== */
 const N = {title:"", url:"", trText:""};
+
+function getActiveTab(){
+  let t = S.tabs.find(x => x.id === S.activeTabId);
+  if (!t){ t = S.tabs[0] || {id:uid(), title:"Google", url:"https://www.google.com"}; if (!S.tabs.length) S.tabs.push(t); S.activeTabId = t.id; }
+  return t;
+}
+
+function renderTabs(){
+  $("#tabCount").textContent = S.tabs.length;
+  const cur = getActiveTab();
+  $("#bUrlInput").value = cur.url || "";
+  const strip = $("#tabsStrip");
+  strip.innerHTML = S.tabs.map(t => `
+    <div class="tab-chip ${t.id===S.activeTabId?'active':''}" data-tid="${t.id}">
+      <span>🌐</span>
+      <span class="tab-chip-title">${esc(t.title || t.url || "Yeni Sekme")}</span>
+      ${S.tabs.length > 1 ? `<button class="tab-chip-x" data-tx="${t.id}">✕</button>` : ""}
+    </div>
+  `).join("");
+  strip.querySelectorAll(".tab-chip").forEach(el => el.onclick = e => {
+    if (e.target.dataset.tx) return;
+    S.activeTabId = el.dataset.tid; saveState(); renderTabs();
+    openRealBrowser(getActiveTab().url);
+  });
+  strip.querySelectorAll("[data-tx]").forEach(btn => btn.onclick = e => {
+    e.stopPropagation();
+    S.tabs = S.tabs.filter(x => x.id !== btn.dataset.tx);
+    if (!S.tabs.length) S.tabs.push({id:uid(), title:"Google", url:"https://www.google.com"});
+    if (S.activeTabId === btn.dataset.tx) S.activeTabId = S.tabs[0].id;
+    saveState(); renderTabs();
+  });
+}
+
+$("#newTabBtn").onclick = () => {
+  const t = {id:uid(), title:"Yeni Sekme", url:"https://www.google.com"};
+  S.tabs.push(t); S.activeTabId = t.id; saveState(); renderTabs();
+  $("#bUrlInput").value = ""; $("#bUrlInput").focus();
+  toast("Yeni sekme açıldı");
+};
 
 function openRealBrowser(urlOrQuery){
   const q = (urlOrQuery || $("#bUrlInput").value || "https://www.google.com").trim();
+  const target = /^https?:\/\//i.test(q) ? q : (!q.includes(" ") && q.includes(".")) ? "https://"+q : "https://www.google.com/search?q="+encodeURIComponent(q);
+  const tab = getActiveTab();
+  tab.url = target;
+  tab.title = q.replace(/^https?:\/\/(www\.)?/,"").slice(0,26) || "Web";
+  saveState(); renderTabs();
+
   if (isNative()){
-    window.AndroidBridge.openBrowser(q);
+    window.AndroidBridge.openBrowser(target);
   } else {
-    const target = /^https?:\/\//i.test(q) ? q : (!q.includes(" ") && q.includes(".")) ? "https://"+q : "https://www.google.com/search?q="+encodeURIComponent(q);
     window.open(target, "_blank");
     toast("Gerçek tarayıcı modu APK kurulduğunda uygulama içinde açılır!");
   }
@@ -1037,9 +1321,7 @@ function renderBookmarks(){
     if (!e.target.dataset.bdel) openRealBrowser(t.dataset.burl);
   });
   grid.querySelectorAll("[data-bdel]").forEach(d => d.onclick = e => {
-    e.stopPropagation();
-    S.bookmarks = S.bookmarks.filter(x => x.id !== d.dataset.bdel);
-    saveState(); renderBookmarks();
+    e.stopPropagation(); S.bookmarks = S.bookmarks.filter(x => x.id !== d.dataset.bdel); saveState(); renderBookmarks();
   });
 }
 $("#addBmManual").onclick = () => {
@@ -1049,21 +1331,15 @@ $("#addBmManual").onclick = () => {
   saveState(); renderBookmarks();
 };
 
-// Native Tarayıcıdan Gelen Sayfa Metinlerini Anlık Çevirip Sayfaya Geri Bas!
 window.__onNativePageExtract = async (t64, u64, b64) => {
-  const title = b64DecodeUtf8(t64);
-  const url = b64DecodeUtf8(u64);
-  const blocks = JSON.parse(b64DecodeUtf8(b64) || "[]");
+  const title = b64DecodeUtf8(t64), url = b64DecodeUtf8(u64), blocks = JSON.parse(b64DecodeUtf8(b64) || "[]");
   N.title = title; N.url = url; N.trText = "";
+  const tab = getActiveTab(); tab.title = title.slice(0,28) || tab.title; tab.url = url; saveState(); renderTabs();
 
-  if (!blocks.length){
-    window.AndroidBridge.setBrowserStatus("Bu sayfada çevrilecek metin bulunamadı.");
-    return;
-  }
+  if (!blocks.length){ window.AndroidBridge.setBrowserStatus("Çevrilecek metin bulunamadı."); return; }
   activeCtrl?.abort(); activeCtrl = new AbortController();
 
-  const limit = Number(S.chunkSize) || 6000;
-  const groups = [];
+  const limit = Number(S.chunkSize) || 6000, groups = [];
   let cur = [], len = 0;
   for (const b of blocks){
     const line = `[[${b.i}]] ${b.t}`;
@@ -1072,100 +1348,320 @@ window.__onNativePageExtract = async (t64, u64, b64) => {
   }
   if (cur.length) groups.push(cur);
 
-  const allTranslated = {};
+  const allTr = {};
   try {
     const sys = buildSystemPrompt("Her paragrafın başındaki [[0]], [[1]] etiketlerini AYNEN koru.");
     for (let g = 0; g < groups.length; g++){
       window.AndroidBridge.setBrowserStatus(`🌐 Çevriliyor (${g+1}/${groups.length})…`);
-      const grp = groups[g];
-      let acc = "";
-      await callAI(grp.map(x => x.line).join("\n\n"), {
-        system: sys, signal: activeCtrl.signal,
-        onDelta: d => { acc += d; }
-      });
-      const re = /\[\[(\d+)\]\]\s*([\s\S]*?)(?=\[\[\d+\]\]|$)/g;
-      let m, matched = 0;
-      const batchMap = {};
-      while ((m = re.exec(acc)) !== null){
-        batchMap[m[1]] = m[2].trim();
-        allTranslated[m[1]] = m[2].trim();
-        matched++;
-      }
+      const grp = groups[g]; let acc = "";
+      await callAI(grp.map(x => x.line).join("\n\n"), {system:sys, signal:activeCtrl.signal, onDelta:d => acc += d});
+      const re = /\[\[(\d+)\]\]\s*([\s\S]*?)(?=\[\[\d+\]\]|$)/g; let m, matched = 0; const batchMap = {};
+      while ((m = re.exec(acc)) !== null){ batchMap[m[1]] = m[2].trim(); allTr[m[1]] = m[2].trim(); matched++; }
       if (!matched && grp.length){
         const parts = acc.split(/\n{2,}/);
-        grp.forEach((x, idx) => {
-          const val = (parts[idx] || (idx === 0 ? acc : "")).trim();
-          if (val){ batchMap[x.i] = val; allTranslated[x.i] = val; }
-        });
+        grp.forEach((x, idx) => { const v = (parts[idx] || (idx===0?acc:"")).trim(); if (v){ batchMap[x.i]=v; allTr[x.i]=v; } });
       }
       window.AndroidBridge.applyPageTranslations(JSON.stringify(batchMap));
     }
-
-    N.trText = blocks.map(b => allTranslated[b.i] || b.t).join("\n\n");
+    N.trText = blocks.map(b => allTr[b.i] || b.t).join("\n\n");
     addHistory(blocks.map(b => b.t).join("\n\n"), N.trText, "Tarayıcı");
     window.AndroidBridge.setBrowserStatus("✅ Sayfa çevirisi tamamlandı!");
-
     if (S.bAutoSave && N.trText){
-      const bookName = guessBookName(url, title);
-      await saveWebChapter(bookName, title || "Bölüm", N.trText, url);
-      window.AndroidBridge.setBrowserStatus(`✅ Çevrildi ve "${bookName}" kitabına kaydedildi 📚`);
+      const bn = guessBookName(url, title);
+      await saveWebChapter(bn, title || "Bölüm", N.trText, url);
+      window.AndroidBridge.setBrowserStatus(`✅ Çevrildi ve "${bn}" kitabına kaydedildi 📚`);
     }
-  } catch (e){
-    window.AndroidBridge.setBrowserStatus("❌ Hata: " + e.message);
-  }
+  } catch (e){ window.AndroidBridge.setBrowserStatus("❌ Hata: " + e.message); }
 };
-
 window.__onNativeSaveBook = async () => {
-  if (!N.trText){ toast("Önce 'Sayfayı Çevir' tuşuna bas"); return; }
-  const bookName = guessBookName(N.url, N.title);
-  await saveWebChapter(bookName, N.title || "Bölüm", N.trText, N.url);
-  if (isNative()) window.AndroidBridge.setBrowserStatus(`📚 "${bookName}" kütüphaneye kaydedildi!`);
-};
-
-window.__onNativeReadFs = () => {
   if (!N.trText) return toast("Önce sayfayı çevir");
-  openQuickReader(N.title || "Web Sayfası", N.trText);
+  const bn = guessBookName(N.url, N.title);
+  await saveWebChapter(bn, N.title || "Bölüm", N.trText, N.url);
+  if (isNative()) window.AndroidBridge.setBrowserStatus(`📚 "${bn}" kütüphaneye kaydedildi!`);
 };
-
+window.__onNativeReadFs = () => N.trText ? openQuickReader(N.title || "Web Sayfası", N.trText) : toast("Önce sayfayı çevir");
 function guessBookName(url, title){
   const clean = (title || "").replace(/\s*[-|–:]\s*(Chapter|Bölüm|Ch\.?|Ep\.?).*$/i,"").trim();
   if (clean && clean.length > 2) return clean.slice(0,55);
   try { return new URL(url).hostname; } catch { return "Web Kitabı"; }
 }
 
-/* ===================== GEÇMİŞ ===================== */
-function addHistory(src, tr, type){
-  S.history.unshift({id:uid(), date:Date.now(), type, src:src.slice(0,1500), tr:tr.slice(0,4000)});
-  if (S.history.length > 40) S.history.length = 40;
-  saveState();
-}
-function renderHistory(q=""){
-  const list = $("#histList");
-  const items = S.history.filter(h => !q || (h.src+h.tr).toLowerCase().includes(q.toLowerCase()));
-  if (!items.length){ list.innerHTML = `<div class="hint" style="text-align:center;padding:20px">Geçmiş boş.</div>`; return; }
-  list.innerHTML = items.map(h => `
-    <div class="list-item">
-      <div class="list-item-body" data-hopen="${h.id}" style="cursor:pointer">
-        <div class="list-item-title">${esc(h.tr.slice(0,80))}</div>
-        <div class="list-item-sub">${h.type} · ${new Date(h.date).toLocaleString("tr")}</div>
-      </div>
-      <button class="btn small danger" data-hdel="${h.id}">✕</button>
+/* ===================== 3. MANGA / WEBTOON ÇEVİRİCİ (VISION AI) ===================== */
+const M = {pages:[], idx:0, fontScale:1, bgAlpha:0.95, editBubbleIdx:-1};
+
+$("#mAddImgBtn").onclick = () => $("#mFileInput").click();
+$("#mFileInput").onchange = async e => {
+  const files = [...e.target.files].sort((a,b) => a.name.localeCompare(b.name, undefined, {numeric:true}));
+  for (const f of files){
+    const dataUrl = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); });
+    const img = new Image(); img.src = dataUrl; await new Promise(r => img.onload = r);
+    M.pages.push({id:uid(), name:f.name, dataUrl, w:img.width, h:img.height, bubbles:[], done:false});
+  }
+  e.target.value = "";
+  if (M.pages.length){ $("#mWorkArea").style.display = "block"; renderMangaUI(); }
+};
+
+function renderMangaUI(){
+  const thumbs = $("#mThumbs");
+  thumbs.innerHTML = M.pages.map((p, i) => `
+    <div class="m-thumb ${i===M.idx?'active':''}" data-mi="${i}">
+      <img src="${p.dataUrl}" alt="">
+      ${p.done ? `<span class="m-thumb-done">✓</span>` : ""}
+      <span class="m-thumb-badge">${i+1}</span>
     </div>
   `).join("");
-  list.querySelectorAll("[data-hopen]").forEach(el => el.onclick = () => {
-    const it = S.history.find(x => x.id === el.dataset.hopen); if (!it) return;
-    srcInput.value = it.src; txtOut.textContent = it.tr; srcInput.oninput();
-    closeModal("histModal"); switchView("text");
-  });
-  list.querySelectorAll("[data-hdel]").forEach(el => el.onclick = () => {
-    S.history = S.history.filter(x => x.id !== el.dataset.hdel); saveState(); renderHistory($("#histSearch").value);
-  });
-}
-$("#openHistBtn").onclick = () => { renderHistory(); openModal("histModal"); };
-$("#histSearch").oninput = e => renderHistory(e.target.value);
-$("#clearHistBtn").onclick = () => { if (confirm("Geçmiş temizlensin mi?")){ S.history = []; saveState(); renderHistory(); } };
+  thumbs.querySelectorAll("[data-mi]").forEach(el => el.onclick = () => { M.idx = Number(el.dataset.mi); renderMangaUI(); });
 
-/* ===================== 3. KÜTÜPHANE (IndexedDB) ===================== */
+  const page = M.pages[M.idx];
+  if (!page){ $("#mWorkArea").style.display = "none"; return; }
+  $("#mPageInfo").textContent = `Sayfa ${M.idx+1} / ${M.pages.length} (${page.bubbles.length} baloncuk)`;
+  $("#mPrevPage").disabled = M.idx <= 0;
+  $("#mNextPage").disabled = M.idx >= M.pages.length - 1;
+
+  const view = $("#mViewSel").value;
+  $("#mStage").style.display = view === "list" ? "none" : "block";
+  $("#mDialogList").style.display = view === "list" ? "block" : "none";
+  $("#mEditHint").style.display = view === "overlay" ? "block" : "none";
+  $("#mStageImg").src = page.dataUrl;
+
+  const ov = $("#mOverlay");
+  if (view !== "overlay" || !page.bubbles.length){
+    ov.innerHTML = "";
+  } else {
+    ov.innerHTML = page.bubbles.map((b, i) => {
+      const fs = Math.max(9, Math.min(20, Math.round((b.w * 0.42 + 7) * M.fontScale)));
+      const bgStyle = b.type === "narration" ? `rgba(17,11,28,${M.bgAlpha})`
+        : b.type === "sfx" ? `rgba(217,70,239,${M.bgAlpha})`
+        : `rgba(255,255,255,${M.bgAlpha})`;
+      return `
+        <div class="m-bubble t-${esc(b.type||'speech')}" data-bi="${i}"
+          style="left:${b.x}%;top:${b.y}%;width:${b.w}%;min-height:${b.h}%;font-size:${fs}px;background:${bgStyle}">
+          ${esc(b.tr)}
+        </div>`;
+    }).join("");
+    ov.querySelectorAll("[data-bi]").forEach(el => el.onclick = () => openBubbleEdit(Number(el.dataset.bi)));
+  }
+
+  // Diyalog Listesi
+  const dl = $("#mDialogList");
+  if (!page.bubbles.length){
+    dl.innerHTML = `<div class="hint" style="text-align:center;padding:16px">Bu sayfa henüz çevrilmedi. Yukarıdan <b>Bu Sayfayı Çevir</b> butonuna bas.</div>`;
+  } else {
+    dl.innerHTML = page.bubbles.map((b, i) => `
+      <div class="m-dialog-card" data-bi="${i}" style="cursor:pointer">
+        <div style="margin-bottom:4px">
+          <span class="m-tag">#${i+1} ${esc(b.type||"konuşma")}</span>
+          <span class="meta">${esc(b.orig||"")}</span>
+        </div>
+        <div style="font-size:15.5px;font-weight:600;color:#fff">${esc(b.tr)}</div>
+      </div>
+    `).join("");
+    dl.querySelectorAll("[data-bi]").forEach(el => el.onclick = () => openBubbleEdit(Number(el.dataset.bi)));
+  }
+}
+
+function openBubbleEdit(bi){
+  const page = M.pages[M.idx]; if (!page || !page.bubbles[bi]) return;
+  M.editBubbleIdx = bi;
+  const b = page.bubbles[bi];
+  $("#bOrigLabel").textContent = "Orijinal: " + (b.orig || "-");
+  $("#bEditText").value = b.tr || "";
+  $("#bEditType").value = b.type || "speech";
+  openModal("bubbleModal");
+}
+$("#bSaveBubble").onclick = () => {
+  const b = M.pages[M.idx]?.bubbles?.[M.editBubbleIdx]; if (!b) return;
+  b.tr = $("#bEditText").value.trim(); b.type = $("#bEditType").value;
+  closeModal("bubbleModal"); renderMangaUI();
+};
+$("#bDelBubble").onclick = () => {
+  const page = M.pages[M.idx]; if (!page) return;
+  page.bubbles.splice(M.editBubbleIdx, 1);
+  closeModal("bubbleModal"); renderMangaUI();
+};
+
+$("#mViewSel").onchange = renderMangaUI;
+$("#mPrevPage").onclick = () => { if (M.idx > 0){ M.idx--; renderMangaUI(); } };
+$("#mNextPage").onclick = () => { if (M.idx < M.pages.length-1){ M.idx++; renderMangaUI(); } };
+$("#mFontScale").oninput = e => { M.fontScale = Number(e.target.value); renderMangaUI(); };
+$("#mBgAlpha").oninput = e => { M.bgAlpha = Number(e.target.value); renderMangaUI(); };
+$("#mClearBtn").onclick = () => { if (confirm("Tüm manga sayfaları temizlensin mi?")){ M.pages=[]; M.idx=0; renderMangaUI(); } };
+
+// Uzun Webtoon Şeritlerini Akıllıca Dilimleme (Vision AI net okusun diye)
+async function sliceForVision(page){
+  const img = new Image(); img.src = page.dataUrl; await new Promise(r => img.onload = r);
+  const maxW = 1100;
+  const scale = Math.min(1, maxW / img.width);
+  const tw = Math.round(img.width * scale), th = Math.round(img.height * scale);
+
+  // Eğer uzun webtoon değilse tek parça gönder
+  if (th <= tw * 1.9){
+    const c = document.createElement("canvas"); c.width = tw; c.height = th;
+    c.getContext("2d").drawImage(img, 0, 0, tw, th);
+    return [{dataUrl:c.toDataURL("image/jpeg", 0.86), yStartPct:0, ySpanPct:100}];
+  }
+  // Uzun webtoon şeridini örtüşen dilimlere böl
+  const sliceH = Math.round(tw * 1.55), overlap = Math.round(sliceH * 0.08);
+  const slices = [];
+  for (let y = 0; y < th; y += (sliceH - overlap)){
+    const h = Math.min(sliceH, th - y);
+    if (h < 120 && slices.length) break;
+    const c = document.createElement("canvas"); c.width = tw; c.height = h;
+    c.getContext("2d").drawImage(img, 0, y/scale, img.width, h/scale, 0, 0, tw, h);
+    slices.push({dataUrl:c.toDataURL("image/jpeg", 0.85), yStartPct:(y/th)*100, ySpanPct:(h/th)*100});
+    if (y + h >= th) break;
+  }
+  return slices;
+}
+
+async function translateMangaPage(pageIndex, signal){
+  const page = M.pages[pageIndex]; if (!page) return;
+  const dir = $("#mDirSel").value === "manga" ? "Manga (sağdan sola, yukarıdan aşağıya)" : "Webtoon (yukarıdan aşağıya)";
+  const slices = await sliceForVision(page);
+  const allBubbles = [];
+
+  const sys = `Sen uzman bir manga/webtoon çevirmenisin. Görseldeki TÜM konuşma baloncuklarını, düşünce baloncuklarını, anlatıcı kutularını ve önemli efekt yazılarını (SFX) tespit et ve ${langName(S.tgtLang)} diline doğal, akıcı şekilde çevir.
+Okuma sırası: ${dir}.
+${S.glossEnabled && S.glossary.length ? "Terim Sözlüğü:\n" + S.glossary.map(g=>`- ${g.src} => ${g.tgt}`).join("\n") : ""}
+ÇIKTIYI SADECE GEÇERLİ JSON DİZİSİ OLARAK VER (başka hiçbir yazı veya markdown ekleme):
+[{"x":12,"y":15,"w":22,"h":10,"type":"speech","orig":"orijinal metin","tr":"Türkçe çeviri"}]
+Kurallar:
+- x, y: baloncuğun sol-üst köşesinin görseldeki yüzde (%) koordinatı (0-100)
+- w, h: baloncuğun genişlik ve yükseklik yüzdesi (8-65 arası)
+- type: "speech" | "thought" | "narration" | "sfx"
+- Eğer görselde hiç yazı yoksa [] döndür.`;
+
+  for (let s = 0; s < slices.length; s++){
+    if (signal?.aborted) throw new DOMException("İptal","AbortError");
+    $("#mStatus").textContent = `Sayfa ${pageIndex+1} · Dilim ${s+1}/${slices.length} taranıyor…`;
+    const userContent = [
+      {type:"text", text:"Bu manga/webtoon görselindeki tüm konuşma baloncuklarını tespit et ve JSON olarak çevir."},
+      {type:"image_url", image_url:{url: slices[s].dataUrl}}
+    ];
+    const raw = await callAI(userContent, {system:sys, signal, streamOverride:false, temperature:0.2});
+    const mJson = raw.match(/\[[\s\S]*\]/);
+    if (mJson){
+      try {
+        const arr = JSON.parse(mJson[0]);
+        for (const b of arr){
+          if (!b || !b.tr) continue;
+          const x = Math.max(1, Math.min(88, Number(b.x)||10));
+          const w = Math.max(10, Math.min(96 - x, Number(b.w)||24));
+          const yInSlice = Math.max(0, Math.min(95, Number(b.y)||10));
+          const hInSlice = Math.max(4, Math.min(50, Number(b.h)||10));
+          const absY = slices[s].yStartPct + (yInSlice / 100) * slices[s].ySpanPct;
+          const absH = (hInSlice / 100) * slices[s].ySpanPct;
+          // Örtüşen dilimde aynı baloncuğu tekrar ekleme
+          const dup = allBubbles.some(o => Math.abs(o.x - x) < 8 && Math.abs(o.y - absY) < 4);
+          if (!dup) allBubbles.push({x, y:Math.min(94, absY), w, h:absH, type:b.type||"speech", orig:b.orig||"", tr:String(b.tr).trim()});
+        }
+      } catch {}
+    }
+  }
+  page.bubbles = allBubbles;
+  page.done = true;
+}
+
+async function runMangaTranslate(all=false){
+  if (!M.pages.length) return toast("Önce manga/webtoon sayfası seç");
+  activeCtrl?.abort(); activeCtrl = new AbortController();
+  const btn = $("#mTransCurBtn"), stop = $("#mStopBtn"), prog = $("#mProg"), st = $("#mStatus");
+  btn.classList.add("busy"); btn.disabled = true; $("#mTransAllBtn").disabled = true; stop.style.display = "";
+  prog.classList.add("on"); st.className = "status";
+
+  const targets = all ? M.pages.map((_,i) => i) : [M.idx];
+  try {
+    for (let k = 0; k < targets.length; k++){
+      const pi = targets[k];
+      M.idx = pi; renderMangaUI();
+      prog.firstElementChild.style.width = Math.max(10, Math.round((k / targets.length) * 100)) + "%";
+      await translateMangaPage(pi, activeCtrl.signal);
+      renderMangaUI();
+      prog.firstElementChild.style.width = Math.round(((k+1) / targets.length) * 100) + "%";
+    }
+    st.className = "status ok";
+    st.textContent = `Tamamlandı! (${M.pages[M.idx].bubbles.length} baloncuk çevrildi)`;
+  } catch (e){
+    st.className = "status error";
+    st.textContent = e.name === "AbortError" ? "Durduruldu." : "Hata (Vision destekli model seçili mi?): " + e.message;
+  } finally {
+    btn.classList.remove("busy"); btn.disabled = false; $("#mTransAllBtn").disabled = false; stop.style.display = "none";
+    setTimeout(() => prog.classList.remove("on"), 600);
+  }
+}
+$("#mTransCurBtn").onclick = () => runMangaTranslate(false);
+$("#mTransAllBtn").onclick = () => runMangaTranslate(true);
+$("#mStopBtn").onclick = () => activeCtrl?.abort();
+
+// Çevrilmiş Manga Sayfasını Baloncuklarıyla Gerçek PNG'ye Çizip İndir
+async function renderMangaPageToDataUrl(page){
+  const img = new Image(); img.src = page.dataUrl; await new Promise(r => img.onload = r);
+  const c = document.createElement("canvas"); c.width = img.width; c.height = img.height;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0);
+
+  for (const b of page.bubbles){
+    const bx = (b.x/100)*c.width, by = (b.y/100)*c.height;
+    const bw = (b.w/100)*c.width, bh = Math.max((b.h/100)*c.height, c.width*0.055);
+    const pad = Math.max(6, c.width * 0.01);
+    const fs = Math.max(14, Math.round((bw * 0.13) * M.fontScale));
+
+    ctx.save();
+    ctx.fillStyle = b.type === "narration" ? `rgba(17,11,28,${M.bgAlpha})`
+      : b.type === "sfx" ? `rgba(217,70,239,${M.bgAlpha})`
+      : `rgba(255,255,255,${M.bgAlpha})`;
+    ctx.strokeStyle = b.type === "sfx" ? "#ffffff" : "#8b5cf6";
+    ctx.lineWidth = Math.max(2, c.width * 0.003);
+    const r = b.type === "narration" ? 4 : 14;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, r);
+    ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = (b.type === "narration" || b.type === "sfx") ? "#ffffff" : "#110b1c";
+    ctx.font = `700 ${fs}px system-ui, sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+
+    // Satır kaydırma
+    const words = b.tr.split(/\s+/), lines = [];
+    let line = "";
+    for (const w of words){
+      const test = line ? line + " " + w : w;
+      if (ctx.measureText(test).width > bw - pad*2 && line){ lines.push(line); line = w; }
+      else line = test;
+    }
+    if (line) lines.push(line);
+    const lh = fs * 1.2;
+    const startY = by + bh/2 - ((lines.length - 1) * lh) / 2;
+    lines.forEach((l, idx) => ctx.fillText(l, bx + bw/2, startY + idx*lh, bw - pad*1.5));
+    ctx.restore();
+  }
+  return c.toDataURL("image/png");
+}
+
+$("#mDlPngBtn").onclick = async () => {
+  const page = M.pages[M.idx]; if (!page) return;
+  toast("Görsel hazırlanıyor…");
+  const url = await renderMangaPageToDataUrl(page);
+  const blob = await (await fetch(url)).blob();
+  downloadBlob(blob, `manga-sayfa-${M.idx+1}-tr.png`);
+};
+
+$("#mSaveLibBtn").onclick = async () => {
+  if (!M.pages.length) return toast("Kaydedilecek sayfa yok");
+  const title = prompt("Kütüphaneye kaydedilecek Manga / Webtoon adı:", "Manga Çevirisi");
+  if (!title) return;
+  toast("Sayfalar kütüphaneye işleniyor…");
+  let html = "";
+  for (let i = 0; i < M.pages.length; i++){
+    const url = M.pages[i].bubbles.length ? await renderMangaPageToDataUrl(M.pages[i]) : M.pages[i].dataUrl;
+    html += `<img src="${url}" alt="Sayfa ${i+1}">`;
+  }
+  const book = makeBookObj(title.trim(), "Manga Çevirisi", "manga", [{id:uid(), title:"Bölüm 1", html}], M.pages[0].dataUrl);
+  await dbPut(book);
+  toast(`"${title}" kütüphaneye kaydedildi 📚`);
+};
+
+/* ===================== 4. KÜTÜPHANE (IndexedDB) & İSTATİSTİKLER ===================== */
 let dbP = null;
 const getDB = () => dbP || (dbP = new Promise((res,rej) => {
   const req = indexedDB.open("CevirmenAI_Lib_v2", 1);
@@ -1182,9 +1678,7 @@ async function saveWebChapter(bookTitle, chapTitle, content, url){
   let book = all.find(b => b.format === "web" && b.title.toLowerCase() === bookTitle.toLowerCase());
   const html = content.split(/\n{2,}/).map(p => `<p>${esc(p).replace(/\n/g,"<br>")}</p>`).join("");
   if (!book){
-    book = {id:uid(), title:bookTitle, author:"Web Çevirisi", format:"web",
-      chapters:[{id:uid(), title:chapTitle, html, url}], hiddenChapters:[], bookmarks:[],
-      curChap:0, scrollPct:0, progress:0, shelf:"auto", fav:false, cover:"", addedAt:Date.now(), lastRead:Date.now()};
+    book = makeBookObj(bookTitle, "Web Çevirisi", "web", [{id:uid(), title:chapTitle, html, url}]);
   } else {
     const idx = book.chapters.findIndex(c => (url && c.url === url) || c.title === chapTitle);
     if (idx >= 0) book.chapters[idx] = {...book.chapters[idx], title:chapTitle, html, url};
@@ -1193,6 +1687,11 @@ async function saveWebChapter(bookTitle, chapTitle, content, url){
   }
   await dbPut(book);
 }
+
+const makeBookObj = (title, author, format, chapters, cover="") => ({
+  id:uid(), title, author, format, chapters, hiddenChapters:[], bookmarks:[],
+  curChap:0, scrollPct:0, progress:0, shelf:"auto", fav:false, cover, addedAt:Date.now(), lastRead:Date.now()
+});
 
 const coverGrad = t => { let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))%360; return `linear-gradient(135deg,hsl(${(h%60)+250},65%,36%),hsl(${(h%60)+290},70%,24%))`; };
 const getShelf = b => (b.shelf && b.shelf !== "auto") ? b.shelf : (b.progress||0) >= 98 ? "done" : (b.progress||0) > 0 ? "reading" : "want";
@@ -1209,8 +1708,10 @@ $("#libSort").onchange = renderLibrary;
 async function renderLibrary(){
   const books = await dbAll();
   $("#stTotal").textContent = books.length;
-  $("#stReading").textContent = books.filter(b => getShelf(b) === "reading").length;
-  $("#stDone").textContent = books.filter(b => getShelf(b) === "done").length;
+  $("#stStreak").textContent = S.stats.streak || 0;
+  $("#stMins").textContent = Math.floor((S.stats.totalSecs || 0) / 60);
+  const w = S.stats.totalWords || 0;
+  $("#stWords").textContent = w >= 1000 ? (w/1000).toFixed(1)+"K" : w;
 
   const q = ($("#libSearch").value || "").toLowerCase(), sort = $("#libSort").value;
   let list = books.filter(b => {
@@ -1276,10 +1777,6 @@ $("#bookFileInput").onchange = async e => {
   }
   e.target.value = ""; renderLibrary();
 };
-const makeBookObj = (title, author, format, chapters, cover="") => ({
-  id:uid(), title, author, format, chapters, hiddenChapters:[], bookmarks:[],
-  curChap:0, scrollPct:0, progress:0, shelf:"auto", fav:false, cover, addedAt:Date.now(), lastRead:Date.now()
-});
 
 async function unzipEntries(buf){
   const dv = new DataView(buf), u8 = new Uint8Array(buf), dec = new TextDecoder();
@@ -1325,7 +1822,7 @@ async function parseEpubFile(file, fb){
     for (const img of [...doc.querySelectorAll("img")]){
       const src = img.getAttribute("src"); if (!src || src.startsWith("data:") || src.startsWith("http")) continue;
       const p = joinPath(it.href, decodeURIComponent(src)), b = await zip.readBytes(p);
-      if (b) img.setAttribute("src", await bytesToDataUrl(b, /\.png$/i.test(p)?"image/png":"image/jpeg"));
+      if (b) img.setAttribute("src", await bytesToDataUrl(b, /\.png$/i.test(p)?"image/png":/\.webp$/i.test(p)?"image/webp":"image/jpeg"));
     }
     const html = doc.body?.innerHTML?.trim() || "";
     if (html) chapters.push({id:uid(), title:(doc.querySelector("h1,h2,h3,title")?.textContent||`Bölüm ${chapters.length+1}`).trim().slice(0,80), html});
@@ -1352,7 +1849,7 @@ async function parsePdfFile(file, fb){
   return makeBookObj(fb, "PDF", "pdf", chapters);
 }
 
-/* ---------- KİTAP DÜZENLEME & EPUB/HTML EXPORT ---------- */
+/* ---------- KİTAP DÜZENLEME & RESİMLİ EPUB/HTML DIŞA AKTARMA ---------- */
 let editingBook = null;
 async function openEditBook(id){
   editingBook = await dbGet(id); if (!editingBook) return;
@@ -1364,7 +1861,7 @@ function renderEditChaps(){
   const hidden = new Set(editingBook.hiddenChapters || []);
   $("#ebChapList").innerHTML = editingBook.chapters.map((c,i) => `
     <div class="list-item">
-      <div class="list-item-body"><div class="list-item-title" style="${hidden.has(i)?'opacity:.45;text-decoration:line-through':''}">${i+1}. ${esc(c.title)}</div></div>
+      <div class="list-item-body"><div class="list-item-title" style="${hidden.has(i)?'opacity:.45;text-decoration:line-through':''}">${i+1}. ${esc(c.title)} ${c.trHtml?'🌐':''}</div></div>
       <button class="btn small ${hidden.has(i)?'ok':'danger'}" data-cact="${i}">${editingBook.format==="web"?"Sil":(hidden.has(i)?"Göster":"Gizle")}</button>
     </div>`).join("");
   $("#ebChapList").querySelectorAll("[data-cact]").forEach(btn => btn.onclick = () => {
@@ -1407,66 +1904,277 @@ function buildZip(entries){
   ev.setUint32(0,0x06054b50,true); ev.setUint16(8,entries.length,true); ev.setUint16(10,entries.length,true); ev.setUint32(12,cdSize,true); ev.setUint32(16,off,true);
   return new Blob([...parts, ...central, new Uint8Array(eocd)], {type:"application/epub+zip"});
 }
+function dataUrlToBytes(dataUrl){
+  const [head, b64] = dataUrl.split(",");
+  const mime = (head.match(/data:([^;]+)/)||[,"image/jpeg"])[1];
+  const bin = atob(b64), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return {mime, u8, ext: mime.includes("png")?"png":mime.includes("webp")?"webp":"jpg"};
+}
+
+// Çevrilmiş bölümleri + tüm gömülü resimleri gerçek EPUB dosyaları olarak paketler!
 $("#ebExpEpub").onclick = () => {
   if (!editingBook) return;
   const hidden = new Set(editingBook.hiddenChapters||[]), chaps = editingBook.chapters.filter((_,i)=>!hidden.has(i)), id = "urn:uuid:"+editingBook.id;
   const files = [{name:"mimetype",data:"application/epub+zip"},{name:"META-INF/container.xml",data:`<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>`}];
-  let mf = `<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>`, sp = "", np = "";
+  let mf = `<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>`, sp = "", np = "", imgCount = 0;
+
   chaps.forEach((c,i) => {
     const fn = `ch${i+1}.xhtml`; mf += `<item id="c${i+1}" href="${fn}" media-type="application/xhtml+xml"/>`; sp += `<itemref idref="c${i+1}"/>`;
     np += `<navPoint id="n${i+1}" playOrder="${i+1}"><navLabel><text>${esc(c.title)}</text></navLabel><content src="${fn}"/></navPoint>`;
-    files.push({name:"OEBPS/"+fn, data:`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>${esc(c.title)}</title></head><body><h2>${esc(c.title)}</h2>${c.html.replace(/<br>/g,"<br/>").replace(/<img([^>]*[^/])>/g,"<img$1/>")}</body></html>`});
+    const rawHtml = c.trHtml || c.html || "";
+    const doc = new DOMParser().parseFromString(rawHtml, "text/html");
+    doc.querySelectorAll("img").forEach(img => {
+      const src = img.getAttribute("src") || "";
+      if (src.startsWith("data:image/")){
+        try {
+          const {mime, u8, ext} = dataUrlToBytes(src);
+          const imgName = `img_${++imgCount}.${ext}`;
+          files.push({name:"OEBPS/"+imgName, data:u8});
+          mf += `<item id="im${imgCount}" href="${imgName}" media-type="${mime}"/>`;
+          img.setAttribute("src", imgName);
+        } catch {}
+      }
+    });
+    const cleanBody = doc.body.innerHTML.replace(/<br>/g,"<br/>").replace(/<img([^>]*[^/])>/g,"<img$1/>").replace(/<hr>/g,"<hr/>");
+    files.push({name:"OEBPS/"+fn, data:`<?xml version="1.0" encoding="utf-8"?><html xmlns="http://www.w3.org/1999/xhtml"><head><title>${esc(c.title)}</title><style>img{max-width:100%;height:auto}</style></head><body><h2>${esc(c.title)}</h2>${cleanBody}</body></html>`});
   });
   files.push({name:"OEBPS/content.opf", data:`<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>${esc(editingBook.title)}</dc:title><dc:creator>${esc(editingBook.author||"Çevirmen AI")}</dc:creator><dc:language>tr</dc:language><dc:identifier id="uid">${id}</dc:identifier></metadata><manifest>${mf}</manifest><spine toc="ncx">${sp}</spine></package>`});
   files.push({name:"OEBPS/toc.ncx", data:`<?xml version="1.0" encoding="utf-8"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="${id}"/></head><docTitle><text>${esc(editingBook.title)}</text></docTitle><navMap>${np}</navMap></ncx>`});
   downloadBlob(buildZip(files), editingBook.title.replace(/[^\w\s-]/g,"").trim()+".epub");
+  toast("Resimli EPUB indirildi 📚");
 };
+
 $("#ebExpHtml").onclick = () => {
   if (!editingBook) return;
   const hidden = new Set(editingBook.hiddenChapters||[]);
-  const body = editingBook.chapters.filter((_,i)=>!hidden.has(i)).map(c=>`<section><h2>${esc(c.title)}</h2>${c.html}</section>`).join("<hr>");
+  const body = editingBook.chapters.filter((_,i)=>!hidden.has(i)).map(c=>`<section><h2>${esc(c.title)}</h2>${c.trHtml||c.html}</section>`).join("<hr>");
   const html = `<!DOCTYPE html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(editingBook.title)}</title><style>body{background:#090612;color:#ece6f7;font:18px/1.8 Georgia,serif;max-width:740px;margin:0 auto;padding:24px}h1,h2{color:#c084fc}hr{border:none;border-top:1px solid #2a1f3d;margin:36px 0}img{max-width:100%}</style></head><body><h1>${esc(editingBook.title)}</h1>${body}</body></html>`;
   downloadBlob(new Blob([html],{type:"text/html;charset=utf-8"}), editingBook.title.replace(/[^\w\s-]/g,"").trim()+".html");
 };
 
-/* ===================== TAM EKRAN OKUYUCU ===================== */
-const R = {book:null, visChaps:[], chapIdx:0, quickMode:false};
+/* ===================== KINDLE OKUYUCU (KALICI ÇEVİRİ, RECAP, AUTO-SCROLL, HIGHLIGHTS) ===================== */
+const R = {book:null, visChaps:[], chapIdx:0, quickMode:false, viewMode:"tr", autoScrollOn:false, scrollRaf:null, statTimer:null, countedChaps:new Set()};
+
 function applyReaderPrefs(){
   const p = S.reader, r = $("#reader"), b = $("#rBody");
   r.className = `reader ${r.classList.contains("open")?"open":""} t-${p.theme}`;
   b.style.fontFamily = p.font; b.style.fontSize = p.size+"px"; b.style.lineHeight = p.lh; b.style.maxWidth = p.width; b.style.textAlign = p.align;
   $("#rFontSel").value = p.font; $("#rSizeRange").value = p.size; $("#rSizeVal").textContent = p.size;
   $("#rLhRange").value = p.lh; $("#rLhVal").textContent = p.lh; $("#rWidthSel").value = p.width; $("#rAlignSel").value = p.align;
+  $("#rScrollRange").value = p.scrollSpeed||3; $("#rScrollVal").textContent = p.scrollSpeed||3;
   $("#rTtsRange").value = p.ttsRate||1; $("#rTtsVal").textContent = (p.ttsRate||1).toFixed(1);
 }
+
+function startReadingStats(){
+  stopReadingStats();
+  const today = todayKey();
+  if (S.stats.lastDay !== today){
+    const prev = S.stats.lastDay ? new Date(S.stats.lastDay) : null;
+    const diffDays = prev ? Math.round((new Date(today) - prev) / 86400000) : 0;
+    S.stats.streak = diffDays === 1 ? (S.stats.streak || 0) + 1 : 1;
+    S.stats.lastDay = today;
+    saveState();
+  }
+  R.statTimer = setInterval(() => {
+    if ($("#reader").classList.contains("open")){ S.stats.totalSecs = (S.stats.totalSecs||0) + 5; saveState(); }
+  }, 5000);
+}
+function stopReadingStats(){ clearInterval(R.statTimer); R.statTimer = null; }
+
 function openQuickReader(title, txt){
   R.book = null; R.quickMode = true;
   R.visChaps = [{title, html:txt.split(/\n{2,}/).map(p=>`<p>${esc(p).replace(/\n/g,"<br>")}</p>`).join("")}];
   R.chapIdx = 0; $("#rBot").style.display="none"; $("#rTocBtn").style.display="none"; $("#rBmBtn").style.display="none";
-  $("#reader").classList.add("open"); applyReaderPrefs(); renderReaderChap();
+  $("#rTransChapBtn").style.display="none"; $("#rRecapBtn").style.display="none"; $("#rViewModeBtn").style.display="none";
+  $("#reader").classList.add("open"); applyReaderPrefs(); renderReaderChap(); startReadingStats();
 }
+
 async function openBookReader(id){
   const book = await dbGet(id); if (!book) return;
-  R.book = book; R.quickMode = false;
+  R.book = book; R.quickMode = false; R.countedChaps.clear();
   const hidden = new Set(book.hiddenChapters||[]);
   R.visChaps = book.chapters.map((c,i)=>({...c, origIdx:i})).filter(c=>!hidden.has(c.origIdx));
   if (!R.visChaps.length) return toast("Görünür bölüm yok");
   R.chapIdx = Math.min(book.curChap||0, R.visChaps.length-1);
   $("#rBot").style.display="flex"; $("#rTocBtn").style.display=""; $("#rBmBtn").style.display="";
-  $("#reader").classList.add("open"); applyReaderPrefs(); renderReaderChap(book.scrollPct||0);
+  $("#rTransChapBtn").style.display=""; $("#rRecapBtn").style.display="";
+  $("#reader").classList.add("open"); applyReaderPrefs(); renderReaderChap(book.scrollPct||0); startReadingStats();
 }
+
 function renderReaderChap(pct=0){
-  stopTTS();
+  stopTTS(); stopAutoScroll();
   const ch = R.visChaps[R.chapIdx];
-  $("#rTitle").textContent = R.book ? `${R.book.title} — ${ch.title}` : ch.title;
-  $("#rBody").innerHTML = ch.html;
+  const realChap = R.book ? R.book.chapters[ch.origIdx] : ch;
+  $("#rTitle").textContent = R.book ? `${R.book.title} — ${realChap.title}` : ch.title;
+
+  const hasTr = !!realChap.trHtml;
+  $("#rViewModeBtn").style.display = hasTr ? "" : "none";
+  $("#rViewModeBtn").textContent = R.viewMode === "tr" ? "Görünüm: Çeviri" : R.viewMode === "bi" ? "Görünüm: İki Dilli" : "Görünüm: Orijinal";
+
+  let htmlToShow = realChap.html;
+  if (hasTr){
+    if (R.viewMode === "tr") htmlToShow = realChap.trHtml;
+    else if (R.viewMode === "bi") htmlToShow = realChap.biHtml || realChap.trHtml;
+  }
+
+  // Bu bölümdeki vurgulamaları (highlights) uygula
+  if (R.book){
+    const hls = S.highlights.filter(h => h.bookId === R.book.id && h.chapIdx === R.chapIdx);
+    for (const h of hls){
+      if (h.text && htmlToShow.includes(h.text)){
+        htmlToShow = htmlToShow.replace(h.text, `<mark class="hl-${esc(h.color||'purple')}">${h.text}</mark>`);
+      }
+    }
+  }
+
+  $("#rBody").innerHTML = htmlToShow;
   $("#rBody").querySelectorAll("img").forEach(img => img.onclick = () => openLightbox(img.src));
+
+  // Kelime istatistiği say
+  const key = (R.book?.id||"q") + ":" + R.chapIdx;
+  if (!R.countedChaps.has(key)){
+    R.countedChaps.add(key);
+    const words = ($("#rBody").innerText || "").trim().split(/\s+/).filter(Boolean).length;
+    S.stats.totalWords = (S.stats.totalWords || 0) + words;
+    saveState();
+  }
+
   const next = R.visChaps[R.chapIdx+1];
   $("#rNextCard").style.display = (next && !R.quickMode) ? "block" : "none";
   if (next) $("#rNextTitle").textContent = next.title;
   $("#rPrev").disabled = R.chapIdx <= 0; $("#rNext").disabled = R.chapIdx >= R.visChaps.length-1;
   setTimeout(() => { const sc = $("#rScroll"); sc.scrollTop = pct ? (sc.scrollHeight - sc.clientHeight)*pct : 0; updateReaderProgress(); }, 30);
 }
+
+// RESİMLERİ KORUYARAK KALICI EPUB / TXT / PDF BÖLÜM ÇEVİRİSİ!
+$("#rTransChapBtn").onclick = async () => {
+  if (!R.book) return;
+  const chMeta = R.visChaps[R.chapIdx];
+  const chap = R.book.chapters[chMeta.origIdx];
+  const doc = new DOMParser().parseFromString(chap.html, "text/html");
+  const nodes = [...doc.body.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(n => !n.querySelector("p,h1,h2,h3") && (n.textContent||"").trim().length > 1);
+  if (!nodes.length) return toast("Bu bölümde çevrilecek metin bulunamadı");
+
+  activeCtrl?.abort(); activeCtrl = new AbortController();
+  const btn = $("#rTransChapBtn");
+  const origLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = "⏳ Çevriliyor…";
+
+  const limit = Number(S.chunkSize) || 6000, groups = [];
+  let cur = [], len = 0;
+  nodes.forEach((n, i) => {
+    const t = n.textContent.replace(/\s+/g," ").trim();
+    const line = `[[${i}]] ${t}`;
+    if (cur.length && len + line.length > limit){ groups.push(cur); cur = []; len = 0; }
+    cur.push({i, n, t, line}); len += line.length + 2;
+  });
+  if (cur.length) groups.push(cur);
+
+  const trMap = {};
+  try {
+    const sys = buildSystemPrompt("Her paragrafın başındaki [[0]], [[1]] etiketlerini AYNEN koru.");
+    for (let g = 0; g < groups.length; g++){
+      btn.textContent = `⏳ Çevriliyor (${g+1}/${groups.length})`;
+      const grp = groups[g]; let acc = "";
+      await callAI(grp.map(x => x.line).join("\n\n"), {system:sys, signal:activeCtrl.signal, onDelta:d => acc += d});
+      const re = /\[\[(\d+)\]\]\s*([\s\S]*?)(?=\[\[\d+\]\]|$)/g; let m, matched = 0;
+      while ((m = re.exec(acc)) !== null){ trMap[Number(m[1])] = m[2].trim(); matched++; }
+      if (!matched && grp.length){
+        const parts = acc.split(/\n{2,}/);
+        grp.forEach((x, idx) => { trMap[x.i] = (parts[idx] || (idx===0?acc:"")).trim(); });
+      }
+    }
+
+    // 1. Saf Çeviri HTML'i (Resimler %100 korunur!)
+    const trDoc = new DOMParser().parseFromString(chap.html, "text/html");
+    const trNodes = [...trDoc.body.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(n => !n.querySelector("p,h1,h2,h3") && (n.textContent||"").trim().length > 1);
+    trNodes.forEach((n, i) => {
+      if (!trMap[i]) return;
+      const imgs = [...n.querySelectorAll("img")].map(im => im.outerHTML).join("");
+      n.innerHTML = imgs + esc(trMap[i]).replace(/\n/g,"<br>");
+    });
+    chap.trHtml = trDoc.body.innerHTML;
+
+    // 2. İki Dilli HTML (Resimler %100 korunur!)
+    const biDoc = new DOMParser().parseFromString(chap.html, "text/html");
+    const biNodes = [...biDoc.body.querySelectorAll("p,h1,h2,h3,h4,li,blockquote")].filter(n => !n.querySelector("p,h1,h2,h3") && (n.textContent||"").trim().length > 1);
+    biNodes.forEach((n, i) => {
+      if (!trMap[i]) return;
+      const origHtml = n.innerHTML;
+      n.innerHTML = `<div class="r-bi-orig">${origHtml}</div><div class="r-bi-tr">${esc(trMap[i]).replace(/\n/g,"<br>")}</div>`;
+    });
+    chap.biHtml = biDoc.body.innerHTML;
+
+    await dbPut(R.book);
+    R.viewMode = "tr";
+    renderReaderChap($("#rScroll").scrollTop / Math.max(1, $("#rScroll").scrollHeight - $("#rScroll").clientHeight));
+    toast("Bölüm resimleriyle birlikte kalıcı çevrildi! ✅");
+  } catch (e){
+    toast(e.name === "AbortError" ? "Durduruldu" : "Hata: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = origLabel;
+  }
+};
+
+$("#rViewModeBtn").onclick = () => {
+  R.viewMode = R.viewMode === "tr" ? "bi" : R.viewMode === "bi" ? "orig" : "tr";
+  renderReaderChap($("#rScroll").scrollTop / Math.max(1, $("#rScroll").scrollHeight - $("#rScroll").clientHeight));
+};
+
+// "NERDE KALMIŞTIM?" ÖZETİ
+$("#rRecapBtn").onclick = async () => {
+  if (!R.book) return;
+  const start = Math.max(0, R.chapIdx - 2);
+  let sample = "";
+  for (let i = start; i <= R.chapIdx; i++){
+    const ch = R.book.chapters[R.visChaps[i].origIdx];
+    const tmp = document.createElement("div"); tmp.innerHTML = ch.trHtml || ch.html;
+    sample += `\n--- ${ch.title} ---\n` + (tmp.innerText || "").slice(0, 3500) + "\n";
+  }
+  $("#recapBox").textContent = "";
+  $("#recapStatus").className = "status"; $("#recapStatus").textContent = "Okuduğun son bölümler analiz ediliyor…";
+  openModal("recapModal");
+  activeCtrl?.abort(); activeCtrl = new AbortController();
+  try {
+    await callAI(sample.slice(0, 11000), {
+      system: `Kullanıcı bu kitaba ara verip geri döndü. Verilen son bölümlere dayanarak:
+1. En önemli karakterleri ve durumlarını,
+2. Son yaşanan olayları,
+3. Tam olarak nerede kalındığını
+5-7 net ve akıcı Türkçe madde halinde hatırlat. Spoiler uydurma, sadece metne dayan.`,
+      signal: activeCtrl.signal,
+      onDelta: d => $("#recapBox").textContent += d
+    });
+    $("#recapStatus").className = "status ok"; $("#recapStatus").textContent = "Hatırlatma hazır! İyi okumalar 📖";
+  } catch (e){
+    $("#recapStatus").className = "status error"; $("#recapStatus").textContent = e.message;
+  }
+};
+
+// OTOMATİK KAYDIRMA (AUTO-SCROLL)
+function stopAutoScroll(){
+  R.autoScrollOn = false;
+  cancelAnimationFrame(R.scrollRaf);
+  $("#rAutoScrollBtn").classList.remove("on");
+}
+$("#rAutoScrollBtn").onclick = () => {
+  if (R.autoScrollOn){ stopAutoScroll(); return; }
+  R.autoScrollOn = true;
+  $("#rAutoScrollBtn").classList.add("on");
+  const sc = $("#rScroll");
+  let last = performance.now();
+  const step = now => {
+    if (!R.autoScrollOn) return;
+    const dt = (now - last) / 1000; last = now;
+    const pxPerSec = (S.reader.scrollSpeed || 3) * 16;
+    sc.scrollTop += pxPerSec * dt;
+    if (sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2){ stopAutoScroll(); return; }
+    R.scrollRaf = requestAnimationFrame(step);
+  };
+  R.scrollRaf = requestAnimationFrame(step);
+};
+
 let progT;
 function updateReaderProgress(){
   const sc = $("#rScroll"), inC = Math.min(1, Math.max(0, sc.scrollTop / Math.max(1, sc.scrollHeight - sc.clientHeight)));
@@ -1478,7 +2186,8 @@ $("#rScroll").onscroll = updateReaderProgress;
 $("#rPrev").onclick = () => { if (R.chapIdx > 0){ R.chapIdx--; renderReaderChap(0); } };
 $("#rNext").onclick = () => { if (R.chapIdx < R.visChaps.length-1){ R.chapIdx++; renderReaderChap(0); } };
 $("#rNextCard").onclick = () => $("#rNext").click();
-$("#rClose").onclick = () => { stopTTS(); $("#reader").classList.remove("open"); $("#selBar").classList.remove("show"); if ($("#view-library").classList.contains("active")) renderLibrary(); };
+$("#rClose").onclick = () => { stopTTS(); stopAutoScroll(); stopReadingStats(); $("#reader").classList.remove("open"); $("#selBar").classList.remove("show"); if ($("#view-library").classList.contains("active")) renderLibrary(); };
+
 $("#rBmBtn").onclick = async () => {
   if (!R.book) return;
   R.book.bookmarks = R.book.bookmarks||[];
@@ -1493,7 +2202,10 @@ $("#rTocBtn").onclick = () => { renderTocModal(); openModal("tocModal"); };
 function renderTocModal(){
   const list = $("#tocList");
   if (tocTab === "chapters"){
-    list.innerHTML = R.visChaps.map((c,i) => `<div class="list-item" data-jump="${i}" style="cursor:pointer;${i===R.chapIdx?'border-color:var(--primary);background:#8b5cf622':''}"><div class="list-item-body"><div class="list-item-title">${i+1}. ${esc(c.title)}</div></div></div>`).join("");
+    list.innerHTML = R.visChaps.map((c,i) => {
+      const ch = R.book.chapters[c.origIdx];
+      return `<div class="list-item" data-jump="${i}" style="cursor:pointer;${i===R.chapIdx?'border-color:var(--primary);background:#8b5cf622':''}"><div class="list-item-body"><div class="list-item-title">${i+1}. ${esc(ch.title)} ${ch.trHtml?'🌐':''}</div></div></div>`;
+    }).join("");
     list.querySelectorAll("[data-jump]").forEach(el => el.onclick = () => { R.chapIdx = Number(el.dataset.jump); renderReaderChap(0); closeModal("tocModal"); });
   } else {
     const bms = R.book?.bookmarks||[];
@@ -1503,6 +2215,7 @@ function renderTocModal(){
     list.querySelectorAll("[data-bd]").forEach(el => el.onclick = async () => { R.book.bookmarks = R.book.bookmarks.filter(x=>x.id!==el.dataset.bd); await dbPut(R.book); renderTocModal(); });
   }
 }
+
 $("#rAaBtn").onclick = () => openModal("aaModal");
 $$("#rThemeRow button").forEach(b => b.onclick = () => { S.reader.theme=b.dataset.theme; saveState(); applyReaderPrefs(); });
 $("#rFontSel").onchange = e => { S.reader.font=e.target.value; saveState(); applyReaderPrefs(); };
@@ -1510,22 +2223,66 @@ $("#rSizeRange").oninput = e => { S.reader.size=Number(e.target.value); saveStat
 $("#rLhRange").oninput = e => { S.reader.lh=Number(e.target.value); saveState(); applyReaderPrefs(); };
 $("#rWidthSel").onchange = e => { S.reader.width=e.target.value; saveState(); applyReaderPrefs(); };
 $("#rAlignSel").onchange = e => { S.reader.align=e.target.value; saveState(); applyReaderPrefs(); };
+$("#rScrollRange").oninput = e => { S.reader.scrollSpeed=Number(e.target.value); saveState(); applyReaderPrefs(); };
 $("#rTtsRange").oninput = e => { S.reader.ttsRate=Number(e.target.value); saveState(); applyReaderPrefs(); };
 
-/* SEÇİM ÇEVİRİSİ */
-let selTxt = "";
+/* ---------- SEÇİM ÇEVİRİSİ & ALTINI ÇİZME (ALINTI DEFTERİ) ---------- */
+let selTxt = "", hlColor = "purple";
 document.addEventListener("selectionchange", () => {
   if (!$("#reader").classList.contains("open")) return;
   const s = window.getSelection()?.toString().trim() || "";
   if (s.length > 1){ selTxt = s; $("#selBar").classList.add("show"); } else $("#selBar").classList.remove("show");
 });
-const selectAllReader = () => {
+$("#rSelAll").onclick = () => {
   const t = [...$("#rBody").querySelectorAll("p,h1,h2,h3,li,blockquote")].map(n=>n.textContent.trim()).filter(Boolean).join("\n\n") || $("#rBody").innerText.trim();
   if (t) openSelTranslate(t);
 };
-$("#rSelAll").onclick = selectAllReader; $("#selAllBtn").onclick = selectAllReader;
 $("#selCloseBtn").onclick = () => { window.getSelection()?.removeAllRanges(); $("#selBar").classList.remove("show"); };
 $("#selTransBtn").onclick = () => openSelTranslate(selTxt);
+$("#selHlBtn").onclick = () => {
+  if (!selTxt) return;
+  $("#selBar").classList.remove("show");
+  $("#hlPreview").textContent = `"${selTxt.slice(0,220)}"`;
+  $("#hlNoteInput").value = "";
+  openModal("hlModal");
+};
+$$("#hlColors button").forEach(b => b.onclick = () => {
+  hlColor = b.dataset.c;
+  $$("#hlColors button").forEach(x => x.style.outline = x === b ? "2px solid #fff" : "none");
+});
+$("#hlSaveBtn").onclick = () => {
+  S.highlights.unshift({
+    id:uid(), date:Date.now(),
+    bookId: R.book?.id || "", bookTitle: R.book?.title || "Hızlı Okuma",
+    chapIdx: R.chapIdx, text: selTxt, color: hlColor, note: $("#hlNoteInput").value.trim()
+  });
+  saveState(); closeModal("hlModal");
+  window.getSelection()?.removeAllRanges();
+  if (R.book) renderReaderChap($("#rScroll").scrollTop / Math.max(1, $("#rScroll").scrollHeight - $("#rScroll").clientHeight));
+  toast("Alıntı defterine eklendi 🖍️");
+};
+
+function renderQuotes(q=""){
+  const list = $("#quotesList");
+  const items = S.highlights.filter(h => !q || (h.text+" "+h.note+" "+h.bookTitle).toLowerCase().includes(q.toLowerCase()));
+  if (!items.length){ list.innerHTML = `<div class="hint" style="text-align:center;padding:20px">Henüz alıntı yok. Okuyucuda metin seçip 🖍️ Vurgula diyebilirsin.</div>`; return; }
+  list.innerHTML = items.map(h => `
+    <div class="list-item" style="align-items:flex-start">
+      <div class="list-item-body">
+        <div class="list-item-title"><mark class="hl-${esc(h.color||'purple')}">"${esc(h.text)}"</mark></div>
+        ${h.note ? `<div class="list-item-sub" style="color:var(--accent)">Not: ${esc(h.note)}</div>` : ""}
+        <div class="list-item-sub">${esc(h.bookTitle)} · ${new Date(h.date).toLocaleDateString("tr")}</div>
+      </div>
+      <button class="btn small danger" data-qdel="${h.id}">✕</button>
+    </div>`).join("");
+  list.querySelectorAll("[data-qdel]").forEach(b => b.onclick = () => {
+    S.highlights = S.highlights.filter(x => x.id !== b.dataset.qdel);
+    saveState(); renderQuotes($("#quoteSearch").value);
+  });
+}
+$("#openQuotesBtn").onclick = () => { renderQuotes(); openModal("quotesModal"); };
+$("#quoteSearch").oninput = e => renderQuotes(e.target.value);
+
 async function openSelTranslate(txt){
   $("#selBar").classList.remove("show"); $("#selSrcBox").textContent = txt; $("#selOutBox").textContent = "";
   $("#selStatus").className = "status"; $("#selStatus").textContent = "Çevriliyor…"; openModal("selModal");
@@ -1538,7 +2295,7 @@ async function openSelTranslate(txt){
 $("#selCopyBtn").onclick = () => copyText($("#selOutBox").textContent);
 $("#selCloseModal").onclick = () => { activeCtrl?.abort(); closeModal("selModal"); };
 
-/* TTS */
+/* ---------- TTS ---------- */
 let ttsOn = false, ttsBtn = null;
 function stopTTS(){ if ("speechSynthesis" in window) speechSynthesis.cancel(); ttsOn=false; if(ttsBtn){ttsBtn.textContent="🔊"; ttsBtn=null;} }
 function toggleTTS(text, btn){
@@ -1557,14 +2314,41 @@ function toggleTTS(text, btn){
 }
 $("#rTtsBtn").onclick = () => toggleTTS($("#rBody").innerText, $("#rTtsBtn"));
 
-/* 4. STÜDYO */
+/* ===================== GEÇMİŞ, STÜDYO, AYARLAR ===================== */
+function addHistory(src, tr, type){
+  S.history.unshift({id:uid(), date:Date.now(), type, src:src.slice(0,1500), tr:tr.slice(0,4000)});
+  if (S.history.length > 40) S.history.length = 40;
+  saveState();
+}
+function renderHistory(q=""){
+  const list = $("#histList");
+  const items = S.history.filter(h => !q || (h.src+h.tr).toLowerCase().includes(q.toLowerCase()));
+  if (!items.length){ list.innerHTML = `<div class="hint" style="text-align:center;padding:20px">Geçmiş boş.</div>`; return; }
+  list.innerHTML = items.map(h => `
+    <div class="list-item">
+      <div class="list-item-body" data-hopen="${h.id}" style="cursor:pointer">
+        <div class="list-item-title">${esc(h.tr.slice(0,80))}</div>
+        <div class="list-item-sub">${h.type} · ${new Date(h.date).toLocaleString("tr")}</div>
+      </div>
+      <button class="btn small danger" data-hdel="${h.id}">✕</button>
+    </div>`).join("");
+  list.querySelectorAll("[data-hopen]").forEach(el => el.onclick = () => {
+    const it = S.history.find(x => x.id === el.dataset.hopen); if (!it) return;
+    srcInput.value = it.src; txtOut.textContent = it.tr; srcInput.oninput(); closeModal("histModal"); switchView("text");
+  });
+  list.querySelectorAll("[data-hdel]").forEach(el => el.onclick = () => {
+    S.history = S.history.filter(x => x.id !== el.dataset.hdel); saveState(); renderHistory($("#histSearch").value);
+  });
+}
+$("#openHistBtn").onclick = () => { renderHistory(); openModal("histModal"); };
+$("#histSearch").oninput = e => renderHistory(e.target.value);
+$("#clearHistBtn").onclick = () => { if (confirm("Geçmiş temizlensin mi?")){ S.history = []; saveState(); renderHistory(); } };
+
 $$("#studioSeg button").forEach(b => b.onclick = () => {
   $$("#studioSeg button").forEach(x=>x.classList.toggle("active",x===b));
   $("#sub-prompts").style.display = b.dataset.sub === "prompts" ? "block" : "none";
   $("#sub-glossary").style.display = b.dataset.sub === "glossary" ? "block" : "none";
 });
-$("#openGlossQuick").onclick = () => { switchView("studio"); $$("#studioSeg button")[1].click(); };
-
 function renderPromptUI(){
   const sel = $("#promptSelect");
   sel.innerHTML = S.prompts.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("");
@@ -1588,7 +2372,6 @@ function renderGlossary(){
 $("#glossEnabled").onchange = e => { S.glossEnabled = e.target.checked; saveState(); };
 $("#addGlossBtn").onclick = () => { const s=$("#glossSrc").value.trim(), t=$("#glossTgt").value.trim(); if(!s||!t)return toast("İki alanı doldur"); S.glossary.unshift({id:uid(),src:s,tgt:t}); $("#glossSrc").value=""; $("#glossTgt").value=""; saveState(); renderGlossary(); };
 
-/* 5. AYARLAR & MODEL & YEDEK */
 function syncSettingsUI(){
   $("#apiKey").value = S.apiKey; $("#baseUrl").value = S.baseUrl; $("#modelInput").value = S.model;
   $("#hdrModelName").textContent = S.model || "Model seçilmedi";
@@ -1640,7 +2423,7 @@ $("#mAddFavBtn").onclick = () => {
 
 $("#exportBackupBtn").onclick = async () => {
   const books = await dbAll();
-  downloadBlob(new Blob([JSON.stringify({version:2, state:S, books})],{type:"application/json"}), `cevirmen-ai-yedek-${new Date().toISOString().slice(0,10)}.json`);
+  downloadBlob(new Blob([JSON.stringify({version:3, state:S, books})],{type:"application/json"}), `cevirmen-ai-yedek-${todayKey()}.json`);
 };
 $("#importBackupBtn").onclick = () => $("#backupFileInput").click();
 $("#backupFileInput").onchange = async e => {
@@ -1657,7 +2440,7 @@ $("#backupFileInput").onchange = async e => {
 function openLightbox(src){ $("#lbImg").src = src; $("#lightbox").classList.add("open"); }
 $("#lightbox").onclick = () => $("#lightbox").classList.remove("open");
 
-function initAll(){ initLangs(); syncSettingsUI(); renderBookmarks(); applyReaderPrefs(); }
+function initAll(){ initLangs(); syncSettingsUI(); renderBookmarks(); renderTabs(); applyReaderPrefs(); }
 initAll();
 })();
 </script>
