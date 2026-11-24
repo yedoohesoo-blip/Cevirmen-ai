@@ -71,8 +71,8 @@ jobs:
                   applicationId "com.cevirmen.ai"
                   minSdk 24
                   targetSdk 34
-                  versionCode 1
-                  versionName "2.0"
+                  versionCode 2
+                  versionName "3.0"
               }
               buildTypes {
                   release { minifyEnabled false }
@@ -126,16 +126,22 @@ jobs:
           import android.app.Activity;
           import android.content.ContentValues;
           import android.content.Intent;
+          import android.graphics.Bitmap;
+          import android.graphics.Canvas;
           import android.graphics.Color;
+          import android.graphics.Rect;
           import android.graphics.drawable.GradientDrawable;
           import android.net.Uri;
           import android.os.Build;
           import android.os.Bundle;
           import android.os.Environment;
+          import android.os.Handler;
+          import android.os.Looper;
           import android.provider.MediaStore;
           import android.util.Base64;
           import android.view.Gravity;
           import android.view.KeyEvent;
+          import android.view.PixelCopy;
           import android.view.View;
           import android.view.inputmethod.EditorInfo;
           import android.webkit.CookieManager;
@@ -153,6 +159,7 @@ jobs:
           import android.widget.TextView;
           import android.widget.Toast;
 
+          import java.io.ByteArrayOutputStream;
           import java.io.File;
           import java.io.FileOutputStream;
           import java.io.OutputStream;
@@ -187,13 +194,13 @@ jobs:
                   b.setText(label);
                   b.setAllCaps(false);
                   b.setTextColor(textColor);
-                  b.setTextSize(12.5f);
+                  b.setTextSize(12f);
                   b.setBackground(pillBg(bg, Color.parseColor("#2a1f3d"), 10));
-                  b.setPadding(dp(10), dp(6), dp(10), dp(6));
+                  b.setPadding(dp(8), dp(6), dp(8), dp(6));
                   b.setMinHeight(0);
                   b.setMinimumHeight(dp(34));
                   b.setMinWidth(0);
-                  b.setMinimumWidth(dp(36));
+                  b.setMinimumWidth(dp(34));
                   return b;
               }
 
@@ -246,7 +253,7 @@ jobs:
                   topBar.setOrientation(LinearLayout.HORIZONTAL);
                   topBar.setGravity(Gravity.CENTER_VERTICAL);
                   topBar.setBackgroundColor(Color.parseColor("#110b1c"));
-                  topBar.setPadding(dp(8), dp(8), dp(8), dp(8));
+                  topBar.setPadding(dp(6), dp(8), dp(6), dp(8));
 
                   Button closeBr = makeBtn("←", Color.parseColor("#1a1229"), Color.WHITE);
                   closeBr.setOnClickListener(v -> browserContainer.setVisibility(View.GONE));
@@ -261,7 +268,7 @@ jobs:
                   urlBar.setHint("Google'da ara veya URL...");
                   urlBar.setHintTextColor(Color.parseColor("#9a8fb0"));
                   urlBar.setTextColor(Color.WHITE);
-                  urlBar.setTextSize(13.5f);
+                  urlBar.setTextSize(13f);
                   urlBar.setSingleLine(true);
                   urlBar.setImeOptions(EditorInfo.IME_ACTION_GO);
                   urlBar.setBackground(pillBg(Color.parseColor("#07050c"), Color.parseColor("#2a1f3d"), 18));
@@ -296,7 +303,7 @@ jobs:
                   statusBar.setTextColor(Color.parseColor("#c084fc"));
                   statusBar.setBackgroundColor(Color.parseColor("#140d22"));
                   statusBar.setTextSize(12f);
-                  statusBar.setPadding(dp(12), dp(4), dp(12), dp(4));
+                  statusBar.setPadding(dp(12), dp(5), dp(12), dp(5));
                   statusBar.setVisibility(View.GONE);
                   browserContainer.addView(statusBar, new LinearLayout.LayoutParams(
                           LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -325,8 +332,7 @@ jobs:
                       @Override
                       public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                           String u = req.getUrl().toString();
-                          if (u.startsWith("http://") || u.startsWith("https://")) return false;
-                          return true;
+                          return !(u.startsWith("http://") || u.startsWith("https://"));
                       }
                       @Override
                       public void onPageFinished(WebView view, String url) {
@@ -336,36 +342,42 @@ jobs:
                   browserContainer.addView(browserWebView, new LinearLayout.LayoutParams(
                           LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
-                  // Alt Google-Çeviri Tarzı Bar
+                  // Alt Bar: Metin Çevir + Manga Çevir + Mod + Oku + Kaydet
                   LinearLayout botBar = new LinearLayout(this);
                   botBar.setOrientation(LinearLayout.HORIZONTAL);
                   botBar.setGravity(Gravity.CENTER_VERTICAL);
                   botBar.setBackgroundColor(Color.parseColor("#110b1c"));
-                  botBar.setPadding(dp(8), dp(8), dp(8), dp(8));
+                  botBar.setPadding(dp(6), dp(7), dp(6), dp(7));
 
-                  Button trBtn = makeBtn("🌐 Sayfayı Çevir", Color.parseColor("#8b5cf6"), Color.WHITE);
-                  trBtn.setOnClickListener(v -> triggerPageExtract("translate"));
+                  Button trBtn = makeBtn("🌐 Metin", Color.parseColor("#8b5cf6"), Color.WHITE);
+                  trBtn.setOnClickListener(v -> triggerPageExtract());
+
+                  Button mangaBtn = makeBtn("💬 Manga", Color.parseColor("#c026d3"), Color.WHITE);
+                  mangaBtn.setOnClickListener(v -> captureViewportForManga());
 
                   modeBtn = makeBtn("Çeviri", Color.parseColor("#1a1229"), Color.parseColor("#c084fc"));
                   modeBtn.setOnClickListener(v -> {
                       if (curTransMode.equals("tr")) { curTransMode = "bi"; modeBtn.setText("İki Dilli"); }
                       else if (curTransMode.equals("bi")) { curTransMode = "orig"; modeBtn.setText("Orijinal"); }
                       else { curTransMode = "tr"; modeBtn.setText("Çeviri"); }
-                      browserWebView.evaluateJavascript("window.__caiSetMode && window.__caiSetMode('" + curTransMode + "');", null);
+                      String toggleManga = "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.display='"
+                              + (curTransMode.equals("orig") ? "none" : "flex") + "';});";
+                      browserWebView.evaluateJavascript("window.__caiSetMode && window.__caiSetMode('" + curTransMode + "');" + toggleManga, null);
                   });
 
-                  Button readBtn = makeBtn("📖 Oku", Color.parseColor("#1a1229"), Color.WHITE);
+                  Button readBtn = makeBtn("��", Color.parseColor("#1a1229"), Color.WHITE);
                   readBtn.setOnClickListener(v -> {
                       browserContainer.setVisibility(View.GONE);
                       appWebView.evaluateJavascript("window.__onNativeReadFs && window.__onNativeReadFs();", null);
                   });
 
-                  Button saveBtn = makeBtn("📚 Kaydet", Color.parseColor("#18332a"), Color.parseColor("#6ee7b7"));
+                  Button saveBtn = makeBtn("📚", Color.parseColor("#18332a"), Color.parseColor("#6ee7b7"));
                   saveBtn.setOnClickListener(v -> appWebView.evaluateJavascript("window.__onNativeSaveBook && window.__onNativeSaveBook();", null));
 
                   LinearLayout.LayoutParams lpGrow = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-                  lpGrow.setMargins(dp(3), 0, dp(3), 0);
+                  lpGrow.setMargins(dp(2), 0, dp(2), 0);
                   botBar.addView(trBtn, lpGrow);
+                  botBar.addView(mangaBtn, lpGrow);
                   botBar.addView(modeBtn, lpBtn);
                   botBar.addView(readBtn, lpBtn);
                   botBar.addView(saveBtn, lpBtn);
@@ -394,7 +406,82 @@ jobs:
                   browserWebView.loadUrl(url);
               }
 
-              private void triggerPageExtract(String action) {
+              // GERÇEK EKRAN GÖRÜNTÜSÜ İLE CANLI MANGA BALONCUK TARAMASI (SIFIR CORS HATASI)
+              private void captureViewportForManga() {
+                  final int w = browserWebView.getWidth();
+                  final int h = browserWebView.getHeight();
+                  if (w <= 0 || h <= 0) return;
+
+                  statusBar.setText("💬 Manga ekranı taranıyor…");
+                  statusBar.setVisibility(View.VISIBLE);
+
+                  // Eski baloncukları 60ms gizle ki temiz orijinal çizim yakalansın
+                  browserWebView.evaluateJavascript(
+                          "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.visibility='hidden';});",
+                          v -> new Handler(Looper.getMainLooper()).postDelayed(() -> doPixelCapture(w, h), 80)
+                  );
+              }
+
+              private void doPixelCapture(int w, int h) {
+                  final Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      int[] loc = new int[2];
+                      browserWebView.getLocationInWindow(loc);
+                      Rect rect = new Rect(loc[0], loc[1], loc[0] + w, loc[1] + h);
+                      try {
+                          PixelCopy.request(getWindow(), rect, bmp, res -> {
+                              restoreHiddenBubbles();
+                              if (res == PixelCopy.SUCCESS) {
+                                  sendBitmapToMangaAI(bmp);
+                              } else {
+                                  fallbackCanvasCapture(w, h);
+                              }
+                          }, new Handler(Looper.getMainLooper()));
+                      } catch (Exception e) {
+                          restoreHiddenBubbles();
+                          fallbackCanvasCapture(w, h);
+                      }
+                  } else {
+                      restoreHiddenBubbles();
+                      fallbackCanvasCapture(w, h);
+                  }
+              }
+
+              private void fallbackCanvasCapture(int w, int h) {
+                  try {
+                      Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                      Canvas c = new Canvas(bmp);
+                      c.translate(-browserWebView.getScrollX(), -browserWebView.getScrollY());
+                      browserWebView.draw(c);
+                      sendBitmapToMangaAI(bmp);
+                  } catch (Exception e) {
+                      statusBar.setText("❌ Ekran yakalanamadı: " + e.getMessage());
+                  }
+              }
+
+              private void restoreHiddenBubbles() {
+                  browserWebView.evaluateJavascript(
+                          "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.visibility='visible';});", null);
+              }
+
+              private void sendBitmapToMangaAI(Bitmap bmp) {
+                  try {
+                      int maxW = 1080;
+                      Bitmap scaled = bmp;
+                      if (bmp.getWidth() > maxW) {
+                          int nh = Math.round((float) bmp.getHeight() * maxW / bmp.getWidth());
+                          scaled = Bitmap.createScaledBitmap(bmp, maxW, nh, true);
+                      }
+                      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                      scaled.compress(Bitmap.CompressFormat.JPEG, 85, baos);
+                      String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+                      appWebView.evaluateJavascript("window.__onNativeMangaCapture && window.__onNativeMangaCapture('" + b64 + "');", null);
+                  } catch (Exception e) {
+                      statusBar.setText("❌ Görsel işlenemedi: " + e.getMessage());
+                  }
+              }
+
+              private void triggerPageExtract() {
                   String js = "(function(){"
                       + "if(!window.__caiState){window.__caiState={els:[],orig:[],tr:[]};}"
                       + "var st=window.__caiState;"
@@ -454,12 +541,8 @@ jobs:
                   @JavascriptInterface
                   public void setBrowserStatus(final String msg) {
                       runOnUiThread(() -> {
-                          if (msg == null || msg.isEmpty()) {
-                              statusBar.setVisibility(View.GONE);
-                          } else {
-                              statusBar.setText(msg);
-                              statusBar.setVisibility(View.VISIBLE);
-                          }
+                          if (msg == null || msg.isEmpty()) statusBar.setVisibility(View.GONE);
+                          else { statusBar.setText(msg); statusBar.setVisibility(View.VISIBLE); }
                       });
                   }
 
@@ -468,6 +551,40 @@ jobs:
                       runOnUiThread(() -> {
                           String b64 = Base64.encodeToString(jsonMap.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           browserWebView.evaluateJavascript("window.__caiApply && window.__caiApply('" + b64 + "','" + curTransMode + "');", null);
+                      });
+                  }
+
+                  // ÇEVRİLMİŞ MANGA BALONCUKLARINI DOĞRUDAN CANLI SİTENİN ÜZERİNE YERLEŞTİRİR
+                  @JavascriptInterface
+                  public void applyMangaBubbles(final String jsonBubbles) {
+                      runOnUiThread(() -> {
+                          String b64 = Base64.encodeToString(jsonBubbles.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String js = "(function(){"
+                              + "try{"
+                              + "var bin=atob('" + b64 + "');var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);"
+                              + "var arr=JSON.parse(new TextDecoder().decode(bytes));"
+                              + "var sy=window.scrollY||document.documentElement.scrollTop||0;"
+                              + "var sx=window.scrollX||document.documentElement.scrollLeft||0;"
+                              + "var vw=window.innerWidth||document.documentElement.clientWidth;"
+                              + "var vh=window.innerHeight||document.documentElement.clientHeight;"
+                              + "var layer=document.getElementById('cai-manga-layer');"
+                              + "if(!layer){layer=document.createElement('div');layer.id='cai-manga-layer';layer.style.cssText='position:absolute;top:0;left:0;width:100%;height:0;pointer-events:none;z-index:2147483640;';document.body.appendChild(layer);}"
+                              + "arr.forEach(function(b){"
+                              + "  var d=document.createElement('div');d.className='cai-mb';"
+                              + "  var bx=sx+(b.x/100)*vw, by=sy+(b.y/100)*vh, bw=(b.w/100)*vw, bh=Math.max((b.h/100)*vh, 28);"
+                              + "  var fs=Math.max(11, Math.min(18, Math.round(bw*0.13)));"
+                              + "  var bg='rgba(255,255,255,0.96)', fg='#110b1c', bd='2px solid #8b5cf6', rad='12px';"
+                              + "  if(b.type==='narration'){bg='rgba(17,11,28,0.94)';fg='#f4eeff';bd='2px solid #c084fc';rad='5px';}"
+                              + "  else if(b.type==='sfx'){bg='rgba(217,70,239,0.92)';fg='#ffffff';bd='2px solid #ffffff';rad='8px';}"
+                              + "  else if(b.type==='thought'){bg='rgba(246,240,255,0.96)';bd='2px dashed #a855f7';rad='18px';}"
+                              + "  d.style.cssText='position:absolute;left:'+bx+'px;top:'+by+'px;width:'+bw+'px;min-height:'+bh+'px;background:'+bg+';color:'+fg+';border:'+bd+';border-radius:'+rad+';padding:4px 6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;font:700 '+fs+'px/1.22 system-ui,sans-serif;box-shadow:0 4px 14px rgba(0,0,0,0.45);pointer-events:auto;word-break:break-word;';"
+                              + "  d.textContent=b.tr;"
+                              + "  d.onclick=function(){this.style.opacity=this.style.opacity==='0.15'?'1':'0.15';};"
+                              + "  layer.appendChild(d);"
+                              + "});"
+                              + "}catch(e){}"
+                              + "})();";
+                          browserWebView.evaluateJavascript(js, null);
                       });
                   }
 
