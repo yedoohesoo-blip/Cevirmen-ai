@@ -243,7 +243,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <div class="out-box" id="txtOut"></div>
       <div class="row" style="margin-top:12px">
         <button class="btn small" id="txtRefineBtn">✨ Daha Akıcı Yap</button>
-        <button class="btn small" id="txtSumBtn">📝 Özetle</button>
+        <button class="btn small" id="txtSumBtn">�� Özetle</button>
         <button class="btn small ok" id="txtSaveLibBtn">📚 Kütüphaneye Kaydet</button>
       </div>
     </div>
@@ -320,9 +320,9 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </select>
       <label>Baloncuk Yazı Tipi</label>
       <select id="mFontSel">
-        <option value="'Comic Sans MS','Chalkboard SE',cursive,sans-serif">💬 Çizgi Roman (Comic)</option>
-        <option value="system-ui,sans-serif">Modern Temiz</option>
-        <option value="Georgia,serif">Klasik Serif</option>
+        <option value="Comic Sans MS, Chalkboard SE, cursive, sans-serif">💬 Çizgi Roman (Comic)</option>
+        <option value="system-ui, sans-serif">Modern Temiz</option>
+        <option value="Georgia, serif">Klasik Serif</option>
       </select>
       <label>Yazı Boyutu Çarpanı: <b id="mFsVal">1.0</b>x</label>
       <input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
@@ -482,7 +482,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Ayarlar</span></button>
 </nav>
 
-<!-- FULLSCREEN READER -->
 <div class="reader t-night" id="reader">
   <div class="r-top">
     <button class="r-btn" id="rClose">←</button>
@@ -549,10 +548,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <select id="rAlignSel"><option value="left">Sola Yaslı</option><option value="justify">İki Yana Yaslı</option></select>
     <label>Oto-Kaydırma Hızı: <b id="rScrollVal">3</b></label><input type="range" id="rScrollRange" min="1" max="10" step="1">
     <label>🎧 Sesli Kitap Motoru</label>
-    <select id="rTtsModeSel">
-      <option value="device">Cihaz Sesi (Ücretsiz)</option>
-      <option value="ai">Yapay Zeka Sesi (OpenAI TTS — Doğal Türkçe)</option>
-    </select>
+    <select id="rTtsModeSel"><option value="device">Cihaz Sesi (Ücretsiz)</option><option value="ai">Yapay Zeka Sesi (OpenAI TTS)</option></select>
     <label>Cihaz Sesi Seçimi</label><select id="rVoiceSel"></select>
     <label>Ses Hızı: <b id="rTtsVal">1.0</b>x</label><input type="range" id="rTtsRange" min="0.7" max="2.0" step="0.1">
   </div>
@@ -719,7 +715,7 @@ const defaultState = () => ({
   glossary:[], glossEnabled:true, bookmarks: structuredClone(DEFAULT_BOOKMARKS),
   tabs:[{id:"tab1",title:"Google",url:"https://www.google.com"}], activeTabId:"tab1",
   bAutoSave:true, history:[], highlights:[],
-  mangaStyle:{dir:"webtoon", font:"'Comic Sans MS','Chalkboard SE',cursive,sans-serif", scale:1.0, alpha:0.95, border:"#8b5cf6"},
+  mangaStyle:{dir:"webtoon", font:"Comic Sans MS, Chalkboard SE, cursive, sans-serif", scale:1.0, alpha:0.95, border:"#8b5cf6"},
   stats:{totalSecs:0, totalWords:0, streak:0, lastDay:""},
   usage:{reqs:0, inTok:0, outTok:0, totalMs:0},
   reader:{theme:"night", font:"Georgia,serif", size:18, lh:1.8, width:"760px", align:"left", ttsRate:1.0, ttsMode:"device", voiceName:"", scrollSpeed:3}
@@ -730,10 +726,13 @@ let S = (() => {
     const raw = JSON.parse(localStorage.getItem(STORE_KEY) || localStorage.getItem("cevirmen_ai_native_v3") || "null");
     if (!raw) return defaultState();
     const d = defaultState();
-    return {...d, ...raw, reader:{...d.reader,...(raw.reader||{})}, stats:{...d.stats,...(raw.stats||{})},
+    const merged = {...d, ...raw, reader:{...d.reader,...(raw.reader||{})}, stats:{...d.stats,...(raw.stats||{})},
       usage:{...d.usage,...(raw.usage||{})}, mangaStyle:{...d.mangaStyle,...(raw.mangaStyle||{})},
       prompts:raw.prompts?.length?raw.prompts:d.prompts, bookmarks:raw.bookmarks||d.bookmarks,
       tabs:raw.tabs?.length?raw.tabs:d.tabs, glossary:raw.glossary||[], history:raw.history||[], highlights:raw.highlights||[]};
+    // Eski kayıtlı tırnaklı font varsa otomatik temizle!
+    if(merged.mangaStyle.font) merged.mangaStyle.font = merged.mangaStyle.font.replace(/['"]/g, "");
+    return merged;
   } catch { return defaultState(); }
 })();
 function saveState(){ localStorage.setItem(STORE_KEY, JSON.stringify(S)); syncNativeConfig(); }
@@ -741,8 +740,10 @@ function syncNativeConfig(){
   if (!isNative() || !window.AndroidBridge.syncConfig) return;
   window.AndroidBridge.syncConfig(JSON.stringify({
     apiKey:S.apiKey, baseUrl:S.baseUrl, model:S.model, tgtLang:langName(S.tgtLang),
-    mangaFont:S.mangaStyle.font, mangaFontScale:S.mangaStyle.scale,
-    mangaBgAlpha:S.mangaStyle.alpha, mangaBorder:S.mangaStyle.border
+    mangaFont:(S.mangaStyle.font || "system-ui, sans-serif").replace(/['"]/g, ""),
+    mangaFontScale:S.mangaStyle.scale,
+    mangaBgAlpha:S.mangaStyle.alpha,
+    mangaBorder:(S.mangaStyle.border || "#8b5cf6").replace(/['"]/g, "")
   }));
 }
 function applyAppTheme(){ document.body.className = S.appTheme && S.appTheme !== "default" ? "th-"+S.appTheme : ""; }
@@ -767,7 +768,7 @@ function initLangs(){
   $("#swapLang").onclick=()=>{if(S.srcLang==="auto")return toast("Otomatik algılama hedef olamaz"); [S.srcLang,S.tgtLang]=[S.tgtLang,S.srcLang]; sEl.value=S.srcLang; tEl.value=S.tgtLang; saveState();};
 }
 
-/* ===================== YAPAY ZEKA MOTORU (GÜVENLİ JSON & STREAM) ===================== */
+/* ===================== YAPAY ZEKA MOTORU ===================== */
 let activeCtrl = null;
 function buildSystemPrompt(extra=""){
   const prof=S.prompts.find(p=>p.id===S.activePromptId)||S.prompts[0];
@@ -846,7 +847,6 @@ async function callAI(userContent, {system, onDelta, signal, streamOverride=null
   throw lastErr||new Error("Bağlantı hatası");
 }
 
-// YARIM KESİLEN VEYA MARKDOWN'LI JSON'LARI BİLE HATASIZ KURTARAN BALONCUK ÇÖZÜCÜ
 function parseBubblesSafe(raw){
   if(!raw) return [];
   const cleaned = String(raw).replace(/```json\s*/gi,"").replace(/```/g,"").trim();
@@ -858,25 +858,12 @@ function parseBubblesSafe(raw){
     type:b.type||"speech",
     tr:String(b.tr||"").trim()
   });
-
-  // 1) Normal dizi parse dene
   const s = cleaned.indexOf("["), e = cleaned.lastIndexOf("]");
   if(s >= 0 && e > s){
-    try{
-      const arr = JSON.parse(cleaned.slice(s, e+1));
-      if(Array.isArray(arr)) return arr.filter(b=>b&&b.tr).map(norm);
-    }catch{}
+    try{ const arr = JSON.parse(cleaned.slice(s, e+1)); if(Array.isArray(arr)) return arr.filter(b=>b&&b.tr).map(norm); }catch{}
   }
-  // 2) Yarım kesildiyse her tamamlanmış {...} baloncuğunu tek tek kurtar
-  const rescued = [];
-  const objRe = /\{[^{}]*"tr"\s*:\s*"(?:[^"\\]|\\.)*"[^{}]*\}/g;
-  let m;
-  while((m = objRe.exec(cleaned)) !== null){
-    try{
-      const obj = JSON.parse(m[0]);
-      if(obj && obj.tr) rescued.push(norm(obj));
-    }catch{}
-  }
+  const rescued = [], objRe = /\{[^{}]*"tr"\s*:\s*"(?:[^"\\]|\\.)*"[^{}]*\}/g; let m;
+  while((m = objRe.exec(cleaned)) !== null){ try{ const obj=JSON.parse(m[0]); if(obj&&obj.tr) rescued.push(norm(obj)); }catch{} }
   return rescued;
 }
 
@@ -944,6 +931,7 @@ function renderTabs(){
 $("#newTabBtn").onclick=()=>{const t={id:uid(),title:"Yeni Sekme",url:"https://www.google.com"}; S.tabs.push(t); S.activeTabId=t.id; saveState(); renderTabs(); $("#bUrlInput").value=""; $("#bUrlInput").focus();};
 
 function openRealBrowser(urlOrQuery){
+  syncNativeConfig();
   const q=(urlOrQuery||$("#bUrlInput").value||"https://www.google.com").trim();
   const target=/^https?:\/\//i.test(q)?q:(!q.includes(" ")&&q.includes("."))?"https://"+q:"https://www.google.com/search?q="+encodeURIComponent(q);
   const tab=getActiveTab(); tab.url=target; tab.title=q.replace(/^https?:\/\/(www\.)?/,"").slice(0,26)||"Web"; saveState(); renderTabs();
@@ -973,7 +961,7 @@ $("#mSiteGoBtn").onclick=()=>{const q=$("#mSiteInput").value.trim(); openRealBro
 $("#mSiteInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("#mSiteGoBtn").click();});
 
 $("#mDirSel").onchange=e=>{S.mangaStyle.dir=e.target.value;saveState();};
-$("#mFontSel").onchange=e=>{S.mangaStyle.font=e.target.value;saveState();};
+$("#mFontSel").onchange=e=>{S.mangaStyle.font=e.target.value.replace(/['"]/g,"");saveState();};
 $("#mFsRange").oninput=e=>{S.mangaStyle.scale=Number(e.target.value);$("#mFsVal").textContent=S.mangaStyle.scale.toFixed(2);saveState();};
 $("#mOpRange").oninput=e=>{S.mangaStyle.alpha=Number(e.target.value);$("#mOpVal").textContent=Math.round(S.mangaStyle.alpha*100);saveState();};
 $$("#mBorderRow button").forEach(b=>b.onclick=()=>{S.mangaStyle.border=b.dataset.bc;saveState();toast("Kenarlık rengi güncellendi");});
@@ -988,6 +976,7 @@ window.__onNativeQuickSelect = async b64 => {
 
 window.__onNativeMangaCapture = async b64Jpeg => {
   if(!isNative())return;
+  syncNativeConfig();
   activeCtrl?.abort(); activeCtrl=new AbortController();
   window.AndroidBridge.setBrowserStatus("💬 Yapay zeka manga baloncuklarını okuyor…");
   try{
