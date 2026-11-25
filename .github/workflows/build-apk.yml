@@ -29,11 +29,11 @@ jobs:
           mkdir -p android_app/app/src/main/assets
           mkdir -p android_app/app/src/main/res/drawable
           cp index.html android_app/app/src/main/assets/index.html
+          [ -f core.js ] && cp core.js android_app/app/src/main/assets/core.js || true
+          [ -f extras.js ] && cp extras.js android_app/app/src/main/assets/extras.js || true
 
           cat << 'EOF' > android_app/settings.gradle
-          pluginManagement {
-              repositories { google(); mavenCentral(); gradlePluginPortal() }
-          }
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
           dependencyResolutionManagement {
               repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
               repositories { google(); mavenCentral() }
@@ -60,8 +60,8 @@ jobs:
                   applicationId "com.cevirmen.ai"
                   minSdk 24
                   targetSdk 34
-                  versionCode 3
-                  versionName "4.0"
+                  versionCode 5
+                  versionName "5.0"
               }
               buildTypes { release { minifyEnabled false } }
               compileOptions {
@@ -71,14 +71,31 @@ jobs:
           }
           EOF
 
+          # MODERN UYGULAMA İKONU (Gradiente uyumlu şık tasarım)
           cat << 'EOF' > android_app/app/src/main/res/drawable/ic_launcher.xml
           <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:aapt="http://schemas.android.com/aapt"
               android:width="108dp" android:height="108dp"
               android:viewportWidth="108" android:viewportHeight="108">
-              <path android:fillColor="#110b1c" android:pathData="M0,0h108v108h-108z"/>
-              <path android:fillColor="#8b5cf6" android:pathData="M24,24h60a14,14 0 0,1 14,14v32a14,14 0 0,1 -14,14h-60a14,14 0 0,1 -14,-14v-32a14,14 0 0,1 14,-14z"/>
-              <path android:fillColor="#ffffff" android:pathData="M62,42c-4,-4 -12,-4 -16,0c-5,5 -5,15 0,20c4,4 12,4 16,0l5,5c-7,7 -19,7 -26,0c-8,-8 -8,-22 0,-30c7,-7 19,-7 26,0z"/>
-              <path android:fillColor="#d946ef" android:pathData="M51,70h6v6h-6z"/>
+              <path android:pathData="M0,0h108v108h-108z">
+                  <aapt:attr name="android:fillColor">
+                      <gradient android:startX="0" android:startY="0" android:endX="108" android:endY="108" android:type="linear">
+                          <item android:offset="0" android:color="#090512"/>
+                          <item android:offset="1" android:color="#1c0d36"/>
+                      </gradient>
+                  </aapt:attr>
+              </path>
+              <path android:pathData="M24,22h60a16,16 0 0,1 16,16v32a16,16 0 0,1 -16,16h-60a16,16 0 0,1 -16,-16v-32a16,16 0 0,1 16,-16z">
+                  <aapt:attr name="android:fillColor">
+                      <gradient android:startX="16" android:startY="22" android:endX="94" android:endY="86" android:type="linear">
+                          <item android:offset="0" android:color="#8b5cf6"/>
+                          <item android:offset="1" android:color="#d946ef"/>
+                      </gradient>
+                  </aapt:attr>
+              </path>
+              <path android:fillColor="#ffffff" android:pathData="M64,41c-5,-5 -14,-5 -19,0c-6,6 -6,17 0,23c5,5 14,5 19,0l5,5c-8,8 -21,8 -29,0c-9,-9 -9,-24 0,-33c8,-8 21,-8 29,0z"/>
+              <path android:fillColor="#fde047" android:pathData="M51,71h7v7h-7z"/>
+              <path android:fillColor="#ffffff" android:pathData="M79,30l2,5l5,2l-5,2l-2,5l-2,-5l-5,-2l5,-2z"/>
           </vector>
           EOF
 
@@ -96,11 +113,14 @@ jobs:
                   android:icon="@drawable/ic_launcher"
                   android:usesCleartextTraffic="true"
                   android:hardwareAccelerated="true"
+                  android:largeHeap="true"
                   android:theme="@android:style/Theme.Material.NoActionBar">
                   <activity
                       android:name=".MainActivity"
                       android:exported="true"
-                      android:configChanges="orientation|screenSize|keyboardHidden"
+                      android:resizeableActivity="true"
+                      android:supportsPictureInPicture="true"
+                      android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
                       android:windowSoftInputMode="adjustResize">
                       <intent-filter>
                           <action android:name="android.intent.action.MAIN" />
@@ -123,6 +143,8 @@ jobs:
           import android.app.NotificationChannel;
           import android.app.NotificationManager;
           import android.app.Service;
+          import android.content.ClipData;
+          import android.content.ClipboardManager;
           import android.content.Context;
           import android.content.Intent;
           import android.content.SharedPreferences;
@@ -152,8 +174,10 @@ jobs:
           import android.view.View;
           import android.view.WindowManager;
           import android.widget.Button;
+          import android.widget.EditText;
           import android.widget.FrameLayout;
           import android.widget.LinearLayout;
+          import android.widget.ScrollView;
           import android.widget.TextView;
           import android.widget.Toast;
 
@@ -183,56 +207,44 @@ jobs:
               private LinearLayout menuBox;
               private FrameLayout resultOverlay;
               private View regionSelector;
+              private LinearLayout infoCard;
               private boolean liveMode = false;
+              private Rect pinnedRect = null;
               private boolean busy = false;
 
               private final Runnable liveRunnable = new Runnable() {
-                  @Override
-                  public void run() {
+                  @Override public void run() {
                       if (!liveMode) return;
-                      if (!busy) captureAndTranslate(null);
-                      handler.postDelayed(this, 4500);
+                      if (!busy) captureAndAction(pinnedRect, "translate", null);
+                      handler.postDelayed(this, 4200);
                   }
               };
 
-              private int dp(int v) {
-                  return Math.round(v * getResources().getDisplayMetrics().density);
-              }
-
+              private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
               private int overlayType() {
                   return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                           ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                           : WindowManager.LayoutParams.TYPE_PHONE;
               }
-
               private GradientDrawable roundBg(int fill, int stroke, int rDp) {
                   GradientDrawable d = new GradientDrawable();
-                  d.setColor(fill);
-                  d.setCornerRadius(dp(rDp));
+                  d.setColor(fill); d.setCornerRadius(dp(rDp));
                   if (stroke != 0) d.setStroke(dp(1), stroke);
                   return d;
               }
 
-              @Override
-              public IBinder onBind(Intent intent) { return null; }
+              @Override public IBinder onBind(Intent intent) { return null; }
 
               @Override
               public int onStartCommand(Intent intent, int flags, int startId) {
-                  if (intent == null || "STOP".equals(intent.getAction())) {
-                      stopSelf();
-                      return START_NOT_STICKY;
-                  }
+                  if (intent == null || "STOP".equals(intent.getAction())) { stopSelf(); return START_NOT_STICKY; }
                   startForegroundNotif();
-
                   int code = intent.getIntExtra("code", Activity.RESULT_CANCELED);
                   Intent data = intent.getParcelableExtra("data");
                   if (data != null && mediaProjection == null) {
                       wm = (WindowManager) getSystemService(WINDOW_SERVICE);
                       DisplayMetrics dm = getResources().getDisplayMetrics();
-                      screenW = dm.widthPixels;
-                      screenH = dm.heightPixels;
-                      screenDpi = dm.densityDpi;
-
+                      screenW = dm.widthPixels; screenH = dm.heightPixels; screenDpi = dm.densityDpi;
                       MediaProjectionManager mpm = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
                       mediaProjection = mpm.getMediaProjection(code, data);
                       if (mediaProjection != null) {
@@ -259,58 +271,37 @@ jobs:
                       ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).createNotificationChannel(ch);
                   }
                   Notification.Builder nb = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                          ? new Notification.Builder(this, chId)
-                          : new Notification.Builder(this);
+                          ? new Notification.Builder(this, chId) : new Notification.Builder(this);
                   Notification n = nb.setContentTitle("Çevirmen AI — Yüzen Çeviri")
-                          .setContentText("Diğer uygulamalar üzerinde çeviriye hazır")
-                          .setSmallIcon(R.drawable.ic_launcher)
-                          .build();
-                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                          .setContentText("Tam ekran, sabit bölge, OCR ve soru-cevap hazır")
+                          .setSmallIcon(R.drawable.ic_launcher).build();
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                       startForeground(101, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
-                  } else {
-                      startForeground(101, n);
-                  }
+                  else startForeground(101, n);
               }
 
               private void showFloatingBubble() {
                   if (bubbleBtn != null) return;
                   bubbleBtn = new TextView(this);
-                  bubbleBtn.setText("Ç");
-                  bubbleBtn.setTextColor(Color.WHITE);
-                  bubbleBtn.setTextSize(19f);
+                  bubbleBtn.setText("Ç"); bubbleBtn.setTextColor(Color.WHITE); bubbleBtn.setTextSize(19f);
                   bubbleBtn.setGravity(Gravity.CENTER);
                   bubbleBtn.setBackground(roundBg(Color.parseColor("#8b5cf6"), Color.parseColor("#d946ef"), 26));
                   bubbleBtn.setElevation(dp(8));
-
-                  bubbleLp = new WindowManager.LayoutParams(
-                          dp(48), dp(48), overlayType(),
-                          WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-                          PixelFormat.TRANSLUCENT);
+                  bubbleLp = new WindowManager.LayoutParams(dp(48), dp(48), overlayType(),
+                          WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
                   bubbleLp.gravity = Gravity.TOP | Gravity.START;
-                  bubbleLp.x = screenW - dp(60);
-                  bubbleLp.y = screenH / 3;
+                  bubbleLp.x = screenW - dp(60); bubbleLp.y = screenH / 3;
 
                   bubbleBtn.setOnTouchListener(new View.OnTouchListener() {
                       int ix, iy; float tx, ty; boolean moved;
-                      @Override
-                      public boolean onTouch(View v, MotionEvent e) {
+                      @Override public boolean onTouch(View v, MotionEvent e) {
                           switch (e.getAction()) {
-                              case MotionEvent.ACTION_DOWN:
-                                  ix = bubbleLp.x; iy = bubbleLp.y;
-                                  tx = e.getRawX(); ty = e.getRawY();
-                                  moved = false;
-                                  return true;
+                              case MotionEvent.ACTION_DOWN: ix = bubbleLp.x; iy = bubbleLp.y; tx = e.getRawX(); ty = e.getRawY(); moved = false; return true;
                               case MotionEvent.ACTION_MOVE:
-                                  int dx = (int) (e.getRawX() - tx);
-                                  int dy = (int) (e.getRawY() - ty);
+                                  int dx = (int) (e.getRawX() - tx), dy = (int) (e.getRawY() - ty);
                                   if (Math.abs(dx) > 10 || Math.abs(dy) > 10) moved = true;
-                                  bubbleLp.x = ix + dx;
-                                  bubbleLp.y = iy + dy;
-                                  wm.updateViewLayout(bubbleBtn, bubbleLp);
-                                  return true;
-                              case MotionEvent.ACTION_UP:
-                                  if (!moved) toggleMenu();
-                                  return true;
+                                  bubbleLp.x = ix + dx; bubbleLp.y = iy + dy; wm.updateViewLayout(bubbleBtn, bubbleLp); return true;
+                              case MotionEvent.ACTION_UP: if (!moved) toggleMenu(); return true;
                           }
                           return false;
                       }
@@ -322,27 +313,33 @@ jobs:
                   if (menuBox != null) { removeMenu(); return; }
                   menuBox = new LinearLayout(this);
                   menuBox.setOrientation(LinearLayout.VERTICAL);
-                  menuBox.setBackground(roundBg(Color.parseColor("#EE110b1c"), Color.parseColor("#8b5cf6"), 16));
+                  menuBox.setBackground(roundBg(Color.parseColor("#F2110b1c"), Color.parseColor("#8b5cf6"), 16));
                   menuBox.setPadding(dp(10), dp(10), dp(10), dp(10));
 
-                  addMenuBtn("🖼️ Tam Ekran Çevir", "#8b5cf6", v -> { removeMenu(); captureAndTranslate(null); });
-                  addMenuBtn("✂️ Bölge Seç & Çevir", "#a855f7", v -> { removeMenu(); openRegionSelector(); });
-                  addMenuBtn(liveMode ? "⏹ Canlı Çeviriyi Durdur" : "⚡ Canlı Çeviri (Oto)", liveMode ? "#f43f5e" : "#1a1229", v -> {
+                  addMenuBtn("🖼️ Tam Ekran Çevir", "#8b5cf6", v -> { removeMenu(); captureAndAction(null, "translate", null); });
+                  addMenuBtn("✂️ Bölge Seç & Çevir", "#a855f7", v -> { removeMenu(); openRegionSelector(false); });
+                  addMenuBtn(pinnedRect != null && liveMode ? "⏹ Sabit Bölgeyi Durdur" : "📌 Sabit Bölge Oto-Çevir",
+                          pinnedRect != null && liveMode ? "#f43f5e" : "#6d28d9", v -> {
                       removeMenu();
-                      liveMode = !liveMode;
-                      if (liveMode) {
-                          Toast.makeText(this, "Canlı çeviri başladı", Toast.LENGTH_SHORT).show();
-                          handler.post(liveRunnable);
-                      } else {
-                          handler.removeCallbacks(liveRunnable);
-                          clearResults();
-                      }
+                      if (pinnedRect != null && liveMode) {
+                          liveMode = false; pinnedRect = null; handler.removeCallbacks(liveRunnable); clearResults();
+                          Toast.makeText(this, "Sabit bölge durduruldu", Toast.LENGTH_SHORT).show();
+                      } else { openRegionSelector(true); }
                   });
-                  addMenuBtn("🧹 Çevirileri Temizle", "#1a1229", v -> { removeMenu(); clearResults(); });
+                  addMenuBtn(liveMode && pinnedRect == null ? "⏹ Canlı Çeviriyi Durdur" : "⚡ Canlı Tam Ekran (Oto)",
+                          liveMode && pinnedRect == null ? "#f43f5e" : "#1a1229", v -> {
+                      removeMenu();
+                      if (liveMode && pinnedRect == null) { liveMode = false; handler.removeCallbacks(liveRunnable); clearResults(); }
+                      else { pinnedRect = null; liveMode = true; handler.post(liveRunnable); }
+                  });
+                  addMenuBtn("📋 Ekrandaki Metni Kopyala", "#1a1229", v -> { removeMenu(); captureAndAction(null, "copy", null); });
+                  addMenuBtn("❓ Ekrana Soru Sor", "#1a1229", v -> { removeMenu(); openAskDialog(); });
+                  addMenuBtn("📎 Panoyu Çevir", "#1a1229", v -> { removeMenu(); translateClipboardNow(); });
+                  addMenuBtn("🧹 Temizle", "#1a1229", v -> { removeMenu(); clearResults(); removeInfoCard(); });
                   addMenuBtn("✕ Yüzen Çeviriyi Kapat", "#3b1224", v -> { removeMenu(); stopSelf(); });
 
                   WindowManager.LayoutParams lp = new WindowManager.LayoutParams(
-                          dp(205), WindowManager.LayoutParams.WRAP_CONTENT, overlayType(),
+                          dp(220), WindowManager.LayoutParams.WRAP_CONTENT, overlayType(),
                           WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
                   lp.gravity = Gravity.CENTER;
                   wm.addView(menuBox, lp);
@@ -350,64 +347,143 @@ jobs:
 
               private void addMenuBtn(String txt, String bgHex, View.OnClickListener l) {
                   Button b = new Button(this);
-                  b.setText(txt);
-                  b.setAllCaps(false);
-                  b.setTextColor(Color.WHITE);
-                  b.setTextSize(13f);
+                  b.setText(txt); b.setAllCaps(false); b.setTextColor(Color.WHITE); b.setTextSize(12.5f);
                   b.setBackground(roundBg(Color.parseColor(bgHex), Color.parseColor("#2a1f3d"), 10));
-                  b.setPadding(dp(10), dp(6), dp(10), dp(6));
-                  b.setMinHeight(0); b.setMinimumHeight(dp(38));
+                  b.setPadding(dp(10), dp(5), dp(10), dp(5)); b.setMinHeight(0); b.setMinimumHeight(dp(36));
                   b.setOnClickListener(l);
-                  LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                  lp.setMargins(0, dp(3), 0, dp(3));
+                  LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                  lp.setMargins(0, dp(2), 0, dp(2));
                   menuBox.addView(b, lp);
               }
 
-              private void removeMenu() {
-                  if (menuBox != null) { try { wm.removeView(menuBox); } catch (Exception ignored) {} menuBox = null; }
+              private void removeMenu() { if (menuBox != null) { try { wm.removeView(menuBox); } catch (Exception ignored) {} menuBox = null; } }
+              private void clearResults() { if (resultOverlay != null) { try { wm.removeView(resultOverlay); } catch (Exception ignored) {} resultOverlay = null; } }
+              private void removeInfoCard() { if (infoCard != null) { try { wm.removeView(infoCard); } catch (Exception ignored) {} infoCard = null; } }
+
+              private void openAskDialog() {
+                  removeInfoCard();
+                  infoCard = new LinearLayout(this);
+                  infoCard.setOrientation(LinearLayout.VERTICAL);
+                  infoCard.setBackground(roundBg(Color.parseColor("#F5110b1c"), Color.parseColor("#8b5cf6"), 16));
+                  infoCard.setPadding(dp(14), dp(14), dp(14), dp(14));
+
+                  TextView title = new TextView(this);
+                  title.setText("❓ Ekrandaki Görüntüye Soru Sor"); title.setTextColor(Color.parseColor("#c084fc")); title.setTextSize(14f);
+                  EditText inp = new EditText(this);
+                  inp.setHint("Örn: Bu ekranda ne yazıyor / bu hatayı çöz?");
+                  inp.setHintTextColor(Color.parseColor("#9a8fb0")); inp.setTextColor(Color.WHITE);
+                  inp.setBackground(roundBg(Color.parseColor("#1a1229"), Color.parseColor("#2a1f3d"), 10));
+                  inp.setPadding(dp(10), dp(8), dp(10), dp(8));
+
+                  LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
+                  Button ask = new Button(this); ask.setText("Sor"); ask.setTextColor(Color.WHITE);
+                  ask.setBackground(roundBg(Color.parseColor("#8b5cf6"), 0, 10));
+                  ask.setOnClickListener(v -> {
+                      String q = inp.getText().toString().trim();
+                      removeInfoCard();
+                      captureAndAction(null, "ask", q.isEmpty() ? "Bu ekrandaki içeriği özetle ve açıkla." : q);
+                  });
+                  Button cancel = new Button(this); cancel.setText("İptal"); cancel.setTextColor(Color.WHITE);
+                  cancel.setBackground(roundBg(Color.parseColor("#2a1f3d"), 0, 10));
+                  cancel.setOnClickListener(v -> removeInfoCard());
+                  row.addView(ask, new LinearLayout.LayoutParams(0, dp(38), 1f));
+                  row.addView(cancel, new LinearLayout.LayoutParams(dp(80), dp(38)));
+
+                  infoCard.addView(title);
+                  LinearLayout.LayoutParams lpI = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                  lpI.setMargins(0, dp(8), 0, dp(10));
+                  infoCard.addView(inp, lpI);
+                  infoCard.addView(row);
+
+                  WindowManager.LayoutParams lp = new WindowManager.LayoutParams(dp(300), WindowManager.LayoutParams.WRAP_CONTENT,
+                          overlayType(), WindowManager.LayoutParams.FLAG_DIM_BEHIND, PixelFormat.TRANSLUCENT);
+                  lp.dimAmount = 0.5f; lp.gravity = Gravity.CENTER;
+                  wm.addView(infoCard, lp);
               }
 
-              private void clearResults() {
-                  if (resultOverlay != null) { try { wm.removeView(resultOverlay); } catch (Exception ignored) {} resultOverlay = null; }
+              private void showResultCard(String titleTxt, String bodyTxt) {
+                  removeInfoCard();
+                  infoCard = new LinearLayout(this);
+                  infoCard.setOrientation(LinearLayout.VERTICAL);
+                  infoCard.setBackground(roundBg(Color.parseColor("#F5110b1c"), Color.parseColor("#8b5cf6"), 16));
+                  infoCard.setPadding(dp(14), dp(14), dp(14), dp(14));
+
+                  TextView t = new TextView(this); t.setText(titleTxt); t.setTextColor(Color.parseColor("#c084fc")); t.setTextSize(14f);
+                  ScrollView sv = new ScrollView(this);
+                  TextView b = new TextView(this); b.setText(bodyTxt); b.setTextColor(Color.WHITE); b.setTextSize(13.5f); b.setPadding(0, dp(8), 0, dp(8));
+                  sv.addView(b);
+
+                  LinearLayout row = new LinearLayout(this); row.setOrientation(LinearLayout.HORIZONTAL);
+                  Button cp = new Button(this); cp.setText("Kopyala"); cp.setTextColor(Color.WHITE); cp.setBackground(roundBg(Color.parseColor("#8b5cf6"), 0, 10));
+                  cp.setOnClickListener(v -> {
+                      ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                      cm.setPrimaryClip(ClipData.newPlainText("CevirmenAI", bodyTxt));
+                      Toast.makeText(this, "Panoya kopyalandı", Toast.LENGTH_SHORT).show();
+                  });
+                  Button cl = new Button(this); cl.setText("Kapat"); cl.setTextColor(Color.WHITE); cl.setBackground(roundBg(Color.parseColor("#2a1f3d"), 0, 10));
+                  cl.setOnClickListener(v -> removeInfoCard());
+                  row.addView(cp, new LinearLayout.LayoutParams(0, dp(38), 1f));
+                  row.addView(cl, new LinearLayout.LayoutParams(dp(80), dp(38)));
+
+                  infoCard.addView(t);
+                  infoCard.addView(sv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(220)));
+                  infoCard.addView(row);
+
+                  WindowManager.LayoutParams lp = new WindowManager.LayoutParams(dp(310), WindowManager.LayoutParams.WRAP_CONTENT,
+                          overlayType(), WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+                  lp.gravity = Gravity.CENTER;
+                  wm.addView(infoCard, lp);
               }
 
-              private void openRegionSelector() {
+              private void translateClipboardNow() {
+                  try {
+                      ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                      if (cm == null || !cm.hasPrimaryClip()) { Toast.makeText(this, "Pano boş", Toast.LENGTH_SHORT).show(); return; }
+                      CharSequence cs = cm.getPrimaryClip().getItemAt(0).coerceToText(this);
+                      final String txt = cs == null ? "" : cs.toString().trim();
+                      if (txt.isEmpty()) { Toast.makeText(this, "Pano boş", Toast.LENGTH_SHORT).show(); return; }
+                      if (bubbleBtn != null) bubbleBtn.setText("⏳");
+                      new Thread(() -> {
+                          try {
+                              String out = callAiSimple("Kullanıcı metnini hedef dile doğal ve akıcı şekilde çevir. Sadece çeviriyi yaz.", txt, null);
+                              handler.post(() -> { if (bubbleBtn != null) bubbleBtn.setText("Ç"); showResultCard("📎 Pano Çevirisi", out); });
+                          } catch (Throwable e) {
+                              handler.post(() -> { if (bubbleBtn != null) bubbleBtn.setText("Ç"); Toast.makeText(this, "Hata: " + e.getMessage(), Toast.LENGTH_LONG).show(); });
+                          }
+                      }).start();
+                  } catch (Exception e) { Toast.makeText(this, "Panoya erişilemedi", Toast.LENGTH_SHORT).show(); }
+              }
+
+              private void openRegionSelector(final boolean pinForAuto) {
                   if (regionSelector != null) return;
                   final RectF sel = new RectF();
                   regionSelector = new View(this) {
-                      final Paint dim = new Paint();
-                      final Paint box = new Paint();
-                      final Paint txt = new Paint(Paint.ANTI_ALIAS_FLAG);
+                      final Paint dim = new Paint(), box = new Paint(), txt = new Paint(Paint.ANTI_ALIAS_FLAG);
                       {
                           dim.setColor(Color.parseColor("#7707050c"));
-                          box.setColor(Color.parseColor("#c084fc"));
-                          box.setStyle(Paint.Style.STROKE);
-                          box.setStrokeWidth(dp(3));
-                          txt.setColor(Color.WHITE);
-                          txt.setTextSize(dp(16));
-                          txt.setTextAlign(Paint.Align.CENTER);
+                          box.setColor(Color.parseColor(pinForAuto ? "#34d399" : "#c084fc"));
+                          box.setStyle(Paint.Style.STROKE); box.setStrokeWidth(dp(3));
+                          txt.setColor(Color.WHITE); txt.setTextSize(dp(15)); txt.setTextAlign(Paint.Align.CENTER);
                       }
                       @Override protected void onDraw(Canvas c) {
                           c.drawRect(0, 0, getWidth(), getHeight(), dim);
                           if (sel.width() > 5 && sel.height() > 5) c.drawRect(sel, box);
-                          else c.drawText("Çevirmek istediğin alanı parmağınla seç", getWidth() / 2f, getHeight() / 2f, txt);
+                          else c.drawText(pinForAuto ? "Sabitlenecek altyazı/metin alanını çiz" : "Çevirmek istediğin alanı parmağınla seç", getWidth() / 2f, getHeight() / 2f, txt);
                       }
                       float sx, sy;
                       @Override public boolean onTouchEvent(MotionEvent e) {
-                          if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                              sx = e.getRawX(); sy = e.getRawY();
-                              sel.set(sx, sy, sx, sy); invalidate(); return true;
-                          } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
-                              sel.set(Math.min(sx, e.getRawX()), Math.min(sy, e.getRawY()),
-                                      Math.max(sx, e.getRawX()), Math.max(sy, e.getRawY()));
-                              invalidate(); return true;
-                          } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                          if (e.getAction() == MotionEvent.ACTION_DOWN) { sx = e.getRawX(); sy = e.getRawY(); sel.set(sx, sy, sx, sy); invalidate(); return true; }
+                          else if (e.getAction() == MotionEvent.ACTION_MOVE) { sel.set(Math.min(sx, e.getRawX()), Math.min(sy, e.getRawY()), Math.max(sx, e.getRawX()), Math.max(sy, e.getRawY())); invalidate(); return true; }
+                          else if (e.getAction() == MotionEvent.ACTION_UP) {
                               try { wm.removeView(regionSelector); } catch (Exception ignored) {}
                               regionSelector = null;
                               if (sel.width() > 30 && sel.height() > 30) {
                                   Rect r = new Rect((int) sel.left, (int) sel.top, (int) sel.right, (int) sel.bottom);
-                                  handler.postDelayed(() -> captureAndTranslate(r), 120);
+                                  if (pinForAuto) {
+                                      pinnedRect = r; liveMode = true;
+                                      Toast.makeText(OverlayService.this, "📌 Sabit bölge oto-çevirici başladı!", Toast.LENGTH_SHORT).show();
+                                      handler.postDelayed(liveRunnable, 150);
+                                  } else { handler.postDelayed(() -> captureAndAction(r, "translate", null), 120); }
                               }
                               return true;
                           }
@@ -420,20 +496,15 @@ jobs:
                   wm.addView(regionSelector, lp);
               }
 
-              private void captureAndTranslate(final Rect crop) {
+              private void captureAndAction(final Rect crop, final String action, final String promptText) {
                   if (busy || imageReader == null) return;
                   busy = true;
-                  clearResults();
+                  if ("translate".equals(action)) clearResults();
                   if (bubbleBtn != null) bubbleBtn.setText("⏳");
 
                   handler.postDelayed(() -> {
                       Bitmap full = grabBitmap();
-                      if (full == null) {
-                          busy = false;
-                          if (bubbleBtn != null) bubbleBtn.setText("Ç");
-                          Toast.makeText(this, "Ekran görüntüsü alınamadı, tekrar dene.", Toast.LENGTH_SHORT).show();
-                          return;
-                      }
+                      if (full == null) { busy = false; if (bubbleBtn != null) bubbleBtn.setText("Ç"); return; }
                       Bitmap target = full;
                       if (crop != null) {
                           int x = Math.max(0, Math.min(crop.left, full.getWidth() - 2));
@@ -451,8 +522,67 @@ jobs:
                       target.compress(Bitmap.CompressFormat.JPEG, 82, baos);
                       final String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
 
-                      new Thread(() -> callVisionAndShow(b64, crop)).start();
-                  }, 140);
+                      new Thread(() -> {
+                          try {
+                              if ("copy".equals(action)) {
+                                  String out = callAiSimple("Görseldeki TÜM metinleri sırayla ve hatasız çıkar. Sadece metni yaz.", "Ekrandaki tüm metni çıkar.", b64);
+                                  handler.post(() -> {
+                                      busy = false; if (bubbleBtn != null) bubbleBtn.setText("Ç");
+                                      ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                      cm.setPrimaryClip(ClipData.newPlainText("OCR", out));
+                                      showResultCard("📋 Kopyalanan Metin", out);
+                                  });
+                              } else if ("ask".equals(action)) {
+                                  String out = callAiSimple("Kullanıcının ekran görüntüsüyle ilgili sorusunu net ve Türkçe yanıtla.", promptText, b64);
+                                  handler.post(() -> { busy = false; if (bubbleBtn != null) bubbleBtn.setText("Ç"); showResultCard("❓ AI Yanıtı", out); });
+                              } else {
+                                  String sys = "Görseldeki tüm yazıları/konuşma baloncuklarını tespit et ve hedef dile doğal çevir. "
+                                          + "SADECE JSON dizisi döndür: [{\"x\":10,\"y\":20,\"w\":30,\"h\":10,\"tr\":\"çeviri\"}]. Yazı yoksa [].";
+                                  String raw = callAiSimple(sys, "Görseldeki metinleri konumlarıyla çevir.", b64);
+                                  int sIdx = raw.indexOf('['), eIdx = raw.lastIndexOf(']');
+                                  JSONArray arr = (sIdx >= 0 && eIdx > sIdx) ? new JSONArray(raw.substring(sIdx, eIdx + 1)) : new JSONArray();
+                                  handler.post(() -> { busy = false; if (bubbleBtn != null) bubbleBtn.setText("Ç"); showBubblesOverlay(arr, crop); });
+                              }
+                          } catch (Throwable e) {
+                              handler.post(() -> { busy = false; if (bubbleBtn != null) bubbleBtn.setText("Ç"); Toast.makeText(this, "Hata: " + e.getMessage(), Toast.LENGTH_LONG).show(); });
+                          }
+                      }).start();
+                  }, 130);
+              }
+
+              private String callAiSimple(String sys, String userText, String b64Jpeg) throws Exception {
+                  SharedPreferences sp = getSharedPreferences("cai_cfg", MODE_PRIVATE);
+                  String apiKey = sp.getString("apiKey", "");
+                  String baseUrl = sp.getString("baseUrl", "https://api.literouter.com/v1");
+                  String model = sp.getString("model", "");
+                  String tgtLang = sp.getString("tgtLang", "Türkçe");
+                  if (apiKey.isEmpty() || model.isEmpty()) throw new Exception("API Key veya Model eksik!");
+
+                  JSONObject req = new JSONObject();
+                  req.put("model", model); req.put("temperature", 0.2); req.put("stream", false);
+                  JSONArray msgs = new JSONArray();
+                  msgs.put(new JSONObject().put("role", "system").put("content", sys + " Hedef dil: " + tgtLang));
+                  if (b64Jpeg != null) {
+                      JSONArray uc = new JSONArray();
+                      uc.put(new JSONObject().put("type", "text").put("text", userText));
+                      uc.put(new JSONObject().put("type", "image_url").put("image_url", new JSONObject().put("url", "data:image/jpeg;base64," + b64Jpeg)));
+                      msgs.put(new JSONObject().put("role", "user").put("content", uc));
+                  } else {
+                      msgs.put(new JSONObject().put("role", "user").put("content", userText));
+                  }
+                  req.put("messages", msgs);
+
+                  HttpURLConnection conn = (HttpURLConnection) new URL(baseUrl.replaceAll("/+$", "") + "/chat/completions").openConnection();
+                  conn.setRequestMethod("POST"); conn.setRequestProperty("Content-Type", "application/json");
+                  conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+                  conn.setConnectTimeout(20000); conn.setReadTimeout(45000); conn.setDoOutput(true);
+                  try (OutputStream os = conn.getOutputStream()) { os.write(req.toString().getBytes(StandardCharsets.UTF_8)); }
+                  int code = conn.getResponseCode();
+                  BufferedReader br = new BufferedReader(new InputStreamReader(code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream(), StandardCharsets.UTF_8));
+                  StringBuilder sb = new StringBuilder(); String line;
+                  while ((line = br.readLine()) != null) sb.append(line);
+                  if (code < 200 || code >= 300) throw new Exception("API " + code);
+                  return new JSONObject(sb.toString()).getJSONArray("choices").getJSONObject(0).getJSONObject("message").getString("content");
               }
 
               private Bitmap grabBitmap() {
@@ -460,138 +590,50 @@ jobs:
                   try {
                       img = imageReader.acquireLatestImage();
                       if (img == null) return null;
-                      Image.Plane[] planes = img.getPlanes();
-                      ByteBuffer buf = planes[0].getBuffer();
-                      int pixelStride = planes[0].getPixelStride();
-                      int rowStride = planes[0].getRowStride();
-                      int rowPadding = rowStride - pixelStride * screenW;
-                      Bitmap bmp = Bitmap.createBitmap(screenW + rowPadding / pixelStride, screenH, Bitmap.Config.ARGB_8888);
+                      Image.Plane[] planes = img.getPlanes(); ByteBuffer buf = planes[0].getBuffer();
+                      int ps = planes[0].getPixelStride(), rs = planes[0].getRowStride(), rp = rs - ps * screenW;
+                      Bitmap bmp = Bitmap.createBitmap(screenW + rp / ps, screenH, Bitmap.Config.ARGB_8888);
                       bmp.copyPixelsFromBuffer(buf);
                       return Bitmap.createBitmap(bmp, 0, 0, screenW, screenH);
-                  } catch (Exception e) {
-                      return null;
-                  } finally {
-                      if (img != null) img.close();
-                  }
-              }
-
-              private void callVisionAndShow(String b64Jpeg, Rect crop) {
-                  try {
-                      SharedPreferences sp = getSharedPreferences("cai_cfg", MODE_PRIVATE);
-                      String apiKey = sp.getString("apiKey", "");
-                      String baseUrl = sp.getString("baseUrl", "https://api.literouter.com/v1");
-                      String model = sp.getString("model", "");
-                      String tgtLang = sp.getString("tgtLang", "Türkçe");
-                      if (apiKey.isEmpty() || model.isEmpty()) throw new Error("API Key veya Model eksik!");
-
-                      String sys = "Görseldeki tüm yazıları/konuşma baloncuklarını tespit et ve " + tgtLang + " diline doğal çevir. "
-                              + "SADECE JSON dizisi döndür: [{\"x\":10,\"y\":20,\"w\":30,\"h\":10,\"tr\":\"çeviri\"}]. "
-                              + "x,y,w,h yüzde (0-100) değerleridir. Yazı yoksa [] döndür.";
-
-                      JSONObject req = new JSONObject();
-                      req.put("model", model);
-                      req.put("temperature", 0.2);
-                      req.put("stream", false);
-                      JSONArray msgs = new JSONArray();
-                      msgs.put(new JSONObject().put("role", "system").put("content", sys));
-                      JSONArray uc = new JSONArray();
-                      uc.put(new JSONObject().put("type", "text").put("text", "Görseldeki metinleri konumlarıyla çevir."));
-                      uc.put(new JSONObject().put("type", "image_url").put("image_url",
-                              new JSONObject().put("url", "data:image/jpeg;base64," + b64Jpeg)));
-                      msgs.put(new JSONObject().put("role", "user").put("content", uc));
-                      req.put("messages", msgs);
-
-                      HttpURLConnection conn = (HttpURLConnection) new URL(baseUrl.replaceAll("/+$", "") + "/chat/completions").openConnection();
-                      conn.setRequestMethod("POST");
-                      conn.setRequestProperty("Content-Type", "application/json");
-                      conn.setRequestProperty("Authorization", "Bearer " + apiKey);
-                      conn.setConnectTimeout(20000);
-                      conn.setReadTimeout(45000);
-                      conn.setDoOutput(true);
-                      try (OutputStream os = conn.getOutputStream()) {
-                          os.write(req.toString().getBytes(StandardCharsets.UTF_8));
-                      }
-                      int code = conn.getResponseCode();
-                      BufferedReader br = new BufferedReader(new InputStreamReader(
-                              code >= 200 && code < 300 ? conn.getInputStream() : conn.getErrorStream(), StandardCharsets.UTF_8));
-                      StringBuilder sb = new StringBuilder();
-                      String line;
-                      while ((line = br.readLine()) != null) sb.append(line);
-                      if (code < 200 || code >= 300) throw new Exception("API " + code);
-
-                      String content = new JSONObject(sb.toString()).getJSONArray("choices")
-                              .getJSONObject(0).getJSONObject("message").getString("content");
-                      int sIdx = content.indexOf('['), eIdx = content.lastIndexOf(']');
-                      JSONArray arr = (sIdx >= 0 && eIdx > sIdx) ? new JSONArray(content.substring(sIdx, eIdx + 1)) : new JSONArray();
-
-                      handler.post(() -> {
-                          busy = false;
-                          if (bubbleBtn != null) bubbleBtn.setText("Ç");
-                          showBubblesOverlay(arr, crop);
-                      });
-                  } catch (Throwable e) {
-                      handler.post(() -> {
-                          busy = false;
-                          if (bubbleBtn != null) bubbleBtn.setText("Ç");
-                          Toast.makeText(this, "Çeviri hatası: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                      });
-                  }
+                  } catch (Exception e) { return null; }
+                  finally { if (img != null) img.close(); }
               }
 
               private void showBubblesOverlay(JSONArray arr, Rect crop) {
                   clearResults();
-                  if (arr.length() == 0) {
-                      Toast.makeText(this, "Çevrilecek yazı bulunamadı", Toast.LENGTH_SHORT).show();
-                      return;
-                  }
+                  if (arr.length() == 0) return;
                   resultOverlay = new FrameLayout(this);
-                  int ox = crop != null ? crop.left : 0;
-                  int oy = crop != null ? crop.top : 0;
-                  int ow = crop != null ? crop.width() : screenW;
-                  int oh = crop != null ? crop.height() : screenH;
+                  int ox = crop != null ? crop.left : 0, oy = crop != null ? crop.top : 0;
+                  int ow = crop != null ? crop.width() : screenW, oh = crop != null ? crop.height() : screenH;
 
                   for (int i = 0; i < arr.length(); i++) {
-                      JSONObject b = arr.optJSONObject(i);
-                      if (b == null) continue;
-                      String tr = b.optString("tr", "").trim();
-                      if (tr.isEmpty()) continue;
-
+                      JSONObject b = arr.optJSONObject(i); if (b == null) continue;
+                      String tr = b.optString("tr", "").trim(); if (tr.isEmpty()) continue;
                       int bx = ox + Math.round((float) b.optDouble("x", 10) / 100f * ow);
                       int by = oy + Math.round((float) b.optDouble("y", 10) / 100f * oh);
                       int bw = Math.max(dp(90), Math.round((float) b.optDouble("w", 30) / 100f * ow));
-
                       TextView tv = new TextView(this);
-                      tv.setText(tr);
-                      tv.setTextColor(Color.WHITE);
-                      tv.setTextSize(13f);
+                      tv.setText(tr); tv.setTextColor(Color.WHITE); tv.setTextSize(13f);
                       tv.setBackground(roundBg(Color.parseColor("#E6110b1c"), Color.parseColor("#a855f7"), 10));
                       tv.setPadding(dp(8), dp(5), dp(8), dp(5));
                       tv.setOnClickListener(v -> clearResults());
-
                       FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(bw, FrameLayout.LayoutParams.WRAP_CONTENT);
                       lp.leftMargin = Math.max(0, Math.min(bx, screenW - bw));
                       lp.topMargin = Math.max(0, Math.min(by, screenH - dp(60)));
                       resultOverlay.addView(tv, lp);
                   }
                   resultOverlay.setOnClickListener(v -> clearResults());
-
                   WindowManager.LayoutParams wlp = new WindowManager.LayoutParams(
                           WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT,
                           overlayType(), WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
                   wm.addView(resultOverlay, wlp);
-                  // Mor top her zaman üstte kalsın
-                  if (bubbleBtn != null) {
-                      try { wm.removeView(bubbleBtn); wm.addView(bubbleBtn, bubbleLp); } catch (Exception ignored) {}
-                  }
+                  if (bubbleBtn != null) { try { wm.removeView(bubbleBtn); wm.addView(bubbleBtn, bubbleLp); } catch (Exception ignored) {} }
               }
 
               @Override
               public void onDestroy() {
-                  isRunning = false;
-                  liveMode = false;
-                  handler.removeCallbacks(liveRunnable);
-                  removeMenu();
-                  clearResults();
+                  isRunning = false; liveMode = false; handler.removeCallbacks(liveRunnable);
+                  removeMenu(); clearResults(); removeInfoCard();
                   if (regionSelector != null) { try { wm.removeView(regionSelector); } catch (Exception ignored) {} }
                   if (bubbleBtn != null) { try { wm.removeView(bubbleBtn); } catch (Exception ignored) {} }
                   if (virtualDisplay != null) virtualDisplay.release();
@@ -607,6 +649,7 @@ jobs:
 
           import android.app.Activity;
           import android.app.AlertDialog;
+          import android.content.ClipboardManager;
           import android.content.ContentValues;
           import android.content.Context;
           import android.content.Intent;
@@ -652,6 +695,7 @@ jobs:
           import android.widget.TextView;
           import android.widget.Toast;
 
+          import org.json.JSONArray;
           import org.json.JSONObject;
 
           import java.io.ByteArrayInputStream;
@@ -666,8 +710,7 @@ jobs:
           import java.nio.charset.StandardCharsets;
 
           public class MainActivity extends Activity {
-              private WebView appWebView;
-              private WebView browserWebView;
+              private WebView appWebView, browserWebView;
               private FrameLayout browserRoot;
               private LinearLayout browserContainer;
               private EditText urlBar;
@@ -676,40 +719,26 @@ jobs:
               private View regionView;
 
               private ValueCallback<Uri[]> filePathCallback;
-              private static final int FILE_REQ = 1001;
-              private static final int OVERLAY_REQ = 1002;
-              private static final int PROJ_REQ = 1003;
+              private static final int FILE_REQ = 1001, OVERLAY_REQ = 1002, PROJ_REQ = 1003;
 
-              private String curTransMode = "tr";
-              private String mobileUA = "";
-              private boolean optAdBlock = false;      // Varsayılan KAPALI (siteleri bozmaz)
-              private boolean optForceDark = false;
-              private boolean optAutoTrans = false;
-              private boolean optDesktop = false;
-              private boolean optAutoManga = false;
+              private String curTransMode = "tr", mobileUA = "";
+              private boolean optAdBlock = false, optForceDark = false, optAutoTrans = false, optDesktop = false, optAutoManga = false;
 
               private Rect pendingCropRect = null;
-              private String mangaFontStyle = "system-ui,sans-serif";
-              private float mangaFontScale = 1.0f;
-              private float mangaBgAlpha = 0.95f;
+              private Bitmap lastCapturedBmp = null;
+              private String mangaFontStyle = "system-ui, sans-serif";
+              private float mangaFontScale = 1.0f, mangaBgAlpha = 0.95f;
               private String mangaBorderHex = "#8b5cf6";
 
               private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
-
               private GradientDrawable pillBg(int fill, int stroke, int radDp) {
-                  GradientDrawable d = new GradientDrawable();
-                  d.setColor(fill); d.setCornerRadius(dp(radDp));
-                  if (stroke != 0) d.setStroke(dp(1), stroke);
-                  return d;
+                  GradientDrawable d = new GradientDrawable(); d.setColor(fill); d.setCornerRadius(dp(radDp));
+                  if (stroke != 0) d.setStroke(dp(1), stroke); return d;
               }
-
               private Button makeBtn(String label, int bg, int textColor) {
-                  Button b = new Button(this);
-                  b.setText(label); b.setAllCaps(false); b.setTextColor(textColor); b.setTextSize(12f);
-                  b.setBackground(pillBg(bg, Color.parseColor("#2a1f3d"), 10));
-                  b.setPadding(dp(8), dp(6), dp(8), dp(6));
-                  b.setMinHeight(0); b.setMinimumHeight(dp(34)); b.setMinWidth(0); b.setMinimumWidth(dp(34));
-                  return b;
+                  Button b = new Button(this); b.setText(label); b.setAllCaps(false); b.setTextColor(textColor); b.setTextSize(12f);
+                  b.setBackground(pillBg(bg, Color.parseColor("#2a1f3d"), 10)); b.setPadding(dp(8), dp(6), dp(8), dp(6));
+                  b.setMinHeight(0); b.setMinimumHeight(dp(34)); b.setMinWidth(0); b.setMinimumWidth(dp(34)); return b;
               }
 
               @Override
@@ -718,10 +747,8 @@ jobs:
                   getWindow().setStatusBarColor(Color.parseColor("#07050c"));
                   getWindow().setNavigationBarColor(Color.parseColor("#0b0712"));
 
-                  FrameLayout root = new FrameLayout(this);
-                  root.setBackgroundColor(Color.parseColor("#07050c"));
+                  FrameLayout root = new FrameLayout(this); root.setBackgroundColor(Color.parseColor("#07050c"));
 
-                  // 1. ANA UYGULAMA (index.html)
                   appWebView = new WebView(this);
                   WebSettings as = appWebView.getSettings();
                   as.setJavaScriptEnabled(true); as.setDomStorageEnabled(true); as.setDatabaseEnabled(true);
@@ -730,79 +757,47 @@ jobs:
                   appWebView.addJavascriptInterface(new AppBridge(), "AndroidBridge");
                   appWebView.setWebViewClient(new WebViewClient());
                   appWebView.setWebChromeClient(new WebChromeClient() {
-                      @Override
-                      public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> cb, FileChooserParams params) {
+                      @Override public boolean onShowFileChooser(WebView wv, ValueCallback<Uri[]> cb, FileChooserParams params) {
                           if (filePathCallback != null) filePathCallback.onReceiveValue(null);
                           filePathCallback = cb;
                           Intent i = new Intent(Intent.ACTION_GET_CONTENT);
-                          i.addCategory(Intent.CATEGORY_OPENABLE);
-                          i.setType("*/*"); i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                          i.addCategory(Intent.CATEGORY_OPENABLE); i.setType("*/*"); i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                           startActivityForResult(Intent.createChooser(i, "Dosya Seç"), FILE_REQ);
                           return true;
                       }
                   });
                   appWebView.loadUrl("file:///android_asset/index.html");
-                  root.addView(appWebView, new FrameLayout.LayoutParams(
-                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                  root.addView(appWebView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
 
-                  // 2. GERÇEK CHROME TARAYICI KATMANI
-                  browserRoot = new FrameLayout(this);
-                  browserRoot.setVisibility(View.GONE);
-                  browserRoot.setBackgroundColor(Color.parseColor("#07050c"));
+                  browserRoot = new FrameLayout(this); browserRoot.setVisibility(View.GONE); browserRoot.setBackgroundColor(Color.parseColor("#07050c"));
+                  browserContainer = new LinearLayout(this); browserContainer.setOrientation(LinearLayout.VERTICAL);
 
-                  browserContainer = new LinearLayout(this);
-                  browserContainer.setOrientation(LinearLayout.VERTICAL);
+                  LinearLayout topBar = new LinearLayout(this); topBar.setOrientation(LinearLayout.HORIZONTAL);
+                  topBar.setGravity(Gravity.CENTER_VERTICAL); topBar.setBackgroundColor(Color.parseColor("#110b1c")); topBar.setPadding(dp(6), dp(8), dp(6), dp(8));
 
-                  LinearLayout topBar = new LinearLayout(this);
-                  topBar.setOrientation(LinearLayout.HORIZONTAL);
-                  topBar.setGravity(Gravity.CENTER_VERTICAL);
-                  topBar.setBackgroundColor(Color.parseColor("#110b1c"));
-                  topBar.setPadding(dp(6), dp(8), dp(6), dp(8));
+                  Button closeBr = makeBtn("←", Color.parseColor("#1a1229"), Color.WHITE); closeBr.setOnClickListener(v -> browserRoot.setVisibility(View.GONE));
+                  Button backBtn = makeBtn("◀", Color.parseColor("#1a1229"), Color.WHITE); backBtn.setOnClickListener(v -> { if (browserWebView.canGoBack()) browserWebView.goBack(); });
+                  Button fwdBtn = makeBtn("▶", Color.parseColor("#1a1229"), Color.WHITE); fwdBtn.setOnClickListener(v -> { if (browserWebView.canGoForward()) browserWebView.goForward(); });
 
-                  Button closeBr = makeBtn("←", Color.parseColor("#1a1229"), Color.WHITE);
-                  closeBr.setOnClickListener(v -> browserRoot.setVisibility(View.GONE));
-
-                  Button backBtn = makeBtn("◀", Color.parseColor("#1a1229"), Color.WHITE);
-                  backBtn.setOnClickListener(v -> { if (browserWebView.canGoBack()) browserWebView.goBack(); });
-
-                  Button fwdBtn = makeBtn("▶", Color.parseColor("#1a1229"), Color.WHITE);
-                  fwdBtn.setOnClickListener(v -> { if (browserWebView.canGoForward()) browserWebView.goForward(); });
-
-                  urlBar = new EditText(this);
-                  urlBar.setHint("Google'da ara veya URL...");
-                  urlBar.setHintTextColor(Color.parseColor("#9a8fb0"));
-                  urlBar.setTextColor(Color.WHITE); urlBar.setTextSize(13f); urlBar.setSingleLine(true);
-                  urlBar.setImeOptions(EditorInfo.IME_ACTION_GO);
-                  urlBar.setBackground(pillBg(Color.parseColor("#07050c"), Color.parseColor("#2a1f3d"), 18));
-                  urlBar.setPadding(dp(12), dp(6), dp(12), dp(6));
+                  urlBar = new EditText(this); urlBar.setHint("Google'da ara veya URL..."); urlBar.setHintTextColor(Color.parseColor("#9a8fb0"));
+                  urlBar.setTextColor(Color.WHITE); urlBar.setTextSize(13f); urlBar.setSingleLine(true); urlBar.setImeOptions(EditorInfo.IME_ACTION_GO);
+                  urlBar.setBackground(pillBg(Color.parseColor("#07050c"), Color.parseColor("#2a1f3d"), 18)); urlBar.setPadding(dp(12), dp(6), dp(12), dp(6));
                   urlBar.setOnEditorActionListener((v, actionId, ev) -> {
-                      if (actionId == EditorInfo.IME_ACTION_GO || (ev != null && ev.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
-                          loadInBrowser(urlBar.getText().toString()); return true;
-                      }
+                      if (actionId == EditorInfo.IME_ACTION_GO || (ev != null && ev.getKeyCode() == KeyEvent.KEYCODE_ENTER)) { loadInBrowser(urlBar.getText().toString()); return true; }
                       return false;
                   });
 
-                  Button menuBtn = makeBtn("⚙", Color.parseColor("#1a1229"), Color.parseColor("#c084fc"));
-                  menuBtn.setOnClickListener(v -> showBrowserMenu());
+                  Button menuBtn = makeBtn("⚙", Color.parseColor("#1a1229"), Color.parseColor("#c084fc")); menuBtn.setOnClickListener(v -> showBrowserMenu());
 
-                  LinearLayout.LayoutParams lpBtn = new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                  LinearLayout.LayoutParams lpBtn = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                   lpBtn.setMargins(dp(2), 0, dp(2), 0);
-                  LinearLayout.LayoutParams lpUrl = new LinearLayout.LayoutParams(0, dp(36), 1f);
-                  lpUrl.setMargins(dp(4), 0, dp(4), 0);
+                  LinearLayout.LayoutParams lpUrl = new LinearLayout.LayoutParams(0, dp(36), 1f); lpUrl.setMargins(dp(4), 0, dp(4), 0);
+                  topBar.addView(closeBr, lpBtn); topBar.addView(backBtn, lpBtn); topBar.addView(fwdBtn, lpBtn); topBar.addView(urlBar, lpUrl); topBar.addView(menuBtn, lpBtn);
+                  browserContainer.addView(topBar, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-                  topBar.addView(closeBr, lpBtn); topBar.addView(backBtn, lpBtn);
-                  topBar.addView(fwdBtn, lpBtn); topBar.addView(urlBar, lpUrl); topBar.addView(menuBtn, lpBtn);
-                  browserContainer.addView(topBar, new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-                  statusBar = new TextView(this);
-                  statusBar.setTextColor(Color.parseColor("#c084fc"));
-                  statusBar.setBackgroundColor(Color.parseColor("#140d22"));
-                  statusBar.setTextSize(12f); statusBar.setPadding(dp(12), dp(5), dp(12), dp(5));
-                  statusBar.setVisibility(View.GONE);
-                  browserContainer.addView(statusBar, new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                  statusBar = new TextView(this); statusBar.setTextColor(Color.parseColor("#c084fc")); statusBar.setBackgroundColor(Color.parseColor("#140d22"));
+                  statusBar.setTextSize(12f); statusBar.setPadding(dp(12), dp(5), dp(12), dp(5)); statusBar.setVisibility(View.GONE);
+                  browserContainer.addView(statusBar, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
                   browserWebView = new WebView(this);
                   WebSettings bs = browserWebView.getSettings();
@@ -813,182 +808,129 @@ jobs:
                   mobileUA = bs.getUserAgentString().replace("; wv", "").replace("Version/4.0 ", "");
                   bs.setUserAgentString(mobileUA);
 
-                  CookieManager cm = CookieManager.getInstance();
-                  cm.setAcceptCookie(true); cm.setAcceptThirdPartyCookies(browserWebView, true);
+                  CookieManager cm = CookieManager.getInstance(); cm.setAcceptCookie(true); cm.setAcceptThirdPartyCookies(browserWebView, true);
                   browserWebView.addJavascriptInterface(new BrowserBridge(), "BrowserBridge");
 
-                  // TARAYICIDAN DİREKT KÜTÜPHANEYE İNDİRME (.epub, .pdf, .txt, .cbz, .html)
                   browserWebView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
                       String fname = URLUtil.guessFileName(url, contentDisposition, mimeType);
                       String low = fname.toLowerCase();
-                      if (low.endsWith(".epub") || low.endsWith(".pdf") || low.endsWith(".txt")
-                              || low.endsWith(".md") || low.endsWith(".html") || low.endsWith(".cbz")) {
+                      if (low.endsWith(".epub") || low.endsWith(".pdf") || low.endsWith(".txt") || low.endsWith(".docx")
+                              || low.endsWith(".fb2") || low.endsWith(".mobi") || low.endsWith(".html") || low.endsWith(".cbz")) {
                           Toast.makeText(this, "Kütüphaneye indiriliyor: " + fname, Toast.LENGTH_SHORT).show();
                           downloadDirectlyToLibrary(url, fname, userAgent);
-                      } else {
-                          startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-                      }
+                      } else { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
                   });
 
                   browserWebView.setWebViewClient(new WebViewClient() {
-                      @Override
-                      public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
+                      @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest req) {
                           if (optAdBlock) {
                               String h = req.getUrl().getHost();
-                              if (h != null && (h.contains("doubleclick.") || h.contains("googlesyndication.")
-                                      || h.contains("adservice.") || h.contains("popads.") || h.contains("exoclick.")
-                                      || h.contains("propellerads.") || h.contains("taboola.") || h.contains("outbrain."))) {
+                              if (h != null && (h.contains("doubleclick.") || h.contains("googlesyndication.") || h.contains("adservice.")
+                                      || h.contains("popads.") || h.contains("exoclick.") || h.contains("propellerads.")
+                                      || h.contains("taboola.") || h.contains("outbrain.") || h.contains("adnxs.")
+                                      || h.contains("mgid.") || h.contains("juicyads.") || h.contains("trafficjunky."))) {
                                   return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(new byte[0]));
                               }
                           }
                           return super.shouldInterceptRequest(view, req);
                       }
-                      @Override
-                      public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
+                      @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                           String u = req.getUrl().toString();
                           return !(u.startsWith("http://") || u.startsWith("https://"));
                       }
-                      @Override
-                      public void onPageFinished(WebView view, String url) {
+                      @Override public void onPageFinished(WebView view, String url) {
                           urlBar.setText(url);
                           injectBrowserHelpers();
                           if (optForceDark) applyForceDark(true);
-                          if (optAutoTrans) {
-                              new Handler(Looper.getMainLooper()).postDelayed(() -> triggerPageExtract(), 900);
-                          }
+                          if (optAutoTrans) new Handler(Looper.getMainLooper()).postDelayed(() -> triggerPageExtract(), 900);
                       }
                   });
-                  browserContainer.addView(browserWebView, new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+                  browserContainer.addView(browserWebView, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
 
-                  // Alt Bar
-                  LinearLayout botBar = new LinearLayout(this);
-                  botBar.setOrientation(LinearLayout.HORIZONTAL);
-                  botBar.setGravity(Gravity.CENTER_VERTICAL);
-                  botBar.setBackgroundColor(Color.parseColor("#110b1c"));
-                  botBar.setPadding(dp(6), dp(7), dp(6), dp(7));
+                  LinearLayout botBar = new LinearLayout(this); botBar.setOrientation(LinearLayout.HORIZONTAL);
+                  botBar.setGravity(Gravity.CENTER_VERTICAL); botBar.setBackgroundColor(Color.parseColor("#110b1c")); botBar.setPadding(dp(6), dp(7), dp(6), dp(7));
 
-                  Button trBtn = makeBtn("🌐 Metin", Color.parseColor("#8b5cf6"), Color.WHITE);
-                  trBtn.setOnClickListener(v -> triggerPageExtract());
-
-                  Button mangaBtn = makeBtn("💬 Manga", Color.parseColor("#c026d3"), Color.WHITE);
-                  mangaBtn.setOnClickListener(v -> captureViewportForManga(null));
-
+                  Button trBtn = makeBtn("🌐 Metin", Color.parseColor("#8b5cf6"), Color.WHITE); trBtn.setOnClickListener(v -> triggerPageExtract());
+                  Button mangaBtn = makeBtn("💬 Manga", Color.parseColor("#c026d3"), Color.WHITE); mangaBtn.setOnClickListener(v -> captureViewportForManga(null, false));
                   modeBtn = makeBtn("Çeviri", Color.parseColor("#1a1229"), Color.parseColor("#c084fc"));
                   modeBtn.setOnClickListener(v -> {
                       if (curTransMode.equals("tr")) { curTransMode = "bi"; modeBtn.setText("İki Dilli"); }
                       else if (curTransMode.equals("bi")) { curTransMode = "orig"; modeBtn.setText("Orijinal"); }
                       else { curTransMode = "tr"; modeBtn.setText("Çeviri"); }
-                      String toggleM = "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.display='"
-                              + (curTransMode.equals("orig") ? "none" : "flex") + "';});";
+                      String toggleM = "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.display='" + (curTransMode.equals("orig") ? "none" : "flex") + "';});";
                       browserWebView.evaluateJavascript("window.__caiSetMode && window.__caiSetMode('" + curTransMode + "');" + toggleM, null);
                   });
-
                   Button readBtn = makeBtn("📖", Color.parseColor("#1a1229"), Color.WHITE);
-                  readBtn.setOnClickListener(v -> {
-                      browserRoot.setVisibility(View.GONE);
-                      appWebView.evaluateJavascript("window.__onNativeReadFs && window.__onNativeReadFs();", null);
-                  });
-
+                  readBtn.setOnClickListener(v -> { browserRoot.setVisibility(View.GONE); appWebView.evaluateJavascript("window.__onNativeReadFs && window.__onNativeReadFs();", null); });
                   Button saveBtn = makeBtn("📚", Color.parseColor("#18332a"), Color.parseColor("#6ee7b7"));
                   saveBtn.setOnClickListener(v -> appWebView.evaluateJavascript("window.__onNativeSaveBook && window.__onNativeSaveBook();", null));
 
-                  LinearLayout.LayoutParams lpGrow = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
-                  lpGrow.setMargins(dp(2), 0, dp(2), 0);
-                  botBar.addView(trBtn, lpGrow); botBar.addView(mangaBtn, lpGrow);
-                  botBar.addView(modeBtn, lpBtn); botBar.addView(readBtn, lpBtn); botBar.addView(saveBtn, lpBtn);
-                  browserContainer.addView(botBar, new LinearLayout.LayoutParams(
-                          LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+                  LinearLayout.LayoutParams lpGrow = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f); lpGrow.setMargins(dp(2), 0, dp(2), 0);
+                  botBar.addView(trBtn, lpGrow); botBar.addView(mangaBtn, lpGrow); botBar.addView(modeBtn, lpBtn); botBar.addView(readBtn, lpBtn); botBar.addView(saveBtn, lpBtn);
+                  browserContainer.addView(botBar, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
-                  browserRoot.addView(browserContainer, new FrameLayout.LayoutParams(
-                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-                  root.addView(browserRoot, new FrameLayout.LayoutParams(
-                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-
+                  browserRoot.addView(browserContainer, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                  root.addView(browserRoot, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
                   setContentView(root);
+              }
+
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  if (appWebView != null) {
+                      new Handler(Looper.getMainLooper()).postDelayed(() ->
+                              appWebView.evaluateJavascript("window.__onAppResume && window.__onAppResume();", null), 350);
+                  }
               }
 
               private void showBrowserMenu() {
                   String[] items = {
-                      "✂️ Parmağınla Alan Seç & Çevir",
+                      "✂️ Alan Seç & Çevir (Manga)",
+                      "🖼️ Manga Paneli Kırp & Kaydet",
                       "🧹 Tek Tık Sade Okuyucu Modu",
-                      (optAutoManga ? "☑ " : "☐ ") + "🔄 Webtoon Oto-Tarama (Kaydırınca)",
+                      (optAutoManga ? "☑ " : "☐ ") + "🔄 Webtoon Oto-Tarama",
                       (optAutoTrans ? "☑ " : "☐ ") + "⚡ Otomatik Bölüm Çevirisi",
                       (optForceDark ? "☑ " : "☐ ") + "🌙 Zorla Karanlık Mod",
                       (optDesktop ? "☑ " : "☐ ") + "🖥️ Masaüstü Görünüm",
-                      (optAdBlock ? "☑ " : "☐ ") + "🛡️ Reklam/Pop-up Koru (Opsiyonel)",
+                      (optAdBlock ? "☑ " : "☐ ") + "🛡️ Gelişmiş Reklam Koruma",
                       "↻ Sayfayı Yenile",
                       "🗑️ Manga Baloncuklarını Temizle"
                   };
-                  new AlertDialog.Builder(this)
-                      .setTitle("Tarayıcı Araçları")
-                      .setItems(items, (d, which) -> {
-                          switch (which) {
-                              case 0: openBrowserRegionSelector(); break;
-                              case 1: applyCleanReaderMode(); break;
-                              case 2:
-                                  optAutoManga = !optAutoManga;
-                                  browserWebView.evaluateJavascript("window.__caiAutoManga=" + optAutoManga + ";", null);
-                                  Toast.makeText(this, optAutoManga ? "Webtoon Oto-Tarama AÇIK" : "Webtoon Oto-Tarama KAPALI", Toast.LENGTH_SHORT).show();
-                                  break;
-                              case 3:
-                                  optAutoTrans = !optAutoTrans;
-                                  Toast.makeText(this, optAutoTrans ? "Otomatik Bölüm Çevirisi AÇIK" : "KAPALI", Toast.LENGTH_SHORT).show();
-                                  break;
-                              case 4:
-                                  optForceDark = !optForceDark;
-                                  applyForceDark(optForceDark);
-                                  break;
-                              case 5:
-                                  optDesktop = !optDesktop;
-                                  browserWebView.getSettings().setUserAgentString(optDesktop
-                                          ? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-                                          : mobileUA);
-                                  browserWebView.reload();
-                                  break;
-                              case 6:
-                                  optAdBlock = !optAdBlock;
-                                  Toast.makeText(this, optAdBlock ? "Reklam Koruma AÇIK" : "Reklam Koruma KAPALI", Toast.LENGTH_SHORT).show();
-                                  break;
-                              case 7: browserWebView.reload(); break;
-                              case 8: browserWebView.evaluateJavascript("var l=document.getElementById('cai-manga-layer');if(l)l.innerHTML='';", null); break;
-                          }
-                      }).show();
+                  new AlertDialog.Builder(this).setTitle("Tarayıcı Araçları").setItems(items, (d, w) -> {
+                      switch (w) {
+                          case 0: openBrowserRegionSelector(false); break;
+                          case 1: openBrowserRegionSelector(true); break;
+                          case 2: applyCleanReaderMode(); break;
+                          case 3: optAutoManga = !optAutoManga; browserWebView.evaluateJavascript("window.__caiAutoManga=" + optAutoManga + ";", null); break;
+                          case 4: optAutoTrans = !optAutoTrans; break;
+                          case 5: optForceDark = !optForceDark; applyForceDark(optForceDark); break;
+                          case 6: optDesktop = !optDesktop; browserWebView.getSettings().setUserAgentString(optDesktop ? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36" : mobileUA); browserWebView.reload(); break;
+                          case 7: optAdBlock = !optAdBlock; Toast.makeText(this, optAdBlock ? "Reklam Koruma AÇIK" : "KAPALI", Toast.LENGTH_SHORT).show(); break;
+                          case 8: browserWebView.reload(); break;
+                          case 9: browserWebView.evaluateJavascript("var l=document.getElementById('cai-manga-layer');if(l)l.innerHTML='';", null); break;
+                      }
+                  }).show();
               }
 
-              // SAYFADA SEÇ-ÇEVİR BALONCUĞU + WEBTOON OTO-TARAMA DİNLEYİCİSİ
               private void injectBrowserHelpers() {
                   String js = "(function(){"
                       + "window.__caiAutoManga=" + optAutoManga + ";"
                       + "if(window.__caiHelpersInit)return;window.__caiHelpersInit=1;"
+                      + "var pb=document.createElement('div');pb.style.cssText='position:fixed;top:0;left:0;height:3px;width:0%;background:linear-gradient(90deg,#8b5cf6,#d946ef);z-index:2147483647;pointer-events:none;transition:width .1s;';document.documentElement.appendChild(pb);"
                       + "var stTimer=null;"
                       + "window.addEventListener('scroll',function(){"
-                      + "  if(!window.__caiAutoManga)return;"
-                      + "  clearTimeout(stTimer);"
+                      + "  var h=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);"
+                      + "  pb.style.width=Math.min(100,Math.round((window.scrollY/h)*100))+'%';"
+                      + "  if(!window.__caiAutoManga)return; clearTimeout(stTimer);"
                       + "  stTimer=setTimeout(function(){BrowserBridge.onAutoMangaScrollStop();},1300);"
                       + "},{passive:true});"
-                      + "var selBtn=document.createElement('div');"
-                      + "selBtn.id='cai-sel-pop';"
+                      + "var selBtn=document.createElement('div');selBtn.id='cai-sel-pop';"
                       + "selBtn.style.cssText='position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:2147483646;display:none;background:#8b5cf6;color:#fff;padding:8px 14px;border-radius:999px;font:700 13px system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.6);max-width:90vw;';"
-                      + "selBtn.textContent='🌐 Seçimi Çevir';"
-                      + "document.body.appendChild(selBtn);"
+                      + "selBtn.textContent='🌐 Seçimi Çevir';document.body.appendChild(selBtn);"
                       + "var curSel='';"
-                      + "document.addEventListener('selectionchange',function(){"
-                      + "  var s=(window.getSelection()+'').trim();"
-                      + "  if(s.length>1 && s.length<1200){curSel=s;selBtn.textContent='🌐 Seçimi Çevir';selBtn.style.display='block';}"
-                      + "  else if(selBtn.textContent==='🌐 Seçimi Çevir'){selBtn.style.display='none';}"
-                      + "});"
-                      + "selBtn.onclick=function(){"
-                      + "  if(selBtn.textContent!=='🌐 Seçimi Çevir'){selBtn.style.display='none';return;}"
-                      + "  selBtn.textContent='⏳ Çevriliyor…';"
-                      + "  BrowserBridge.onQuickSelect(curSel);"
-                      + "};"
-                      + "window.__caiShowQuickTrans=function(b64){"
-                      + "  try{var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);"
-                      + "  var txt=new TextDecoder().decode(bytes);"
-                      + "  selBtn.style.borderRadius='14px';selBtn.style.background='#180f29';selBtn.style.border='1px solid #8b5cf6';"
-                      + "  selBtn.textContent=txt + '  [✕]';selBtn.style.display='block';}catch(e){}"
-                      + "};"
+                      + "document.addEventListener('selectionchange',function(){var s=(window.getSelection()+'').trim();if(s.length>1&&s.length<1200){curSel=s;selBtn.textContent='🌐 Seçimi Çevir';selBtn.style.display='block';}else if(selBtn.textContent==='🌐 Seçimi Çevir'){selBtn.style.display='none';}});"
+                      + "selBtn.onclick=function(){if(selBtn.textContent!=='🌐 Seçimi Çevir'){selBtn.style.display='none';return;}selBtn.textContent='⏳ Çevriliyor…';BrowserBridge.onQuickSelect(curSel);};"
+                      + "window.__caiShowQuickTrans=function(b64){try{var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);selBtn.style.borderRadius='14px';selBtn.style.background='#180f29';selBtn.style.border='1px solid #8b5cf6';selBtn.textContent=new TextDecoder().decode(bytes)+'  [✕]';selBtn.style.display='block';}catch(e){}};"
                       + "})();";
                   browserWebView.evaluateJavascript(js, null);
               }
@@ -1001,56 +943,44 @@ jobs:
               }
 
               private void applyCleanReaderMode() {
-                  String js = "(function(){"
-                      + "var root=document.querySelector('article,main,[role=main],.chapter-content,.cha-words,#chapter-content,.entry-content')||document.body;"
-                      + "var title=document.querySelector('h1')?.innerText||document.title;"
-                      + "var html=root.innerHTML;"
-                      + "document.body.innerHTML='<div style=\"max-width:740px;margin:0 auto;padding:20px 18px 60px;font:18px/1.85 Georgia,serif;color:#ece6f7\"><h2 style=\"color:#c084fc;margin-bottom:16px\">'+title+'</h2>'+html+'</div>';"
-                      + "document.body.style.cssText='background:#07050c!important;color:#ece6f7!important;margin:0;padding:0';"
-                      + "document.querySelectorAll('script,style,iframe,nav,aside,footer,form,.ads').forEach(function(e){e.remove();});"
-                      + "})();";
+                  String js = "(function(){var root=document.querySelector('article,main,[role=main],.chapter-content,.cha-words,#chapter-content,.entry-content')||document.body;var title=document.querySelector('h1')?.innerText||document.title;var html=root.innerHTML;document.body.innerHTML='<div style=\"max-width:740px;margin:0 auto;padding:20px 18px 60px;font:18px/1.85 Georgia,serif;color:#ece6f7\"><h2 style=\"color:#c084fc;margin-bottom:16px\">'+title+'</h2>'+html+'</div>';document.body.style.cssText='background:#07050c!important;color:#ece6f7!important;margin:0;padding:0';document.querySelectorAll('script,style,iframe,nav,aside,footer,form,.ads').forEach(function(e){e.remove();});})();";
                   browserWebView.evaluateJavascript(js, null);
               }
 
-              private void openBrowserRegionSelector() {
+              private void openBrowserRegionSelector(final boolean saveAsPanel) {
                   if (regionView != null) return;
                   final RectF sel = new RectF();
                   regionView = new View(this) {
                       final Paint dim = new Paint(), box = new Paint(), txt = new Paint(Paint.ANTI_ALIAS_FLAG);
                       {
                           dim.setColor(Color.parseColor("#6607050c"));
-                          box.setColor(Color.parseColor("#d946ef")); box.setStyle(Paint.Style.STROKE); box.setStrokeWidth(dp(3));
+                          box.setColor(Color.parseColor(saveAsPanel ? "#34d399" : "#d946ef")); box.setStyle(Paint.Style.STROKE); box.setStrokeWidth(dp(3));
                           txt.setColor(Color.WHITE); txt.setTextSize(dp(15)); txt.setTextAlign(Paint.Align.CENTER);
                       }
                       @Override protected void onDraw(Canvas c) {
                           c.drawRect(0, 0, getWidth(), getHeight(), dim);
                           if (sel.width() > 5 && sel.height() > 5) c.drawRect(sel, box);
-                          else c.drawText("Çevirmek istediğin manga alanını parmağınla seç", getWidth() / 2f, getHeight() / 2f, txt);
+                          else c.drawText(saveAsPanel ? "Kırpıp kaydedeceğin manga panelini seç" : "Çevirmek istediğin alanı seç", getWidth() / 2f, getHeight() / 2f, txt);
                       }
                       float sx, sy;
                       @Override public boolean onTouchEvent(MotionEvent e) {
-                          if (e.getAction() == MotionEvent.ACTION_DOWN) {
-                              sx = e.getX(); sy = e.getY(); sel.set(sx, sy, sx, sy); invalidate(); return true;
-                          } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
-                              sel.set(Math.min(sx, e.getX()), Math.min(sy, e.getY()), Math.max(sx, e.getX()), Math.max(sy, e.getY()));
-                              invalidate(); return true;
-                          } else if (e.getAction() == MotionEvent.ACTION_UP) {
+                          if (e.getAction() == MotionEvent.ACTION_DOWN) { sx = e.getX(); sy = e.getY(); sel.set(sx, sy, sx, sy); invalidate(); return true; }
+                          else if (e.getAction() == MotionEvent.ACTION_MOVE) { sel.set(Math.min(sx, e.getX()), Math.min(sy, e.getY()), Math.max(sx, e.getX()), Math.max(sy, e.getY())); invalidate(); return true; }
+                          else if (e.getAction() == MotionEvent.ACTION_UP) {
                               browserRoot.removeView(regionView); regionView = null;
                               if (sel.width() > 30 && sel.height() > 30) {
                                   int[] bLoc = new int[2], rLoc = new int[2];
                                   browserWebView.getLocationInWindow(bLoc); browserRoot.getLocationInWindow(rLoc);
                                   int dy = bLoc[1] - rLoc[1];
-                                  Rect crop = new Rect((int) sel.left, Math.max(0, (int) sel.top - dy),
-                                          (int) sel.right, Math.max(10, (int) sel.bottom - dy));
-                                  captureViewportForManga(crop);
+                                  Rect crop = new Rect((int) sel.left, Math.max(0, (int) sel.top - dy), (int) sel.right, Math.max(10, (int) sel.bottom - dy));
+                                  captureViewportForManga(crop, saveAsPanel);
                               }
                               return true;
                           }
                           return false;
                       }
                   };
-                  browserRoot.addView(regionView, new FrameLayout.LayoutParams(
-                          FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+                  browserRoot.addView(regionView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
               }
 
               private void downloadDirectlyToLibrary(final String fileUrl, final String filename, final String ua) {
@@ -1061,43 +991,35 @@ jobs:
                           if (cookies != null) conn.setRequestProperty("Cookie", cookies);
                           if (ua != null) conn.setRequestProperty("User-Agent", ua);
                           ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                          try (InputStream is = conn.getInputStream()) {
-                              byte[] buf = new byte[8192]; int n;
-                              while ((n = is.read(buf)) > 0) baos.write(buf, 0, n);
-                          }
+                          try (InputStream is = conn.getInputStream()) { byte[] buf = new byte[8192]; int n; while ((n = is.read(buf)) > 0) baos.write(buf, 0, n); }
                           final String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
                           final String fn64 = Base64.encodeToString(filename.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                          runOnUiThread(() -> appWebView.evaluateJavascript(
-                                  "window.__onNativeFileImport && window.__onNativeFileImport('" + fn64 + "','" + b64 + "');", null));
-                      } catch (Exception e) {
-                          runOnUiThread(() -> Toast.makeText(this, "İndirme hatası: " + e.getMessage(), Toast.LENGTH_LONG).show());
-                      }
+                          runOnUiThread(() -> appWebView.evaluateJavascript("window.__onNativeFileImport && window.__onNativeFileImport('" + fn64 + "','" + b64 + "');", null));
+                      } catch (Exception e) { runOnUiThread(() -> Toast.makeText(this, "İndirme hatası: " + e.getMessage(), Toast.LENGTH_LONG).show()); }
                   }).start();
               }
 
               private void loadInBrowser(String input) {
-                  String q = input == null ? "" : input.trim();
-                  if (q.isEmpty()) q = "https://www.google.com";
-                  String url;
-                  if (q.startsWith("http://") || q.startsWith("https://")) url = q;
-                  else if (!q.contains(" ") && q.contains(".")) url = "https://" + q;
-                  else { try { url = "https://www.google.com/search?q=" + URLEncoder.encode(q, "UTF-8"); } catch (Exception e) { url = "https://www.google.com"; } }
-                  urlBar.setText(url);
-                  browserWebView.loadUrl(url);
+                  String q = input == null ? "" : input.trim(); if (q.isEmpty()) q = "https://www.google.com";
+                  String url = (q.startsWith("http://") || q.startsWith("https://")) ? q
+                          : (!q.contains(" ") && q.contains(".")) ? "https://" + q
+                          : "https://www.google.com/search?q=" + Uri.encode(q);
+                  urlBar.setText(url); browserWebView.loadUrl(url);
               }
 
-              private void captureViewportForManga(final Rect crop) {
+              private void captureViewportForManga(final Rect crop, final boolean savePanelOnly) {
                   final int w = browserWebView.getWidth(), h = browserWebView.getHeight();
                   if (w <= 0 || h <= 0) return;
                   pendingCropRect = crop;
-                  statusBar.setText(crop != null ? "✂️ Seçili alan taranıyor…" : "💬 Manga ekranı taranıyor…");
-                  statusBar.setVisibility(View.VISIBLE);
-                  browserWebView.evaluateJavascript(
-                          "document.querySelectorAll('.cai-mb').forEach(function(e){e.style.visibility='hidden';});",
-                          v -> new Handler(Looper.getMainLooper()).postDelayed(() -> doPixelCapture(w, h, crop), 80));
+                  if (!savePanelOnly) {
+                      statusBar.setText(crop != null ? "✂️ Seçili alan taranıyor…" : "💬 Manga ekranı taranıyor…");
+                      statusBar.setVisibility(View.VISIBLE);
+                  }
+                  browserWebView.evaluateJavascript("document.querySelectorAll('.cai-mb').forEach(function(e){e.style.visibility='hidden';});",
+                          v -> new Handler(Looper.getMainLooper()).postDelayed(() -> doPixelCapture(w, h, crop, savePanelOnly), 80));
               }
 
-              private void doPixelCapture(int w, int h, Rect crop) {
+              private void doPixelCapture(int w, int h, Rect crop, boolean savePanelOnly) {
                   final Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                       int[] loc = new int[2]; browserWebView.getLocationInWindow(loc);
@@ -1105,18 +1027,18 @@ jobs:
                       try {
                           PixelCopy.request(getWindow(), rect, bmp, res -> {
                               restoreHiddenBubbles();
-                              if (res == PixelCopy.SUCCESS) sendBitmapToMangaAI(bmp, crop);
-                              else fallbackCanvasCapture(w, h, crop);
+                              if (res == PixelCopy.SUCCESS) processCapturedBitmap(bmp, crop, savePanelOnly);
+                              else fallbackCanvasCapture(w, h, crop, savePanelOnly);
                           }, new Handler(Looper.getMainLooper()));
-                      } catch (Exception e) { restoreHiddenBubbles(); fallbackCanvasCapture(w, h, crop); }
-                  } else { restoreHiddenBubbles(); fallbackCanvasCapture(w, h, crop); }
+                      } catch (Exception e) { restoreHiddenBubbles(); fallbackCanvasCapture(w, h, crop, savePanelOnly); }
+                  } else { restoreHiddenBubbles(); fallbackCanvasCapture(w, h, crop, savePanelOnly); }
               }
 
-              private void fallbackCanvasCapture(int w, int h, Rect crop) {
+              private void fallbackCanvasCapture(int w, int h, Rect crop, boolean savePanelOnly) {
                   try {
                       Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                       Canvas c = new Canvas(bmp); c.translate(-browserWebView.getScrollX(), -browserWebView.getScrollY());
-                      browserWebView.draw(c); sendBitmapToMangaAI(bmp, crop);
+                      browserWebView.draw(c); processCapturedBitmap(bmp, crop, savePanelOnly);
                   } catch (Exception e) { statusBar.setText("❌ Ekran yakalanamadı: " + e.getMessage()); }
               }
 
@@ -1124,7 +1046,7 @@ jobs:
                   browserWebView.evaluateJavascript("document.querySelectorAll('.cai-mb').forEach(function(e){e.style.visibility='visible';});", null);
               }
 
-              private void sendBitmapToMangaAI(Bitmap bmp, Rect crop) {
+              private void processCapturedBitmap(Bitmap bmp, Rect crop, boolean savePanelOnly) {
                   try {
                       Bitmap target = bmp;
                       if (crop != null) {
@@ -1134,16 +1056,41 @@ jobs:
                           int ch = Math.max(2, Math.min(crop.height(), bmp.getHeight() - y));
                           target = Bitmap.createBitmap(bmp, x, y, cw, ch);
                       }
+                      if (savePanelOnly) {
+                          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                          target.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                          saveBytesToDownloads("manga-panel-" + System.currentTimeMillis() + ".png", baos.toByteArray(), "image/png");
+                          return;
+                      }
+                      lastCapturedBmp = target;
                       int maxW = 1080;
+                      Bitmap scaled = target;
                       if (target.getWidth() > maxW) {
                           int nh = Math.round((float) target.getHeight() * maxW / target.getWidth());
-                          target = Bitmap.createScaledBitmap(target, maxW, nh, true);
+                          scaled = Bitmap.createScaledBitmap(target, maxW, nh, true);
                       }
                       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                      target.compress(Bitmap.CompressFormat.JPEG, 85, baos);
+                      scaled.compress(Bitmap.CompressFormat.JPEG, 85, baos);
                       String b64 = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
                       appWebView.evaluateJavascript("window.__onNativeMangaCapture && window.__onNativeMangaCapture('" + b64 + "');", null);
                   } catch (Exception e) { statusBar.setText("❌ Görsel hatası: " + e.getMessage()); }
+              }
+
+              private void saveBytesToDownloads(String filename, byte[] bytes, String mimeType) {
+                  try {
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                          ContentValues cv = new ContentValues();
+                          cv.put(MediaStore.Downloads.DISPLAY_NAME, filename);
+                          cv.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+                          cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                          Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                          if (uri != null) try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(bytes); }
+                      } else {
+                          File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), filename);
+                          try (FileOutputStream fos = new FileOutputStream(f)) { fos.write(bytes); }
+                      }
+                      Toast.makeText(this, "Kaydedildi: " + filename, Toast.LENGTH_LONG).show();
+                  } catch (Exception e) { Toast.makeText(this, "Kayıt hatası: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
               }
 
               private void triggerPageExtract() {
@@ -1157,54 +1104,66 @@ jobs:
                       + "  if(nodes.length<3){nodes=document.body.querySelectorAll('p,h1,h2,h3,div');}"
                       + "  var seen=new Set();"
                       + "  for(var i=0;i<nodes.length;i++){"
-                      + "    var el=nodes[i];"
-                      + "    if(skip[el.tagName]||el.closest('nav,header,footer,script,style'))continue;"
+                      + "    var el=nodes[i];if(skip[el.tagName]||el.closest('nav,header,footer,script,style'))continue;"
                       + "    if(el.tagName==='DIV'&&el.querySelector('p,div'))continue;"
-                      + "    var t=(el.innerText||'').replace(/\\s+/g,' ').trim();"
-                      + "    if(t.length<4||seen.has(el))continue;"
+                      + "    var t=(el.innerText||'').replace(/\\s+/g,' ').trim();if(t.length<4||seen.has(el))continue;"
                       + "    seen.add(el);var idx=st.els.length;el.setAttribute('data-cai-id',idx);"
                       + "    st.els.push(el);st.orig.push(el.innerHTML);st.tr.push('');"
                       + "  }"
                       + "}"
                       + "window.__caiSetMode=function(m){for(var i=0;i<st.els.length;i++){var el=st.els[i],tr=st.tr[i];if(!tr||m==='orig'){el.innerHTML=st.orig[i];}else if(m==='bi'){el.innerHTML='<div style=\"opacity:.65;font-size:.88em;margin-bottom:4px\">'+st.orig[i]+'</div><div>'+tr.replace(/</g,'&lt;').replace(/\\n/g,'<br>')+'</div>';}else{el.innerText=tr;}}};"
                       + "window.__caiApply=function(b64,m){try{var bin=atob(b64);var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var map=JSON.parse(new TextDecoder().decode(bytes));for(var k in map){var idx=Number(k);if(st.els[idx]){st.tr[idx]=map[k];}}window.__caiSetMode(m||'tr');}catch(e){}};"
+                      + "var cov=(document.querySelector('meta[property=\"og:image\"]')?.content)||((document.querySelector('img[src*=\"cover\"],.cover img')?.src))||'';"
                       + "var out=st.els.map(function(el,i){return {i:i,t:(el.innerText||'').replace(/\\s+/g,' ').trim()};});"
-                      + "BrowserBridge.onPageExtracted(document.title||location.href, location.href, JSON.stringify(out));"
+                      + "BrowserBridge.onPageExtracted(document.title||location.href, location.href, cov, JSON.stringify(out));"
                       + "})();";
                   browserWebView.evaluateJavascript(js, null);
+              }
+
+              // BALONCUK ARKA PLAN RENGİNİ ÇİZİMDEN OTOMATİK ÖRNEKLEME
+              private String enrichBubblesWithColors(String jsonBubbles) {
+                  try {
+                      JSONArray arr = new JSONArray(jsonBubbles);
+                      if (lastCapturedBmp != null) {
+                          int bw = lastCapturedBmp.getWidth(), bh = lastCapturedBmp.getHeight();
+                          for (int i = 0; i < arr.length(); i++) {
+                              JSONObject b = arr.optJSONObject(i); if (b == null) continue;
+                              int px = Math.max(0, Math.min(bw - 1, Math.round((float) (b.optDouble("x", 10) + b.optDouble("w", 20) * 0.15) / 100f * bw)));
+                              int py = Math.max(0, Math.min(bh - 1, Math.round((float) (b.optDouble("y", 10) + b.optDouble("h", 10) * 0.15) / 100f * bh)));
+                              int c = lastCapturedBmp.getPixel(px, py);
+                              int r = Color.red(c), g = Color.green(c), bl = Color.blue(c);
+                              double lum = 0.299 * r + 0.587 * g + 0.114 * bl;
+                              b.put("bg", String.format("rgba(%d,%d,%d,%.2f)", r, g, bl, mangaBgAlpha));
+                              b.put("fg", lum > 135 ? "#110b1c" : "#f5f0ff");
+                          }
+                      }
+                      return arr.toString();
+                  } catch (Exception e) { return jsonBubbles; }
               }
 
               private class AppBridge {
                   @JavascriptInterface public boolean isNative() { return true; }
 
-                  @JavascriptInterface
-                  public void openBrowser(final String urlOrQuery) {
-                      runOnUiThread(() -> {
-                          browserRoot.setVisibility(View.VISIBLE);
-                          statusBar.setVisibility(View.GONE);
-                          curTransMode = "tr"; modeBtn.setText("Çeviri");
-                          loadInBrowser(urlOrQuery);
-                      });
+                  @JavascriptInterface public void openBrowser(final String urlOrQuery) {
+                      runOnUiThread(() -> { browserRoot.setVisibility(View.VISIBLE); statusBar.setVisibility(View.GONE); curTransMode = "tr"; modeBtn.setText("Çeviri"); loadInBrowser(urlOrQuery); });
                   }
-
-                  @JavascriptInterface
-                  public void setBrowserStatus(final String msg) {
-                      runOnUiThread(() -> {
-                          if (msg == null || msg.isEmpty()) statusBar.setVisibility(View.GONE);
-                          else { statusBar.setText(msg); statusBar.setVisibility(View.VISIBLE); }
-                      });
+                  @JavascriptInterface public void setBrowserStatus(final String msg) {
+                      runOnUiThread(() -> { if (msg == null || msg.isEmpty()) statusBar.setVisibility(View.GONE); else { statusBar.setText(msg); statusBar.setVisibility(View.VISIBLE); } });
                   }
-
-                  @JavascriptInterface
-                  public void setKeepScreenOn(final boolean on) {
-                      runOnUiThread(() -> {
-                          if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                          else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                      });
+                  @JavascriptInterface public void setKeepScreenOn(final boolean on) {
+                      runOnUiThread(() -> { if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); });
                   }
-
-                  @JavascriptInterface
-                  public void syncConfig(final String jsonCfg) {
+                  @JavascriptInterface public String getClipboardText() {
+                      try {
+                          ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                          if (cm != null && cm.hasPrimaryClip()) {
+                              CharSequence cs = cm.getPrimaryClip().getItemAt(0).coerceToText(MainActivity.this);
+                              return cs == null ? "" : cs.toString();
+                          }
+                      } catch (Exception ignored) {}
+                      return "";
+                  }
+                  @JavascriptInterface public void syncConfig(final String jsonCfg) {
                       try {
                           JSONObject j = new JSONObject(jsonCfg);
                           SharedPreferences.Editor ed = getSharedPreferences("cai_cfg", MODE_PRIVATE).edit();
@@ -1213,56 +1172,49 @@ jobs:
                           ed.putString("model", j.optString("model", ""));
                           ed.putString("tgtLang", j.optString("tgtLang", "Türkçe"));
                           ed.apply();
-                          mangaFontStyle = j.optString("mangaFont", "system-ui,sans-serif");
+                          mangaFontStyle = j.optString("mangaFont", "system-ui, sans-serif").replace("'", "").replace("\"", "");
                           mangaFontScale = (float) j.optDouble("mangaFontScale", 1.0);
                           mangaBgAlpha = (float) j.optDouble("mangaBgAlpha", 0.95);
-                          mangaBorderHex = j.optString("mangaBorder", "#8b5cf6");
+                          mangaBorderHex = j.optString("mangaBorder", "#8b5cf6").replace("'", "");
                       } catch (Exception ignored) {}
                   }
-
-                  @JavascriptInterface
-                  public void startFloatingOverlay() {
+                  @JavascriptInterface public void startFloatingOverlay() {
                       runOnUiThread(() -> {
                           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(MainActivity.this)) {
                               Toast.makeText(MainActivity.this, "Lütfen 'Diğer uygulamaların üzerinde göster' iznini aç.", Toast.LENGTH_LONG).show();
-                              startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                      Uri.parse("package:" + getPackageName())), OVERLAY_REQ);
+                              startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), OVERLAY_REQ);
                               return;
                           }
                           MediaProjectionManager mpm = (MediaProjectionManager) getSystemService(Context.MEDIA_PROJECTION_SERVICE);
                           startActivityForResult(mpm.createScreenCaptureIntent(), PROJ_REQ);
                       });
                   }
-
-                  @JavascriptInterface
-                  public void stopFloatingOverlay() {
-                      runOnUiThread(() -> {
-                          Intent i = new Intent(MainActivity.this, OverlayService.class);
-                          i.setAction("STOP");
-                          startService(i);
-                      });
+                  @JavascriptInterface public void stopFloatingOverlay() {
+                      runOnUiThread(() -> { Intent i = new Intent(MainActivity.this, OverlayService.class); i.setAction("STOP"); startService(i); });
                   }
-
-                  @JavascriptInterface
-                  public void applyPageTranslations(final String jsonMap) {
+                  @JavascriptInterface public void applyPageTranslations(final String jsonMap) {
                       runOnUiThread(() -> {
                           String b64 = Base64.encodeToString(jsonMap.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           browserWebView.evaluateJavascript("window.__caiApply && window.__caiApply('" + b64 + "','" + curTransMode + "');", null);
                       });
                   }
-
-                  @JavascriptInterface
-                  public void showQuickSelectResult(final String text) {
+                  @JavascriptInterface public void showQuickSelectResult(final String text) {
                       runOnUiThread(() -> {
                           String b64 = Base64.encodeToString((text == null ? "" : text).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           browserWebView.evaluateJavascript("window.__caiShowQuickTrans && window.__caiShowQuickTrans('" + b64 + "');", null);
                       });
                   }
-
-                  @JavascriptInterface
-                  public void applyMangaBubbles(final String jsonBubbles) {
+                  @JavascriptInterface public void updateSingleMangaBubble(final String id, final String newText) {
                       runOnUiThread(() -> {
-                          String b64 = Base64.encodeToString(jsonBubbles.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String b64 = Base64.encodeToString((newText == null ? "" : newText).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String js = "(function(){var el=document.getElementById('" + id + "');if(!el)return;var bin=atob('" + b64 + "');var bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);var t=el.querySelector('.cai-mb-t');if(t)t.textContent=new TextDecoder().decode(bytes);})();";
+                          browserWebView.evaluateJavascript(js, null);
+                      });
+                  }
+                  @JavascriptInterface public void applyMangaBubbles(final String jsonBubbles) {
+                      runOnUiThread(() -> {
+                          String enriched = enrichBubblesWithColors(jsonBubbles);
+                          String b64 = Base64.encodeToString(enriched.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           float oxPct = 0f, oyPct = 0f, owPct = 100f, ohPct = 100f;
                           if (pendingCropRect != null && browserWebView.getWidth() > 0 && browserWebView.getHeight() > 0) {
                               oxPct = (float) pendingCropRect.left / browserWebView.getWidth() * 100f;
@@ -1279,69 +1231,61 @@ jobs:
                               + "var ox=" + oxPct + "/100*vw, oy=" + oyPct + "/100*vh, ow=" + owPct + "/100*vw, oh=" + ohPct + "/100*vh;"
                               + "var layer=document.getElementById('cai-manga-layer');"
                               + "if(!layer){layer=document.createElement('div');layer.id='cai-manga-layer';layer.style.cssText='position:absolute;top:0;left:0;width:100%;height:0;pointer-events:none;z-index:2147483640;';document.body.appendChild(layer);}"
-                              + "arr.forEach(function(b){"
-                              + "  var d=document.createElement('div');d.className='cai-mb';"
-                              + "  var bx=sx+ox+(b.x/100)*ow, by=sy+oy+(b.y/100)*oh, bw=Math.max(70,(b.w/100)*ow), bh=Math.max((b.h/100)*oh,28);"
-                              + "  var fs=Math.max(10,Math.min(20,Math.round(bw*0.13*" + mangaFontScale + ")));"
-                              + "  var bg='rgba(255,255,255," + mangaBgAlpha + ")', fg='#110b1c', bd='2px solid " + mangaBorderHex + "', rad='12px';"
-                              + "  if(b.type==='narration'){bg='rgba(17,11,28," + mangaBgAlpha + ")';fg='#f4eeff';bd='2px solid #c084fc';rad='5px';}"
-                              + "  else if(b.type==='sfx'){bg='rgba(217,70,239," + mangaBgAlpha + ")';fg='#ffffff';bd='2px solid #fff';rad='8px';}"
-                              + "  else if(b.type==='thought'){bg='rgba(246,240,255," + mangaBgAlpha + ")';bd='2px dashed #a855f7';rad='18px';}"
-                              + "  d.style.cssText='position:absolute;left:'+bx+'px;top:'+by+'px;width:'+bw+'px;min-height:'+bh+'px;background:'+bg+';color:'+fg+';border:'+bd+';border-radius:'+rad+';padding:4px 6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;font:700 '+fs+'px/1.22 " + mangaFontStyle + ";box-shadow:0 4px 14px rgba(0,0,0,0.45);pointer-events:auto;word-break:break-word;';"
-                              + "  d.textContent=b.tr; d.onclick=function(){this.style.opacity=this.style.opacity==='0.15'?'1':'0.15';};"
+                              + "arr.forEach(function(b,idx){"
+                              + "  var bid='caimb_'+Date.now()+'_'+idx; var d=document.createElement('div'); d.id=bid; d.className='cai-mb';"
+                              + "  var bx=sx+ox+(b.x/100)*ow, by=sy+oy+(b.y/100)*oh, bw=Math.max(64,(b.w/100)*ow), bh=Math.max((b.h/100)*oh,28);"
+                              + "  var len=Math.max(6,(b.tr||'').length); var areaFs=Math.sqrt((bw*bh)/len)*0.95;"
+                              + "  var fs=Math.max(9,Math.min(18,Math.round(areaFs*" + mangaFontScale + ")));"
+                              + "  var bg=b.bg||'rgba(255,255,255," + mangaBgAlpha + ")', fg=b.fg||'#110b1c', bd='2px solid " + mangaBorderHex + "', rad='14px';"
+                              + "  if(b.type==='narration'){rad='4px';bd='1.5px solid #c084fc';}"
+                              + "  else if(b.type==='sfx'){bg='rgba(217,70,239," + mangaBgAlpha + ")';fg='#fff';bd='2px solid #fff';rad='8px';}"
+                              + "  else if(b.type==='thought'){bd='2px dashed #a855f7';rad='20px';}"
+                              + "  d.style.cssText='position:absolute;left:'+bx+'px;top:'+by+'px;width:'+bw+'px;min-height:'+bh+'px;background:'+bg+';color:'+fg+';border:'+bd+';border-radius:'+rad+';padding:4px 6px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;font:700 '+fs+'px/1.18 " + mangaFontStyle + ";box-shadow:0 4px 12px rgba(0,0,0,0.4);pointer-events:auto;word-break:break-word;';"
+                              + "  var sp=document.createElement('span');sp.className='cai-mb-t';sp.textContent=b.tr;d.appendChild(sp);"
+                              + "  var rt=document.createElement('button');rt.textContent='↻';rt.title='Tekrar çevir';"
+                              + "  rt.style.cssText='position:absolute;top:-9px;right:-9px;width:20px;height:20px;border-radius:50%;border:none;background:#8b5cf6;color:#fff;font-size:11px;line-height:20px;padding:0;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5);';"
+                              + "  rt.onclick=function(ev){ev.stopPropagation();sp.textContent='⏳…';BrowserBridge.onRetranslateBubble(bid,b.orig||b.tr,b.tr);};"
+                              + "  d.appendChild(rt);"
+                              + "  d.onclick=function(){this.style.opacity=this.style.opacity==='0.15'?'1':'0.15';};"
                               + "  layer.appendChild(d);"
                               + "});}catch(e){}})();";
                           browserWebView.evaluateJavascript(js, null);
                       });
                   }
-
-                  @JavascriptInterface
-                  public void saveFile(final String filename, final String base64Data, final String mimeType) {
-                      runOnUiThread(() -> {
-                          try {
-                              byte[] bytes = Base64.decode(base64Data, Base64.DEFAULT);
-                              if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                  ContentValues cv = new ContentValues();
-                                  cv.put(MediaStore.Downloads.DISPLAY_NAME, filename);
-                                  cv.put(MediaStore.Downloads.MIME_TYPE, mimeType);
-                                  cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-                                  Uri uri = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
-                                  if (uri != null) try (OutputStream os = getContentResolver().openOutputStream(uri)) { os.write(bytes); }
-                              } else {
-                                  File f = new File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), filename);
-                                  try (FileOutputStream fos = new FileOutputStream(f)) { fos.write(bytes); }
-                              }
-                              Toast.makeText(MainActivity.this, "İndirildi: " + filename, Toast.LENGTH_LONG).show();
-                          } catch (Exception e) { Toast.makeText(MainActivity.this, "Hata: " + e.getMessage(), Toast.LENGTH_LONG).show(); }
-                      });
+                  @JavascriptInterface public void saveFile(final String filename, final String base64Data, final String mimeType) {
+                      runOnUiThread(() -> saveBytesToDownloads(filename, Base64.decode(base64Data, Base64.DEFAULT), mimeType));
                   }
               }
 
               private class BrowserBridge {
-                  @JavascriptInterface
-                  public void onPageExtracted(final String title, final String url, final String jsonBlocks) {
+                  @JavascriptInterface public void onPageExtracted(final String title, final String url, final String cover, final String jsonBlocks) {
                       runOnUiThread(() -> {
                           String t64 = Base64.encodeToString((title == null ? "" : title).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           String u64 = Base64.encodeToString((url == null ? "" : url).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String c64 = Base64.encodeToString((cover == null ? "" : cover).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           String b64 = Base64.encodeToString((jsonBlocks == null ? "[]" : jsonBlocks).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                          appWebView.evaluateJavascript("window.__onNativePageExtract && window.__onNativePageExtract('" + t64 + "','" + u64 + "','" + b64 + "');", null);
+                          appWebView.evaluateJavascript("window.__onNativePageExtract && window.__onNativePageExtract('" + t64 + "','" + u64 + "','" + c64 + "','" + b64 + "');", null);
                       });
                   }
-                  @JavascriptInterface
-                  public void onQuickSelect(final String text) {
+                  @JavascriptInterface public void onQuickSelect(final String text) {
                       runOnUiThread(() -> {
                           String b64 = Base64.encodeToString((text == null ? "" : text).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
                           appWebView.evaluateJavascript("window.__onNativeQuickSelect && window.__onNativeQuickSelect('" + b64 + "');", null);
                       });
                   }
-                  @JavascriptInterface
-                  public void onAutoMangaScrollStop() {
-                      runOnUiThread(() -> { if (optAutoManga) captureViewportForManga(null); });
+                  @JavascriptInterface public void onRetranslateBubble(final String id, final String orig, final String prevTr) {
+                      runOnUiThread(() -> {
+                          String o64 = Base64.encodeToString((orig == null ? "" : orig).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          String p64 = Base64.encodeToString((prevTr == null ? "" : prevTr).getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+                          appWebView.evaluateJavascript("window.__onNativeRetranslateBubble && window.__onNativeRetranslateBubble('" + id + "','" + o64 + "','" + p64 + "');", null);
+                      });
+                  }
+                  @JavascriptInterface public void onAutoMangaScrollStop() {
+                      runOnUiThread(() -> { if (optAutoManga) captureViewportForManga(null, false); });
                   }
               }
 
-              @Override
-              protected void onActivityResult(int req, int res, Intent data) {
+              @Override protected void onActivityResult(int req, int res, Intent data) {
                   if (req == FILE_REQ && filePathCallback != null) {
                       Uri[] results = null;
                       if (res == RESULT_OK && data != null) {
@@ -1357,19 +1301,15 @@ jobs:
                           startActivityForResult(mpm.createScreenCaptureIntent(), PROJ_REQ);
                       }
                   } else if (req == PROJ_REQ && res == RESULT_OK && data != null) {
-                      Intent svc = new Intent(this, OverlayService.class);
-                      svc.putExtra("code", res); svc.putExtra("data", data);
-                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(svc);
-                      else startService(svc);
+                      Intent svc = new Intent(this, OverlayService.class); svc.putExtra("code", res); svc.putExtra("data", data);
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(svc); else startService(svc);
                   }
               }
 
-              @Override
-              public void onBackPressed() {
+              @Override public void onBackPressed() {
                   if (regionView != null) { browserRoot.removeView(regionView); regionView = null; return; }
                   if (browserRoot.getVisibility() == View.VISIBLE) {
-                      if (browserWebView.canGoBack()) browserWebView.goBack();
-                      else browserRoot.setVisibility(View.GONE);
+                      if (browserWebView.canGoBack()) browserWebView.goBack(); else browserRoot.setVisibility(View.GONE);
                       return;
                   }
                   if (appWebView.canGoBack()) { appWebView.goBack(); return; }
