@@ -3,184 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#07050c">
+<meta name="theme-color" content="#06040b">
 <title>Çevirmen AI</title>
 <style>
 :root{
-  --bg:#07050c; --surface:#110b1c; --surface2:#1a1229; --surface3:#231838;
-  --border:#2a1f3d; --text:#ece6f7; --muted:#9a8fb0;
-  --primary:#8b5cf6; --primary2:#a855f7; --accent:#c084fc; --pink:#d946ef;
-  --danger:#f43f5e; --ok:#34d399; --warn:#fbbf24; --radius:16px;
+  --bg:#06040b; --surface:#0e0918; --surface2:#161024; --surface3:#201733;
+  --border:#261c3a; --border2:#392a57; --text:#f0eafb; --muted:#9287aa;
+  --primary:#8b5cf6; --primary2:#a855f7; --accent:#c4b5fd; --pink:#e879f9;
+  --danger:#f43f5e; --ok:#10b981; --warn:#f59e0b; --radius:14px;
 }
-body.th-pink{--primary:#ec4899;--primary2:#d946ef;--accent:#f472b6;--pink:#fb7185;--border:#3d1f35}
-body.th-blue{--primary:#3b82f6;--primary2:#6366f1;--accent:#60a5fa;--pink:#818cf8;--bg:#050814;--surface:#0c1224;--surface2:#131c36;--border:#1e2d52}
-body.th-emerald{--primary:#10b981;--primary2:#14b8a6;--accent:#34d399;--pink:#2dd4bf;--bg:#040d0a;--surface:#0a1a15;--surface2:#112620;--border:#1b3d33}
-body.th-amoled{--bg:#000000;--surface:#08080c;--surface2:#121218;--border:#22222c}
+body.th-pink{--primary:#ec4899;--primary2:#d946ef;--accent:#f9a8d4;--pink:#fb7185;--border:#381c30}
+body.th-blue{--primary:#3b82f6;--primary2:#6366f1;--accent:#93c5fd;--pink:#818cf8;--bg:#040712;--surface:#0a1020;--surface2:#111a33;--border:#1d2b4d}
+body.th-emerald{--primary:#10b981;--primary2:#14b8a6;--accent:#6ee7b7;--pink:#2dd4bf;--bg:#030a08;--surface:#081612;--surface2:#0f221c;--border:#19382e}
+body.th-amoled{--bg:#000000;--surface:#07070b;--surface2:#111117;--border:#20202b}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
-  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   background:
-    radial-gradient(900px 520px at 92% -8%,color-mix(in srgb,var(--primary) 26%,transparent),transparent 62%),
-    radial-gradient(760px 520px at -10% 110%,color-mix(in srgb,var(--pink) 18%,transparent),transparent 60%),
+    radial-gradient(650px 380px at 95% -5%,color-mix(in srgb,var(--primary) 22%,transparent),transparent 65%),
+    radial-gradient(580px 420px at -10% 105%,color-mix(in srgb,var(--pink) 14%,transparent),transparent 65%),
     var(--bg);
   background-attachment:fixed;color:var(--text);min-height:100vh;
-  padding-bottom:calc(88px + env(safe-area-inset-bottom));line-height:1.5;
-  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(78px + env(safe-area-inset-bottom));line-height:1.45;
+  font-size:14px;-webkit-font-smoothing:antialiased;
 }
 button,input,textarea,select{font:inherit;color:inherit}
 a{color:var(--accent)}
 
 .view{display:none;will-change:transform,opacity}
 .view.active{display:block}
-body.anim-fade .view.active{animation:aFade .18s cubic-bezier(.2,.8,.2,1)}
-body.anim-slide .view.active{animation:aSlide .22s cubic-bezier(.2,.8,.2,1)}
-body.anim-zoom .view.active{animation:aZoom .2s cubic-bezier(.2,.8,.2,1)}
+body.anim-fade .view.active{animation:aFade .16s ease-out}
+body.anim-slide .view.active{animation:aSlide .2s cubic-bezier(.2,.8,.2,1)}
+body.anim-zoom .view.active{animation:aZoom .18s cubic-bezier(.2,.8,.2,1)}
 body.anim-none .view.active{animation:none}
 @keyframes aFade{from{opacity:0}to{opacity:1}}
-@keyframes aSlide{from{opacity:0;transform:translate3d(16px,0,0)}to{opacity:1;transform:none}}
-@keyframes aZoom{from{opacity:0;transform:scale3d(.96,.96,1)}to{opacity:1;transform:none}}
+@keyframes aSlide{from{opacity:0;transform:translate3d(14px,0,0)}to{opacity:1;transform:none}}
+@keyframes aZoom{from{opacity:0;transform:scale3d(.97,.97,1)}to{opacity:1;transform:none}}
 
-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:9px;padding:11px 13px;padding-top:calc(11px + env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-.logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:17px;flex:0 0 36px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
+/* MODERN KOMPAKT HEADER */
+header{
+  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;
+  padding:9px 12px;padding-top:calc(9px + env(safe-area-inset-top));
+  background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(18px);
+  border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent);
+}
+.logo{
+  width:32px;height:32px;border-radius:10px;display:grid;place-items:center;
+  font-weight:800;font-size:15px;flex:0 0 32px;color:#fff;
+  background:linear-gradient(135deg,var(--primary),var(--pink));
+  box-shadow:0 4px 14px color-mix(in srgb,var(--primary) 40%,transparent);
+}
 .hdr-mid{flex:1;min-width:0}
-.hdr-mid h1{font-size:16px;line-height:1.15}
-.hdr-model{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11.5px;font-weight:500;background:var(--surface2);border:1px solid var(--border);padding:2px 9px;border-radius:999px;margin-top:2px;cursor:pointer;max-width:48vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-mid h1{font-size:14.5px;font-weight:750;letter-spacing:-.2px;line-height:1.1}
+.hdr-model{
+  display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:500;
+  background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;
+  margin-top:2px;cursor:pointer;max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
 .hdr-actions{display:flex;gap:5px;flex:0 0 auto}
-.icon-btn{width:33px;height:33px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:14.5px}
-.icon-btn:active{transform:scale(.93);border-color:var(--primary)}
+.icon-btn{
+  width:30px;height:30px;border-radius:9px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);display:grid;place-items:center;
+  cursor:pointer;font-size:13.5px;transition:.14s;
+}
+.icon-btn:active{transform:scale(.92);border-color:var(--primary)}
 
-.clip-banner{display:none;align-items:center;gap:8px;padding:10px 14px;background:#241342;border-bottom:1px solid var(--primary);font-size:13px}
+.clip-banner{display:none;align-items:center;gap:8px;padding:8px 12px;background:#20113a;border-bottom:1px solid var(--primary);font-size:12.5px}
 .clip-banner.show{display:flex}
 
-main{max-width:880px;margin:0 auto;padding:13px}
-.card{background:linear-gradient(180deg,var(--surface),var(--bg));border:1px solid var(--border);border-radius:var(--radius);padding:15px;margin-bottom:12px}
-.card-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;flex-wrap:wrap}
-.card-head h2{font-size:15px;color:var(--accent);font-weight:650;flex:1;min-width:110px}
-label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 6px}
-input,textarea,select{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:14.5px;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--primary)}
-textarea{resize:vertical;min-height:135px;line-height:1.6}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+main{max-width:860px;margin:0 auto;padding:11px}
+
+/* ZARİF CAM KARTLAR */
+.card{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--bg) 96%,transparent));
+  border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:10px;
+}
+.card-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap}
+.card-head h2{font-size:13.5px;color:var(--accent);font-weight:700;letter-spacing:-.1px;flex:1;min-width:100px}
+label{display:block;font-size:11.5px;color:var(--muted);margin:8px 0 4px;font-weight:500}
+input,textarea,select{
+  width:100%;background:var(--surface2);color:var(--text);
+  border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:13.5px;outline:none;transition:.15s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--primary);background:var(--surface3)}
+textarea{resize:vertical;min-height:118px;line-height:1.58}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .row > .grow{flex:1;min-width:0}
 
-.btn{flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:9px 13px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
-.btn:active{transform:scale(.97)}
+/* İNCE, MODERN & KOMPAKT BUTONLAR */
+.btn{
+  flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);color:var(--text);
+  padding:6px 11px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
+  transition:transform .12s,border-color .15s,background .15s;
+}
+.btn:active{transform:scale(.96)}
 .btn:disabled{opacity:.45;pointer-events:none}
-.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border:none;color:#fff}
+.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border:none;color:#fff;box-shadow:0 3px 12px color-mix(in srgb,var(--primary) 35%,transparent)}
 .btn.pink{background:linear-gradient(135deg,var(--primary2),var(--pink));border:none;color:#fff}
-.btn.danger{background:#f43f5e20;border-color:#f43f5e55;color:#fda4af}
-.btn.ok{background:#34d39920;border-color:#34d39955;color:#6ee7b7}
-.btn.warn{background:#fbbf2420;border-color:#fbbf2455;color:#fde68a}
-.btn.small{padding:6px 10px;font-size:12px;border-radius:10px}
+.btn.danger{background:#f43f5e18;border-color:#f43f5e44;color:#fda4af}
+.btn.ok{background:#10b98118;border-color:#10b98144;color:#6ee7b7}
+.btn.warn{background:#f59e0b18;border-color:#f59e0b44;color:#fde68a}
+.btn.small{padding:5px 9px;font-size:11.5px;border-radius:8px}
 .btn.pill{border-radius:999px}
 .btn.grow{flex:1}
 
-.lang-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-.lang-bar select{flex:1;padding:9px 11px;font-size:14px}
-.swap{width:38px;height:38px;padding:0;border-radius:50%;flex:0 0 38px;font-size:15px}
-.out-box{white-space:pre-wrap;word-wrap:break-word;line-height:1.85;font-size:16.5px;min-height:110px;background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:17px;color:var(--text)}
-.out-box:empty::before{content:"Çeviri burada rahat okunacak şekilde görünecek.";color:var(--muted);font-size:14px}
-.meta{font-size:12px;color:var(--muted)}
-.progress{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:10px;display:none}
+.lang-bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.lang-bar select{flex:1;padding:7px 10px;font-size:13px}
+.swap{width:32px;height:32px;padding:0;border-radius:50%;flex:0 0 32px;font-size:14px}
+
+.out-box{
+  white-space:pre-wrap;word-wrap:break-word;line-height:1.82;font-size:15.5px;min-height:105px;
+  background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);
+}
+.out-box:empty::before{content:"Çeviri burada rahat okunacak şekilde görünecek.";color:var(--muted);font-size:13px}
+.meta{font-size:11.5px;color:var(--muted)}
+.progress{height:3px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:8px;display:none}
 .progress.on{display:block}
 .progress > div{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:width .2s}
-.status{font-size:12.5px;color:var(--muted);margin-top:8px;min-height:18px;line-height:1.45}
+.status{font-size:12px;color:var(--muted);margin-top:6px;min-height:16px;line-height:1.4}
 .status.error{color:#fda4af}
 .status.ok{color:#6ee7b7}
-.spin{width:14px;height:14px;border:2px solid #fff5;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none}
+.spin{width:12px;height:12px;border:2px solid #fff5;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:none}
 .busy .spin{display:inline-block}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-.switch{display:flex;align-items:center;justify-content:space-between;margin-top:11px;gap:12px;font-size:13.5px}
-.switch input{width:44px;height:24px;appearance:none;background:var(--border);border-radius:20px;position:relative;cursor:pointer;padding:0;border:none;flex:0 0 44px}
-.switch input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.18s}
+.switch{display:flex;align-items:center;justify-content:space-between;margin-top:9px;gap:10px;font-size:12.5px}
+.switch input{width:38px;height:21px;appearance:none;background:var(--border);border-radius:20px;position:relative;cursor:pointer;padding:0;border:none;flex:0 0 38px}
+.switch input::after{content:"";position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.16s}
 .switch input:checked{background:var(--primary)}
-.switch input:checked::after{left:23px}
-input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:none;border:none}
-.hint{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.45}
+.switch input:checked::after{left:19.5px}
+input[type=range]{padding:0;height:5px;accent-color:var(--primary);background:none;border:none}
+.hint{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.45}
 .pw{position:relative}
-.pw input{padding-right:68px}
-.pw button{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.pw input{padding-right:62px}
+.pw button{position:absolute;right:5px;top:50%;transform:translateY(-50%)}
 
-.seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px;margin-bottom:11px;overflow-x:auto}
-.seg button{flex:1;border:none;background:none;color:var(--muted);padding:7px 8px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:9px;overflow-x:auto}
+.seg button{flex:1;border:none;background:none;color:var(--muted);padding:6px 8px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
 .seg button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
 
-.moodbar{height:4px;border-radius:4px;margin:8px 0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:background .4s}
-.tn-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:#8b5cf633;border:1px solid var(--primary);color:var(--accent);font-size:11px;font-weight:800;margin-left:3px;cursor:pointer;vertical-align:middle}
+.moodbar{height:3px;border-radius:4px;margin:6px 0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:background .4s}
+.tn-badge{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#8b5cf633;border:1px solid var(--primary);color:var(--accent);font-size:10px;font-weight:800;margin-left:3px;cursor:pointer;vertical-align:middle}
 
-.native-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 22%,transparent),color-mix(in srgb,var(--pink) 18%,transparent));border:1px solid var(--primary);border-radius:14px;padding:11px 13px;margin-bottom:11px;font-size:12.5px}
-.tabs-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:9px}
+/* AI SOHBET TASARIMI */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 154px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:380px}
+.chat-msgs{flex:1;overflow-y:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:9px}
+.chat-msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.58;white-space:pre-wrap;word-break:break-word}
+.chat-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:4px}
+.chat-msg.ai{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
+.chat-msg a{color:#fde047;text-decoration:underline;font-weight:600}
+.chat-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:7px}
+.chat-chips::-webkit-scrollbar{display:none}
+.chat-chip{flex:0 0 auto;padding:5px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:11.5px;color:var(--accent);cursor:pointer}
+.chat-bar{display:flex;gap:6px;align-items:flex-end;padding-top:8px;border-top:1px solid var(--border)}
+.chat-bar textarea{min-height:38px;max-height:110px;padding:8px 11px;border-radius:18px;font-size:13.5px;resize:none}
+
+/* TARAYICI, SEKMELER & FMHY */
+.native-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 18%,transparent),color-mix(in srgb,var(--pink) 14%,transparent));border:1px solid color-mix(in srgb,var(--primary) 60%,transparent);border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:12px}
+.tabs-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:5px;margin-bottom:7px}
 .tabs-strip::-webkit-scrollbar{display:none}
-.tab-chip{flex:0 0 auto;max-width:185px;display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:11px;border:1px solid var(--border);background:var(--surface2);cursor:pointer}
+.tab-chip{flex:0 0 auto;max-width:170px;display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);cursor:pointer}
 .tab-chip.active{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 18%,transparent)}
-.tab-chip-title{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
-.tab-chip-x{width:18px;height:18px;border-radius:50%;border:none;background:#ffffff18;color:#fda4af;font-size:10px;display:grid;place-items:center;cursor:pointer}
+.tab-chip-title{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.tab-chip-x{width:16px;height:16px;border-radius:50%;border:none;background:#ffffff18;color:#fda4af;font-size:9.5px;display:grid;place-items:center;cursor:pointer}
 
-.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:9px;margin-top:9px}
-.bm-tile{background:var(--surface2);border:1px solid var(--border);border-radius:13px;padding:11px 7px;text-align:center;cursor:pointer;position:relative}
-.bm-tile:active{transform:scale(.96);border-color:var(--primary)}
-.bm-ico{width:36px;height:36px;border-radius:11px;margin:0 auto 6px;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
-.bm-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bm-del{position:absolute;top:4px;right:4px;width:19px;height:19px;border-radius:50%;border:none;background:#0008;color:#fda4af;font-size:10px;cursor:pointer;display:grid;place-items:center}
+.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:7px}
+.bm-tile{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer;position:relative;transition:.14s}
+.bm-tile:active{transform:scale(.95);border-color:var(--primary)}
+.bm-ico{width:32px;height:32px;border-radius:9px;margin:0 auto 5px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
+.bm-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-del{position:absolute;top:3px;right:3px;width:17px;height:17px;border-radius:50%;border:none;background:#0009;color:#fda4af;font-size:9.5px;cursor:pointer;display:grid;place-items:center}
 
-.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:11px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 5px;text-align:center}
-.stat-box b{display:block;font-size:15.5px;color:var(--accent)}
-.stat-box span{font-size:10px;color:var(--muted)}
-.shelf-bar{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:9px}
+/* KÜTÜPHANE */
+.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center}
+.stat-box b{display:block;font-size:14.5px;color:var(--accent)}
+.stat-box span{font-size:9.5px;color:var(--muted)}
+.shelf-bar{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
 .shelf-bar::-webkit-scrollbar{display:none}
-.shelf-pill{flex:0 0 auto;padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer}
+.shelf-pill{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer}
 .shelf-pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
 
-.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(144px,1fr));gap:11px}
-.book-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative}
-.book-cover{aspect-ratio:2/2.75;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:11px;background-size:cover;background-position:center}
-.book-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#00000020 20%,#07050ce0 100%)}
-.book-cover-title{position:relative;z-index:2;font-size:13px;font-weight:750;color:#fff;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.book-badge{position:absolute;top:7px;left:7px;z-index:2;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;background:#07050ccc;border:1px solid #ffffff26;color:#fff;text-transform:uppercase}
-.book-fav{position:absolute;top:6px;right:6px;z-index:3;width:27px;height:27px;border-radius:50%;border:none;background:#07050caa;color:#fff;font-size:13px;cursor:pointer;display:grid;place-items:center}
-.book-info{padding:9px;display:flex;flex-direction:column;gap:5px;flex:1}
-.book-meta{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.book-prog{height:4px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px}
+.book-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative}
+.book-cover{aspect-ratio:2/2.7;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;background-size:cover;background-position:center}
+.book-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#00000018 25%,#06040be8 100%)}
+.book-cover-title{position:relative;z-index:2;font-size:12.5px;font-weight:750;color:#fff;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.book-badge{position:absolute;top:6px;left:6px;z-index:2;font-size:9px;font-weight:700;padding:2px 5px;border-radius:5px;background:#07050ccc;border:1px solid #ffffff26;color:#fff;text-transform:uppercase}
+.book-fav{position:absolute;top:5px;right:5px;z-index:3;width:24px;height:24px;border-radius:50%;border:none;background:#07050caa;color:#fff;font-size:12px;cursor:pointer;display:grid;place-items:center}
+.book-info{padding:8px;display:flex;flex-direction:column;gap:4px;flex:1}
+.book-meta{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.book-prog{height:3px;background:var(--surface2);border-radius:3px;overflow:hidden}
 .book-prog > div{height:100%;background:linear-gradient(90deg,var(--primary),var(--pink))}
-.book-acts{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted)}
+.book-acts{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted)}
 
-.heatmap{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;margin-top:8px}
-.hm-cell{aspect-ratio:1;border-radius:4px;background:var(--surface2)}
+.heatmap{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:8px}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface2)}
 .hm-1{background:color-mix(in srgb,var(--primary) 30%,transparent)}
 .hm-2{background:color-mix(in srgb,var(--primary) 60%,transparent)}
 .hm-3{background:var(--primary)}
 .hm-4{background:var(--pink)}
 
-.list-item{display:flex;align-items:center;gap:9px;padding:10px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:7px}
+.list-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;margin-bottom:6px}
 .list-item-body{flex:1;min-width:0}
-.list-item-title{font-size:13.5px;font-weight:650;word-break:break-word}
-.list-item-sub{font-size:11.5px;color:var(--muted);margin-top:2px;word-break:break-word}
+.list-item-title{font-size:13px;font-weight:650;word-break:break-word}
+.list-item-sub{font-size:11px;color:var(--muted);margin-top:2px;word-break:break-word}
 
-nav.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;padding:7px 4px calc(7px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--border)}
-nav.bnav button{flex:1;background:none;border:none;color:var(--muted);font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 1px;border-radius:11px;cursor:pointer}
-nav.bnav button svg{width:20px;height:20px}
-nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 18%,transparent)}
+/* YÜZEN MODERN ALT MENÜ */
+nav.bnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);
+  border-top:1px solid var(--border);
+}
+nav.bnav button{
+  flex:1;background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;border-radius:10px;cursor:pointer;
+}
+nav.bnav button svg{width:19px;height:19px}
+nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 16%,transparent)}
 nav.bnav button.active svg{color:var(--accent)}
 
-.reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#07050c);color:var(--r-fg,#ece6f7)}
+/* OKUYUCU */
+.reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#06040b);color:var(--r-fg,#f0eafb)}
 .reader.open{display:flex}
-.reader.t-night{--r-bg:#07050c;--r-fg:#ece6f7;--r-bar:#110b1cf5;--r-bd:#2a1f3d;--r-mut:#9a8fb0}
-.reader.t-amoled{--r-bg:#000000;--r-fg:#e5e5e5;--r-bar:#0a0a0af5;--r-bd:#222;--r-mut:#888}
+.reader.t-night{--r-bg:#06040b;--r-fg:#f0eafb;--r-bar:#0e0918f5;--r-bd:#261c3a;--r-mut:#9287aa}
+.reader.t-amoled{--r-bg:#000000;--r-fg:#e5e5e5;--r-bar:#08080cf5;--r-bd:#20202b;--r-mut:#888}
 .reader.t-sepia{--r-bg:#f4ecd8;--r-fg:#33281d;--r-bar:#ebe0c7f5;--r-bd:#d6c7a9;--r-mut:#7c6a53}
 .reader.t-day{--r-bg:#ffffff;--r-fg:#1a1a1f;--r-bar:#f5f5f7f5;--r-bd:#e2e2e8;--r-mut:#666}
-.r-top{display:flex;align-items:center;gap:5px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top));background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
-.r-title{flex:1;min-width:0;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.r-btn{border:1px solid var(--r-bd);background:transparent;color:var(--r-fg);padding:5px 8px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;flex:0 0 auto}
+.r-top{display:flex;align-items:center;gap:5px;padding:7px 9px;padding-top:calc(7px + env(safe-area-inset-top));background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
+.r-title{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-btn{border:1px solid var(--r-bd);background:transparent;color:var(--r-fg);padding:4px 7px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;flex:0 0 auto}
 .r-btn.on{background:var(--primary);border-color:var(--primary);color:#fff}
-.r-subbar{display:flex;align-items:center;gap:5px;padding:6px 9px;overflow-x:auto;background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
+.r-subbar{display:flex;align-items:center;gap:5px;padding:5px 8px;overflow-x:auto;background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
 .r-subbar::-webkit-scrollbar{display:none}
-.r-prog{height:3px;background:var(--r-bd)}
+.r-prog{height:2.5px;background:var(--r-bd)}
 .r-prog > div{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:width .18s}
-.r-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 17px 70px}
+.r-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 64px}
 .r-body{margin:0 auto;word-wrap:break-word}
 .r-body p{margin-bottom:1.1em}
 .r-body img{max-width:100%;height:auto;border-radius:10px;display:block;margin:12px auto;cursor:zoom-in}
@@ -189,26 +251,26 @@ nav.bnav button.active svg{color:var(--accent)}
 .r-bi-tr{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--r-bd)}
 mark.hl-purple{background:#8b5cf655;color:inherit;padding:1px 3px;border-radius:4px}
 mark.hl-yellow{background:#fbbf2455;color:inherit;padding:1px 3px;border-radius:4px}
-mark.hl-green{background:#34d39948;color:inherit;padding:1px 3px;border-radius:4px}
+mark.hl-green{background:#10b98148;color:inherit;padding:1px 3px;border-radius:4px}
 mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4px}
-.r-next-card{margin:34px auto 10px;padding:15px;border-radius:14px;border:1px solid var(--r-bd);text-align:center;cursor:pointer;max-width:420px;background:#8b5cf614}
-.r-bot{display:flex;align-items:center;gap:8px;padding:9px 13px;padding-bottom:calc(9px + env(safe-area-inset-bottom));background:var(--r-bar);border-top:1px solid var(--r-bd)}
-.r-info{flex:1;text-align:center;font-size:12px;color:var(--r-mut)}
+.r-next-card{margin:30px auto 10px;padding:14px;border-radius:13px;border:1px solid var(--r-bd);text-align:center;cursor:pointer;max-width:400px;background:#8b5cf614}
+.r-bot{display:flex;align-items:center;gap:8px;padding:8px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom));background:var(--r-bar);border-top:1px solid var(--r-bd)}
+.r-info{flex:1;text-align:center;font-size:11.5px;color:var(--r-mut)}
 
-.sel-bar{position:fixed;left:50%;bottom:calc(72px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;display:none;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;background:#1c1230f5;border:1px solid var(--primary);padding:6px 10px;border-radius:18px;box-shadow:0 10px 30px #00000099;max-width:95vw}
+.sel-bar{position:fixed;left:50%;bottom:calc(68px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;display:none;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;background:#1a102ef5;border:1px solid var(--primary);padding:5px 9px;border-radius:16px;box-shadow:0 8px 26px #00000099;max-width:95vw}
 .sel-bar.show{display:flex}
 
-.modal{position:fixed;inset:0;z-index:150;background:#000000aa;backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center}
+.modal{position:fixed;inset:0;z-index:150;background:#000000aa;backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
 .modal.open{display:flex}
-.sheet{width:100%;max-width:680px;max-height:87vh;overflow-y:auto;background:linear-gradient(180deg,var(--surface),var(--bg));border:1px solid var(--border);border-radius:22px 22px 0 0;padding:17px 15px calc(22px + env(safe-area-inset-bottom));animation:slideUp .18s ease}
-@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
-.sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:13px}
-.sheet-head h3{flex:1;font-size:15.5px;color:var(--accent)}
+.sheet{width:100%;max-width:680px;max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,var(--surface),var(--bg));border:1px solid var(--border);border-radius:20px 20px 0 0;padding:15px 14px calc(20px + env(safe-area-inset-bottom));animation:slideUp .16s ease}
+@keyframes slideUp{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
+.sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.sheet-head h3{flex:1;font-size:14.5px;color:var(--accent)}
 
 .lightbox{position:fixed;inset:0;z-index:200;background:#000e;display:none;align-items:center;justify-content:center;padding:16px}
 .lightbox.open{display:flex}
 .lightbox img{max-width:100%;max-height:92vh;border-radius:10px}
-.toast{position:fixed;left:50%;bottom:94px;transform:translateX(-50%) translateY(16px);opacity:0;background:#201438;border:1px solid var(--primary);color:#fff;padding:10px 15px;border-radius:12px;font-size:13px;transition:.2s;pointer-events:none;z-index:300;max-width:90vw;text-align:center}
+.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(14px);opacity:0;background:#1c1133;border:1px solid var(--primary);color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;transition:.18s;pointer-events:none;z-index:300;max-width:90vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
@@ -222,8 +284,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   </div>
   <div class="hdr-actions">
     <button class="icon-btn" id="openQuickSearch" title="Hızlı Arama">🔍</button>
-    <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Ekran Çevirisi">🫧</button>
-    <button class="icon-btn" id="openQuotesBtn" title="Alıntı Defteri">🖍️</button>
+    <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Çeviri">🫧</button>
+    <button class="icon-btn" id="openQuotesBtn" title="Alıntılar">🖍️</button>
     <button class="icon-btn" id="openHistBtn" title="Geçmiş">📜</button>
   </div>
 </header>
@@ -236,6 +298,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <main>
 
+  <!-- 1. METİN ÇEVİRİSİ -->
   <section id="view-text" class="view active">
     <div class="card">
       <div class="lang-bar">
@@ -244,17 +307,14 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <select id="tgtLang"></select>
       </div>
       <textarea id="srcInput" placeholder="Çevirmek istediğin metni buraya yaz veya yapıştır..."></textarea>
-      <div class="row" style="margin-top:9px">
+      <div class="row" style="margin-top:8px">
         <span class="meta grow" id="srcCount">0 karakter</span>
         <button class="btn small" id="pasteSrc">Yapıştır</button>
         <button class="btn small" id="clearSrc">Temizle</button>
         <button class="btn primary" id="txtTranslateBtn"><span class="spin"></span>Çevir</button>
         <button class="btn danger" id="txtStopBtn" style="display:none">Durdur</button>
       </div>
-      <label class="switch" style="margin-top:8px;font-size:12.5px">
-        <span>📝 Deyim & Atasözü Çevirmen Notları Ekle</span>
-        <input type="checkbox" id="tnToggle">
-      </label>
+      <label class="switch"><span>📝 Deyim & Atasözü Çevirmen Notları</span><input type="checkbox" id="tnToggle"></label>
       <div class="progress" id="txtProg"><div></div></div>
       <div class="status" id="txtStatus"></div>
     </div>
@@ -267,12 +327,12 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <button class="btn small" id="txtCopyBtn">Kopyala</button>
         <button class="btn small" id="txtShareBtn">Paylaş</button>
       </div>
-      <div class="moodbar" id="txtMoodbar" title="Atmosfer / Duygu Şeridi"></div>
+      <div class="moodbar" id="txtMoodbar"></div>
       <div class="out-box" id="txtOut"></div>
       <div class="status" id="qaStatus"></div>
-      <div class="row" style="margin-top:11px">
-        <button class="btn small" id="txtQaBtn">🔍 Kalite & Halüsilasyon Denetle</button>
-        <button class="btn small" id="txtRaceBtn">⚔️ Model Yarıştır</button>
+      <div class="row" style="margin-top:9px">
+        <button class="btn small" id="txtQaBtn">🔍 Denetle</button>
+        <button class="btn small" id="txtRaceBtn">⚔️ Yarıştır</button>
         <button class="btn small" id="txtRefineBtn">✨ Cilala</button>
         <button class="btn small" id="txtSumBtn">📝 Özet</button>
         <button class="btn small ok" id="txtSaveLibBtn">📚 Kaydet</button>
@@ -280,22 +340,23 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
+  <!-- 2. TARAYICI + FMHY (YENİLE / EKLE / KALDIR) -->
   <section id="view-browser" class="view">
     <div id="nativeBadge" class="native-banner" style="display:none">
-      <b>🚀 Pro Tarayıcı (S20 FE Optimize)!</b> Romanlarda <b>🌐 Metin</b>, mangalarda <b>💬 Manga</b>, çevirdiğin bölümü Wiki & Sözlükle okumak için <b>📚 Oku</b> tuşuna bas!
+      <b>🚀 Pro Tarayıcı!</b> Üstteki <b>🛡️</b> ile reklam engelleyiciyi anında aç/kapa, alttaki <b>🌐 Metin</b> / <b>💬 Manga</b> ile çevir, <b>📚 Oku</b> ile Wiki & Sözlükte oku.
     </div>
 
-    <div class="card" style="padding:12px">
-      <div class="card-head" style="margin-bottom:8px">
-        <h2>📑 Açık Sekmeler (<span id="tabCount">1</span>)</h2>
+    <div class="card">
+      <div class="card-head" style="margin-bottom:7px">
+        <h2>📑 Sekmeler (<span id="tabCount">1</span>)</h2>
         <button class="btn primary small" id="newTabBtn">+ Sekme</button>
       </div>
       <div class="tabs-strip" id="tabsStrip"></div>
-      <div class="row" style="margin-top:6px">
+      <div class="row" style="margin-top:5px">
         <input id="bUrlInput" class="grow" placeholder="Google'da ara veya URL..." style="border-radius:999px">
-        <button class="btn pink pill" id="bGoBtn">🌐 Aç</button>
+        <button class="btn pink pill" id="bGoBtn">Aç</button>
       </div>
-      <div class="row" style="margin-top:8px">
+      <div class="row" style="margin-top:7px">
         <button class="btn small grow" id="bOpenGoogle">🔍 Google</button>
         <button class="btn small" id="bPasteGo">📋 Yapıştır</button>
         <button class="btn small" id="addBmManual">+ Yer İmi</button>
@@ -304,20 +365,21 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
     <div class="card">
       <div class="card-head">
-        <h2>🧭 FMHY Okuma Merkezi (Roman & Manga)</h2>
-        <button class="btn small" id="openFmhyDirect">fmhy.net ↗</button>
+        <h2>🧭 FMHY Okuma Merkezi</h2>
+        <button class="btn small ok" id="fmhyAddBtn" title="Bu kategoriye site ekle">+ Ekle</button>
+        <button class="btn small" id="fmhyRefreshBtn" title="Varsayılan listeyi yenile">↻</button>
+        <button class="btn small" id="openFmhyDirect">fmhy ↗</button>
       </div>
       <div class="seg" id="fmhySeg">
-        <button class="active" data-fc="novels">📖 Hafif Roman</button>
-        <button data-fc="manga">💬 Manga / Manhwa</button>
+        <button class="active" data-fc="novels">📖 Roman</button>
+        <button data-fc="manga">💬 Manga</button>
         <button data-fc="ebooks">📚 E-Kitap</button>
       </div>
       <div class="bm-grid" id="fmhyGrid"></div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>🫧 Ekran Üstü Yüzen Çeviri</h2></div>
-      <p class="hint" style="margin-top:0;margin-bottom:9px">Tam Ekran, Bölge Seç, <b>📌 Sabit Bölge Oto-Çevir</b>, <b>�� OCR Kopyala</b>, <b>❓ Ekrana Soru Sor</b> ve <b>📎 Pano Çevir</b>.</p>
+      <div class="card-head"><h2>🫧 Yüzen Ekran Çevirisi</h2></div>
       <div class="row">
         <button class="btn pink grow" id="startOverlayBtn">🫧 Yüzen Çeviriyi Başlat</button>
         <button class="btn danger" id="stopOverlayBtn">Kapat</button>
@@ -331,23 +393,45 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
     <div class="card">
       <label class="switch" style="margin-top:0"><span>Metin çevirisini otomatik Kütüphaneye kaydet</span><input type="checkbox" id="bAutoSave"></label>
-      <label class="switch"><span>Uygulamaya dönünce Panoyu otomatik yakala</span><input type="checkbox" id="clipWatchToggle"></label>
+      <label class="switch"><span>Uygulamaya dönünce Panoyu yakala</span><input type="checkbox" id="clipWatchToggle"></label>
     </div>
   </section>
 
+  <!-- 3. AI SOHBET BÖLÜMÜ -->
+  <section id="view-chat" class="view">
+    <div class="card chat-wrap" style="padding:10px 11px;margin-bottom:0">
+      <div class="card-head" style="margin-bottom:6px">
+        <h2>🤖 AI Asistan & Site Öneri Sohbeti</h2>
+        <button class="btn small danger" id="chatClearBtn">Temizle</button>
+      </div>
+      <div class="chat-chips" id="chatChips">
+        <button class="chat-chip" data-cq="Ücretsiz İngilizce web novel ve hafif roman okuyabileceğim en iyi güncel siteleri linkleriyle öner.">📖 Roman siteleri öner</button>
+        <button class="chat-chip" data-cq="Manhwa ve manga okuyabileceğim en kaliteli, az reklamlı siteleri linkleriyle öner.">💬 Manga siteleri öner</button>
+        <button class="chat-chip" data-cq="Shadow Slave ve Solo Leveling tarzı sürükleyici 5 web novel öner.">⚔️ LitRPG öner</button>
+        <button class="chat-chip" data-cq="Türkçe çeviride akıcılığı artıracak ipuçları ver.">✨ Çeviri ipuçları</button>
+      </div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-bar">
+        <textarea id="chatInput" rows="1" placeholder="Yapay zekaya bir şey sor veya site önerisi iste..."></textarea>
+        <button class="btn primary pill" id="chatSendBtn"><span class="spin"></span>Gönder</button>
+        <button class="btn danger pill" id="chatStopBtn" style="display:none">■</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. MANGA STÜDYOSU -->
   <section id="view-manga" class="view">
     <div class="card">
-      <div class="card-head"><h2>💬 Canlı Manga & Manhwa Tarayıcısı</h2></div>
-      <p class="hint" style="margin-top:0;margin-bottom:10px">Yüksek kontrastlı çizgi roman baloncuklarıyla her çizimde net okunur. Yanlış çevrilen baloncuğun sağ üstündeki <b>↻</b> tuşuna basarak anında düzelttirebilirsin!</p>
-      <div class="row" style="margin-bottom:10px">
+      <div class="card-head"><h2>💬 Canlı Manga & Manhwa</h2></div>
+      <div class="row" style="margin-bottom:8px">
         <input id="mSiteInput" class="grow" placeholder="Manga/Manhwa ara veya URL..." style="border-radius:999px">
-        <button class="btn pink pill" id="mSiteGoBtn">💬 Aç</button>
+        <button class="btn pink pill" id="mSiteGoBtn">Aç</button>
       </div>
       <div class="bm-grid" id="mangaSitesGrid"></div>
     </div>
 
     <div class="card">
-      <h2>🎨 Baloncuk Optimizasyonu & Stili</h2>
+      <h2>🎨 Baloncuk Stili</h2>
       <label>Okuma Yönü</label>
       <select id="mDirSel"><option value="webtoon">📜 Webtoon / Manhwa (Yukarıdan Aşağıya)</option><option value="manga">📖 Manga (Sağdan Sola)</option></select>
       <label>Baloncuk Yazı Tipi</label>
@@ -357,8 +441,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <option value="Georgia, serif">Klasik Serif</option>
         <option value="Impact, Arial Black, sans-serif">Kalın Aksiyon</option>
       </select>
-      <label>Yazı Boyutu Çarpanı: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
-      <label>Opaklık: <b id="mOpVal">96</b>%</label><input type="range" id="mOpRange" min="0.8" max="1.0" step="0.02">
+      <label>Yazı Boyutu: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
+      <label>Opaklık: <b id="mOpVal">98</b>%</label><input type="range" id="mOpRange" min="0.85" max="1.0" step="0.01">
       <label>Kenarlık Rengi</label>
       <div class="row" id="mBorderRow">
         <button class="btn small grow" data-bc="#8b5cf6" style="border-color:#8b5cf6">Mor</button>
@@ -369,31 +453,32 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
+  <!-- 5. KÜTÜPHANE -->
   <section id="view-library" class="view">
     <div class="stats-strip">
       <div class="stat-box"><b id="stTotal">0</b><span>Kitap</span></div>
-      <div class="stat-box"><b id="stStreak">0</b><span>Gün Seri 🔥</span></div>
-      <div class="stat-box"><b id="stMins">0</b><span>Dakika ⏱</span></div>
-      <div class="stat-box"><b id="stWords">0</b><span>Kelime 📖</span></div>
+      <div class="stat-box"><b id="stStreak">0</b><span>Gün 🔥</span></div>
+      <div class="stat-box"><b id="stMins">0</b><span>Dk ⏱</span></div>
+      <div class="stat-box"><b id="stWords">0</b><span>Kelime</span></div>
     </div>
 
-    <div class="card" style="padding:12px">
-      <div class="row" style="margin-bottom:9px">
-        <input id="libSearch" class="grow" placeholder="🔍 Kitap, yazar, seri ara..." style="padding:8px 11px;font-size:13.5px">
-        <select id="libSort" style="width:auto;padding:8px 9px;font-size:12.5px">
+    <div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <input id="libSearch" class="grow" placeholder="🔍 Kitap, yazar, seri ara..." style="padding:7px 10px;font-size:13px">
+        <select id="libSort" style="width:auto;padding:7px 8px;font-size:12px">
           <option value="recent">Son Okunan</option>
           <option value="rating">⭐ Puan</option>
           <option value="title">A-Z</option>
           <option value="prog">İlerleme</option>
         </select>
       </div>
-      <div class="row" style="margin-bottom:9px">
-        <button class="btn primary small grow" id="addBookBtn">+ Kitap Ekle</button>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn primary small grow" id="addBookBtn">+ Kitap</button>
         <input type="file" id="bookFileInput" multiple accept=".epub,.pdf,.txt,.md,.html,.htm,.cbz,.docx,.fb2,.mobi" style="display:none">
-        <button class="btn small" id="aiOrganizeBtn" title="Aynı serileri yapay zeka ile birleştir">🤖 AI Düzenle</button>
-        <button class="btn small" id="openOpdsBtn" title="OPDS Katalog">🌐 OPDS</button>
-        <button class="btn small" id="openWrappedBtn" title="Okuma Takvimi & Wrapped">📊</button>
-        <button class="btn small danger" id="openTrashBtn" title="7 Günlük Çöp Kutusu">🗑️</button>
+        <button class="btn small" id="aiOrganizeBtn">🤖 Düzenle</button>
+        <button class="btn small" id="openOpdsBtn">🌐 OPDS</button>
+        <button class="btn small" id="openWrappedBtn">📊</button>
+        <button class="btn small danger" id="openTrashBtn">🗑️</button>
       </div>
       <div class="shelf-bar" id="shelfBar">
         <button class="shelf-pill active" data-shelf="all">Tümü</button>
@@ -405,14 +490,15 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
 
     <div class="book-grid" id="bookGrid"></div>
-    <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:32px 15px;display:none">
+    <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:28px 14px;display:none">
       Henüz kitap yok. <b>EPUB, PDF, DOCX, FB2, MOBI, CBZ, TXT, HTML</b> ekleyebilir veya Tarayıcıdan kaydedebilirsin.
     </div>
   </section>
 
+  <!-- 6. STÜDYO -->
   <section id="view-studio" class="view">
     <div class="seg" id="studioSeg">
-      <button class="active" data-sub="prompts">✨ Promptlar</button>
+      <button class="active" data-sub="prompts">✨ Prompt</button>
       <button data-sub="market">🛒 Pazar</button>
       <button data-sub="glossary">📖 Sözlük</button>
       <button data-sub="ambient">🌧️ Ambiyans</button>
@@ -423,8 +509,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <div class="card-head"><h2>Aktif Çeviri Profili</h2><button class="btn small" id="newPromptBtn">+ Yeni</button></div>
         <select id="promptSelect"></select>
         <label>Profil Adı</label><input id="promptName">
-        <label>Sistem Talimatı</label><textarea id="promptText" style="min-height:175px"></textarea>
-        <div class="row" style="margin-top:11px">
+        <label>Sistem Talimatı</label><textarea id="promptText" style="min-height:160px"></textarea>
+        <div class="row" style="margin-top:9px">
           <button class="btn primary" id="savePromptBtn">Kaydet</button>
           <button class="btn" id="resetPromptBtn">Sıfırla</button>
           <button class="btn danger" id="delPromptBtn">Sil</button>
@@ -432,45 +518,31 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </div>
     </div>
 
-    <div id="sub-market" style="display:none">
-      <div class="card">
-        <h2>🛒 Prompt Pazar Yeri (Tek Tıkla Ekle)</h2>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">Farklı türler için özenle hazırlanmış profesyonel çeviri profilleri.</p>
-        <div id="promptMarketList"></div>
-      </div>
-    </div>
+    <div id="sub-market" style="display:none"><div class="card"><h2>🛒 Prompt Pazar Yeri</h2><div id="promptMarketList"></div></div></div>
 
     <div id="sub-glossary" style="display:none">
       <div class="card">
-        <div class="card-head">
-          <h2>Genel Terim Sözlüğü</h2>
-          <label class="switch" style="margin:0;gap:8px;font-size:12px"><span>Aktif</span><input type="checkbox" id="glossEnabled"></label>
-        </div>
-        <div class="row">
-          <input id="glossSrc" class="grow" placeholder="Orijinal">
-          <input id="glossTgt" class="grow" placeholder="Çevirisi">
-          <button class="btn primary" id="addGlossBtn">Ekle</button>
-        </div>
+        <div class="card-head"><h2>Terim Sözlüğü</h2><label class="switch" style="margin:0;gap:7px"><span>Aktif</span><input type="checkbox" id="glossEnabled"></label></div>
+        <div class="row"><input id="glossSrc" class="grow" placeholder="Orijinal"><input id="glossTgt" class="grow" placeholder="Çevirisi"><button class="btn primary small" id="addGlossBtn">Ekle</button></div>
       </div>
       <div id="glossList"></div>
     </div>
 
     <div id="sub-ambient" style="display:none">
       <div class="card">
-        <div class="card-head"><h2>🌧️ Ücretsiz Çevrimdışı Ambiyans Sesleri</h2><button class="btn small danger" id="stopAmbBtn">Durdur</button></div>
-        <p class="hint" style="margin-top:0;margin-bottom:10px">Kitap okurken veya sesli kitap dinlerken arka planda çalar (%100 çevrimdışı Web Audio motoru).</p>
+        <div class="card-head"><h2>🌧️ Ambiyans Sesleri</h2><button class="btn small danger" id="stopAmbBtn">Durdur</button></div>
         <div class="row" id="ambBtns">
           <button class="btn small grow" data-amb="rain">🌧️ Yağmur</button>
           <button class="btn small grow" data-amb="fire">🔥 Şömine</button>
-          <button class="btn small grow" data-amb="wind">🌲 Gece Rüzgarı</button>
-          <button class="btn small grow" data-amb="cafe">☕ Kafe / Brown</button>
+          <button class="btn small grow" data-amb="wind">🌲 Rüzgar</button>
+          <button class="btn small grow" data-amb="cafe">☕ Kafe</button>
         </div>
-        <label>Ambiyans Sesi: <b id="ambVolVal">35</b>%</label>
-        <input type="range" id="ambVolRange" min="5" max="100" step="5" value="35">
+        <label>Ses: <b id="ambVolVal">35</b>%</label><input type="range" id="ambVolRange" min="5" max="100" step="5" value="35">
       </div>
     </div>
   </section>
 
+  <!-- 7. AYARLAR -->
   <section id="view-settings" class="view">
     <div class="card">
       <h2>Yapay Zeka API Ayarları</h2>
@@ -478,43 +550,37 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <label>Base URL</label><input id="baseUrl" placeholder="https://api.literouter.com/v1">
       <label>Aktif Model</label><input id="modelInput" list="modelDatalist" placeholder="Örn: gemini-2.5-flash">
       <datalist id="modelDatalist"></datalist>
-      <div class="row" style="margin-top:11px">
-        <button class="btn" id="fetchModelsBtn">Modelleri Getir</button>
-        <button class="btn primary" id="testApiBtn">Test Et</button>
+      <div class="row" style="margin-top:9px">
+        <button class="btn small" id="fetchModelsBtn">Modelleri Getir</button>
+        <button class="btn primary small" id="testApiBtn">Test Et</button>
       </div>
       <div class="status" id="apiStatus"></div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>🪙 Token & Hız Sayacı</h2><button class="btn small danger" id="resetUsageBtn">Sıfırla</button></div>
+      <div class="card-head"><h2>🪙 Token & Hız</h2><button class="btn small danger" id="resetUsageBtn">Sıfırla</button></div>
       <div class="stats-strip" style="margin-bottom:0">
         <div class="stat-box"><b id="uReqs">0</b><span>İstek</span></div>
         <div class="stat-box"><b id="uIn">0</b><span>Giriş</span></div>
         <div class="stat-box"><b id="uOut">0</b><span>Çıkış</span></div>
-        <div class="stat-box"><b id="uSpd">0s</b><span>Ort. Hız</span></div>
+        <div class="stat-box"><b id="uSpd">0s</b><span>Hız</span></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>🎨 Tema, Animasyon & Alt Menü Düzenleyici</h2>
-      <label>Tema Rengi</label>
-      <div class="row" id="appThemeRow">
+      <h2>🎨 Görünüm & Özelleştirme</h2>
+      <div class="row" id="appThemeRow" style="margin-bottom:6px">
         <button class="btn small grow" data-ath="default">Mor</button>
         <button class="btn small grow" data-ath="pink">Pembe</button>
         <button class="btn small grow" data-ath="blue">Mavi</button>
         <button class="btn small grow" data-ath="emerald">Zümrüt</button>
         <button class="btn small grow" data-ath="amoled">AMOLED</button>
       </div>
-      <label>Sayfa Geçiş Animasyonu (120Hz S20 FE)</label>
-      <select id="animStyleSel">
-        <option value="fade">Yumuşak Geçiş (Fade)</option>
-        <option value="slide">Yatay Kayma (Slide)</option>
-        <option value="zoom">Modern Yakınlaşma (Zoom)</option>
-        <option value="none">Animasyon Yok (Ultra Hızlı)</option>
-      </select>
-      <div class="row" style="margin-top:10px">
-        <button class="btn small grow" id="openNavCustBtn">🧭 Alt Menüyü Özelleştir</button>
-        <button class="btn small grow" id="openStorageBtn">💾 Depolama Yöneticisi</button>
+      <label>Geçiş Animasyonu</label>
+      <select id="animStyleSel"><option value="fade">Yumuşak (Fade)</option><option value="slide">Kayma (Slide)</option><option value="zoom">Yakınlaşma (Zoom)</option><option value="none">Yok</option></select>
+      <div class="row" style="margin-top:9px">
+        <button class="btn small grow" id="openNavCustBtn">🧭 Alt Menü</button>
+        <button class="btn small grow" id="openStorageBtn">💾 Depolama</button>
         <button class="btn small" id="openDebugBtn">🐞 Konsol</button>
       </div>
     </div>
@@ -530,8 +596,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <div class="card">
       <h2>Yedekleme (.JSON)</h2>
       <div class="row">
-        <button class="btn primary grow" id="exportBackupBtn">⬇ Tam Yedek</button>
-        <button class="btn grow" id="importBackupBtn">⬆ Geri Yükle</button>
+        <button class="btn primary small grow" id="exportBackupBtn">⬇ Tam Yedek</button>
+        <button class="btn small grow" id="importBackupBtn">⬆ Geri Yükle</button>
         <input type="file" id="backupFileInput" accept=".json" style="display:none">
       </div>
     </div>
@@ -541,12 +607,13 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <nav class="bnav" id="bottomNav"></nav>
 
+<!-- FULLSCREEN READER -->
 <div class="reader t-night" id="reader">
   <div class="r-top">
     <button class="r-btn" id="rClose">←</button>
     <div class="r-title" id="rTitle">Okuyucu</div>
-    <button class="r-btn" id="rTtsBtn" title="Çoklu Karakter Sesli Kitap">🎧</button>
-    <button class="r-btn" id="rWikiBtn" title="Seri Wiki & İlişki Haritası">🧠</button>
+    <button class="r-btn" id="rTtsBtn">🎧</button>
+    <button class="r-btn" id="rWikiBtn">🧠</button>
     <button class="r-btn" id="rBmBtn">🔖</button>
     <button class="r-btn" id="rTocBtn">☰</button>
     <button class="r-btn" id="rAaBtn">Aa</button>
@@ -562,10 +629,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <div class="r-prog"><div id="rProgBar"></div></div>
   <div class="r-scroll" id="rScroll">
     <div class="r-body" id="rBody"></div>
-    <div class="r-next-card" id="rNextCard" style="display:none">
-      <div style="font-size:12px;opacity:.7">Sonraki Bölüm</div>
-      <div id="rNextTitle" style="font-weight:700;margin-top:4px"></div>
-    </div>
+    <div class="r-next-card" id="rNextCard" style="display:none"><div style="font-size:11px;opacity:.7">Sonraki Bölüm</div><div id="rNextTitle" style="font-weight:700;margin-top:3px"></div></div>
   </div>
   <div class="r-bot" id="rBot">
     <button class="r-btn" id="rPrev">◀ Önceki</button>
@@ -582,122 +646,66 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 </div>
 
 <!-- MODALS -->
-<div class="modal" id="modelModal"><div class="sheet"><div class="sheet-head"><h3>⚡ Hızlı Model Değiştirici</h3><button class="btn small" id="mRefreshBtn">↻</button><button class="btn small" data-close="modelModal">✕</button></div><div class="row" style="margin-bottom:11px"><input id="mAddInput" class="grow" list="modelDatalist" placeholder="Model adı..."><button class="btn primary small" id="mAddFavBtn">⭐ Ekle</button></div><div id="mFavList"></div></div></div>
+<div class="modal" id="modelModal"><div class="sheet"><div class="sheet-head"><h3>⚡ Model Değiştirici</h3><button class="btn small" id="mRefreshBtn">↻</button><button class="btn small" data-close="modelModal">✕</button></div><div class="row" style="margin-bottom:9px"><input id="mAddInput" class="grow" list="modelDatalist" placeholder="Model adı..."><button class="btn primary small" id="mAddFavBtn">⭐ Ekle</button></div><div id="mFavList"></div></div></div>
 
-<div class="modal" id="aaModal"><div class="sheet"><div class="sheet-head"><h3>Aa Görünüm, Yazı Tipi & Sesli Kitap</h3><button class="btn small" data-close="aaModal">✕</button></div>
+<div class="modal" id="aaModal"><div class="sheet"><div class="sheet-head"><h3>Aa Görünüm & Sesli Kitap</h3><button class="btn small" data-close="aaModal">✕</button></div>
   <div class="row" id="rThemeRow"><button class="btn small grow" data-theme="night">Gece</button><button class="btn small grow" data-theme="amoled">AMOLED</button><button class="btn small grow" data-theme="sepia">Sepya</button><button class="btn small grow" data-theme="day">Gündüz</button></div>
-  <label>Özel Yazı Tipleri</label>
-  <select id="rFontSel">
-    <option value="system-ui,-apple-system,sans-serif">Modern Sistem</option>
-    <option value="Georgia,serif">Kitap (Georgia)</option>
-    <option value="Palatino Linotype,Book Antiqua,serif">Edebi Klasik (Palatino)</option>
-    <option value="Verdana,sans-serif">Okuma Dostu (Verdana)</option>
-    <option value="Trebuchet MS,sans-serif">Akıcı Roman (Trebuchet)</option>
-    <option value="ui-monospace,monospace">Daktilo (Mono)</option>
-  </select>
-  <label>Yazı Boyutu: <b id="rSizeVal">18</b>px</label><input type="range" id="rSizeRange" min="14" max="30" step="1">
+  <label>Yazı Tipi</label>
+  <select id="rFontSel"><option value="system-ui,-apple-system,sans-serif">Modern</option><option value="Georgia,serif">Georgia</option><option value="Palatino Linotype,Book Antiqua,serif">Palatino</option><option value="Verdana,sans-serif">Verdana</option><option value="Trebuchet MS,sans-serif">Trebuchet</option><option value="ui-monospace,monospace">Mono</option></select>
+  <label>Boyut: <b id="rSizeVal">18</b>px</label><input type="range" id="rSizeRange" min="14" max="30" step="1">
   <label>Satır Aralığı: <b id="rLhVal">1.8</b></label><input type="range" id="rLhRange" min="1.35" max="2.4" step="0.05">
   <label>Genişlik</label><select id="rWidthSel"><option value="620px">Dar</option><option value="760px">Orta</option><option value="960px">Geniş</option><option value="100%">Tam</option></select>
   <label>Hizalama</label><select id="rAlignSel"><option value="left">Sola</option><option value="justify">Yasla</option></select>
-  <label>Oto-Kaydırma Hızı: <b id="rScrollVal">3</b></label><input type="range" id="rScrollRange" min="1" max="10" step="1">
-  <label>🎧 Sesli Kitap Motoru</label>
-  <select id="rTtsModeSel"><option value="multi">🎭 Çoklu Karakter Sesi (Ücretsiz Akıllı TTS)</option><option value="device">Standart Cihaz Sesi</option><option value="ai">Yapay Zeka Sesi (OpenAI TTS)</option></select>
+  <label>Oto-Kaydırma: <b id="rScrollVal">3</b></label><input type="range" id="rScrollRange" min="1" max="10" step="1">
+  <label>🎧 Sesli Kitap</label><select id="rTtsModeSel"><option value="multi">🎭 Çoklu Karakter TTS</option><option value="device">Standart Cihaz Sesi</option><option value="ai">Yapay Zeka Sesi (OpenAI TTS)</option></select>
   <label>Cihaz Sesi</label><select id="rVoiceSel"></select>
-  <label>Ses Hızı: <b id="rTtsVal">1.0</b>x</label><input type="range" id="rTtsRange" min="0.7" max="2.0" step="0.1">
+  <label>Hız: <b id="rTtsVal">1.0</b>x</label><input type="range" id="rTtsRange" min="0.7" max="2.0" step="0.1">
 </div></div>
 
 <div class="modal" id="tocModal"><div class="sheet"><div class="sheet-head"><h3>☰ İçindekiler & Yer İmleri</h3><button class="btn small" data-close="tocModal">✕</button></div><div class="seg" id="tocSeg"><button class="active" data-t="chapters">Bölümler</button><button data-t="bms">🔖 Yer İmleri</button></div><div id="tocList"></div></div></div>
 
 <div class="modal" id="wikiModal"><div class="sheet">
-  <div class="sheet-head">
-    <h3>🧠 Seri Bilgi Kitabı (Wiki)</h3>
-    <button class="btn small ok" id="wikiManualAddBtn">+ Ekle</button>
-    <button class="btn small" data-close="wikiModal">✕</button>
-  </div>
-  <div class="row" style="margin-bottom:9px">
-    <button class="btn pink small grow" id="wikiScanChapBtn"><span class="spin"></span>✨ Bu Bölümü Tara & Güncelle</button>
-  </div>
+  <div class="sheet-head"><h3>🧠 Seri Bilgi Kitabı (Wiki)</h3><button class="btn small ok" id="wikiManualAddBtn">+ Ekle</button><button class="btn small" data-close="wikiModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px"><button class="btn pink small grow" id="wikiScanChapBtn"><span class="spin"></span>✨ Bu Bölümü Tara & Güncelle</button></div>
   <div class="status" id="wikiStatus"></div>
-  <div class="row" style="margin:8px 0">
-    <input id="wikiSearch" class="grow" placeholder="🔍 Karakter, güç sistemi veya terim ara..." style="padding:8px 12px;font-size:13.5px;border-radius:999px">
-  </div>
-  <div id="wikiStatsBar" class="meta" style="margin-bottom:8px;text-align:center"></div>
-  <div class="seg" id="wikiSeg">
-    <button class="active" data-wt="chars">👤 Karakterler</button>
-    <button data-wt="lore">⚡ Güç & Terimler</button>
-    <button data-wt="graph">🕸️ İlişki Haritası</button>
-  </div>
+  <div class="row" style="margin:7px 0"><input id="wikiSearch" class="grow" placeholder="🔍 Karakter, güç sistemi veya terim ara..." style="border-radius:999px"></div>
+  <div id="wikiStatsBar" class="meta" style="margin-bottom:7px;text-align:center"></div>
+  <div class="seg" id="wikiSeg"><button class="active" data-wt="chars">👤 Karakterler</button><button data-wt="lore">⚡ Güç & Terimler</button><button data-wt="graph">🕸️ İlişki Haritası</button></div>
   <div id="wikiContent"></div>
 </div></div>
 
-<div class="modal" id="raceModal"><div class="sheet">
-  <div class="sheet-head"><h3>⚔️ API Hız & Kalite Yarışması</h3><button class="btn small" data-close="raceModal">✕</button></div>
-  <div class="row" style="margin-bottom:10px">
-    <input id="raceM1" class="grow" list="modelDatalist" placeholder="1. Model">
-    <input id="raceM2" class="grow" list="modelDatalist" placeholder="2. Model">
-    <button class="btn pink small" id="raceStartBtn">Yarıştır!</button>
-  </div>
-  <div id="raceResults"></div>
-</div></div>
-
-<div class="modal" id="wrappedModal"><div class="sheet">
-  <div class="sheet-head"><h3>📊 Aktivite Takvimi & Wrapped Kartın</h3><button class="btn small" data-close="wrappedModal">✕</button></div>
-  <div id="wrappedCard" class="card" style="background:linear-gradient(135deg,#2e1065,#4c1d95,#831843);border-color:var(--pink);text-align:center;padding:20px"></div>
-  <label>Son 70 Günlük Okuma Takvimi</label>
-  <div class="heatmap" id="activityHeatmap"></div>
-</div></div>
-
-<div class="modal" id="trashModal"><div class="sheet">
-  <div class="sheet-head"><h3>🗑️ Çöp Kutusu (7 Gün Saklanır)</h3><button class="btn small danger" id="emptyTrashBtn">Boşalt</button><button class="btn small" data-close="trashModal">✕</button></div>
-  <div id="trashList"></div>
-</div></div>
-
-<div class="modal" id="opdsModal"><div class="sheet">
-  <div class="sheet-head"><h3>🌐 OPDS E-Kitap Katalogları</h3><button class="btn small" data-close="opdsModal">✕</button></div>
-  <div class="row" style="margin-bottom:10px">
-    <input id="opdsUrlInput" class="grow" value="https://standardebooks.org/feeds/opds" placeholder="OPDS Feed URL...">
-    <button class="btn primary small" id="opdsLoadBtn">Getir</button>
-  </div>
-  <div class="status" id="opdsStatus"></div>
-  <div id="opdsList" style="margin-top:8px"></div>
-</div></div>
-
-<div class="modal" id="quickSearchModal"><div class="sheet"><div class="sheet-head"><h3>🔍 Hızlı Arama (Her Şeyde)</h3><button class="btn small" data-close="quickSearchModal">✕</button></div><input id="qsInput" placeholder="Kitap, geçmiş, alıntı veya sözlük ara..." style="margin-bottom:10px"><div id="qsResults"></div></div></div>
-<div class="modal" id="storageModal"><div class="sheet"><div class="sheet-head"><h3>💾 Depolama Yöneticisi</h3><button class="btn small" data-close="storageModal">✕</button></div><div id="storageInfo"></div></div></div>
-<div class="modal" id="navCustModal"><div class="sheet"><div class="sheet-head"><h3>🧭 Alt Menü Düzenleyici</h3><button class="btn small" data-close="navCustModal">✕</button></div><p class="hint" style="margin-top:0;margin-bottom:10px">Alt çubukta görünmesini istediğin sekmeleri seç (Ayarlar her zaman görünür).</p><div id="navCustList"></div></div></div>
-<div class="modal" id="debugModal"><div class="sheet"><div class="sheet-head"><h3>🐞 Canlı Hata Ayıklama Konsolu</h3><button class="btn small danger" id="clearDebugBtn">Temizle</button><button class="btn small" data-close="debugModal">✕</button></div><div id="debugLogs" style="font-family:monospace;font-size:11.5px;max-height:55vh;overflow:auto;background:#000;padding:10px;border-radius:10px;white-space:pre-wrap"></div></div></div>
-<div class="modal" id="recapModal"><div class="sheet"><div class="sheet-head"><h3>🔄 Nerde Kalmıştım?</h3><button class="btn small" data-close="recapModal">✕</button></div><div class="out-box" id="recapBox" style="min-height:120px"></div><div class="status" id="recapStatus"></div></div></div>
-<div class="modal" id="selModal"><div class="sheet"><div class="sheet-head"><h3 id="selModalTitle">🌐 Seçim Çevirisi</h3><button class="btn small" id="selCopyBtn">Kopyala</button><button class="btn small" id="selCloseModal">✕</button></div><div id="selSrcBox" style="max-height:100px;overflow:auto;padding:10px;border-radius:10px;background:var(--surface2);font-size:13px;color:var(--muted);margin-bottom:10px;white-space:pre-wrap"></div><div class="out-box" id="selOutBox" style="min-height:90px"></div><div class="status" id="selStatus"></div></div></div>
-<div class="modal" id="hlModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Alıntıyı Vurgula</h3><button class="btn small" data-close="hlModal">✕</button></div><div id="hlPreview" style="padding:10px;border-radius:10px;background:var(--surface2);font-size:13px;margin-bottom:10px"></div><div class="row" id="hlColors"><button class="btn small grow" data-c="purple" style="background:#8b5cf644">Mor</button><button class="btn small grow" data-c="yellow" style="background:#fbbf2444">Sarı</button><button class="btn small grow" data-c="green" style="background:#34d39944">Yeşil</button><button class="btn small grow" data-c="pink" style="background:#f43f5e44">Pembe</button></div><label>Not</label><input id="hlNoteInput" placeholder="Not..."><button class="btn primary" id="hlSaveBtn" style="width:100%;margin-top:11px">Kaydet</button></div></div>
-<div class="modal" id="quotesModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Alıntı Defterim</h3><button class="btn small" data-close="quotesModal">✕</button></div><input id="quoteSearch" placeholder="🔍 Ara..." style="margin-bottom:10px"><div id="quotesList"></div></div></div>
-<div class="modal" id="histModal"><div class="sheet"><div class="sheet-head"><h3>📜 Geçmiş</h3><button class="btn small danger" id="clearHistBtn">Temizle</button><button class="btn small" data-close="histModal">✕</button></div><input id="histSearch" placeholder="🔍 Ara..." style="margin-bottom:10px"><div id="histList"></div></div></div>
+<div class="modal" id="raceModal"><div class="sheet"><div class="sheet-head"><h3>⚔️ Model Yarışması</h3><button class="btn small" data-close="raceModal">✕</button></div><div class="row" style="margin-bottom:9px"><input id="raceM1" class="grow" list="modelDatalist" placeholder="1. Model"><input id="raceM2" class="grow" list="modelDatalist" placeholder="2. Model"><button class="btn pink small" id="raceStartBtn">Yarıştır</button></div><div id="raceResults"></div></div></div>
+<div class="modal" id="wrappedModal"><div class="sheet"><div class="sheet-head"><h3>📊 Takvim & Wrapped</h3><button class="btn small" data-close="wrappedModal">✕</button></div><div id="wrappedCard" class="card" style="background:linear-gradient(135deg,#2e1065,#4c1d95,#831843);border-color:var(--pink);text-align:center;padding:18px"></div><label>Son 70 Gün</label><div class="heatmap" id="activityHeatmap"></div></div></div>
+<div class="modal" id="trashModal"><div class="sheet"><div class="sheet-head"><h3>🗑️ Çöp Kutusu (7 Gün)</h3><button class="btn small danger" id="emptyTrashBtn">Boşalt</button><button class="btn small" data-close="trashModal">✕</button></div><div id="trashList"></div></div></div>
+<div class="modal" id="opdsModal"><div class="sheet"><div class="sheet-head"><h3>🌐 OPDS Katalog</h3><button class="btn small" data-close="opdsModal">✕</button></div><div class="row" style="margin-bottom:8px"><input id="opdsUrlInput" class="grow" value="https://standardebooks.org/feeds/opds"><button class="btn primary small" id="opdsLoadBtn">Getir</button></div><div class="status" id="opdsStatus"></div><div id="opdsList" style="margin-top:8px"></div></div></div>
+<div class="modal" id="quickSearchModal"><div class="sheet"><div class="sheet-head"><h3>🔍 Hızlı Arama</h3><button class="btn small" data-close="quickSearchModal">✕</button></div><input id="qsInput" placeholder="Kitap, alıntı, sözlük ara..." style="margin-bottom:9px"><div id="qsResults"></div></div></div>
+<div class="modal" id="storageModal"><div class="sheet"><div class="sheet-head"><h3>💾 Depolama</h3><button class="btn small" data-close="storageModal">✕</button></div><div id="storageInfo"></div></div></div>
+<div class="modal" id="navCustModal"><div class="sheet"><div class="sheet-head"><h3>🧭 Alt Menü Düzenleyici</h3><button class="btn small" data-close="navCustModal">✕</button></div><div id="navCustList"></div></div></div>
+<div class="modal" id="debugModal"><div class="sheet"><div class="sheet-head"><h3>🐞 Konsol</h3><button class="btn small danger" id="clearDebugBtn">Temizle</button><button class="btn small" data-close="debugModal">✕</button></div><div id="debugLogs" style="font-family:monospace;font-size:11px;max-height:55vh;overflow:auto;background:#000;padding:10px;border-radius:10px;white-space:pre-wrap"></div></div></div>
+<div class="modal" id="recapModal"><div class="sheet"><div class="sheet-head"><h3>🔄 Nerde Kalmıştım?</h3><button class="btn small" data-close="recapModal">✕</button></div><div class="out-box" id="recapBox" style="min-height:110px"></div><div class="status" id="recapStatus"></div></div></div>
+<div class="modal" id="selModal"><div class="sheet"><div class="sheet-head"><h3 id="selModalTitle">🌐 Seçim Çevirisi</h3><button class="btn small" id="selCopyBtn">Kopyala</button><button class="btn small" id="selCloseModal">✕</button></div><div id="selSrcBox" style="max-height:90px;overflow:auto;padding:9px;border-radius:9px;background:var(--surface2);font-size:12.5px;color:var(--muted);margin-bottom:9px;white-space:pre-wrap"></div><div class="out-box" id="selOutBox" style="min-height:85px"></div><div class="status" id="selStatus"></div></div></div>
+<div class="modal" id="hlModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Vurgula</h3><button class="btn small" data-close="hlModal">✕</button></div><div id="hlPreview" style="padding:9px;border-radius:9px;background:var(--surface2);font-size:12.5px;margin-bottom:9px"></div><div class="row" id="hlColors"><button class="btn small grow" data-c="purple" style="background:#8b5cf644">Mor</button><button class="btn small grow" data-c="yellow" style="background:#fbbf2444">Sarı</button><button class="btn small grow" data-c="green" style="background:#10b98144">Yeşil</button><button class="btn small grow" data-c="pink" style="background:#f43f5e44">Pembe</button></div><label>Not</label><input id="hlNoteInput" placeholder="Not..."><button class="btn primary" id="hlSaveBtn" style="width:100%;margin-top:10px">Kaydet</button></div></div>
+<div class="modal" id="quotesModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Alıntı Defterim</h3><button class="btn small" data-close="quotesModal">✕</button></div><input id="quoteSearch" placeholder="🔍 Ara..." style="margin-bottom:9px"><div id="quotesList"></div></div></div>
+<div class="modal" id="histModal"><div class="sheet"><div class="sheet-head"><h3>📜 Geçmiş</h3><button class="btn small danger" id="clearHistBtn">Temizle</button><button class="btn small" data-close="histModal">✕</button></div><input id="histSearch" placeholder="🔍 Ara..." style="margin-bottom:9px"><div id="histList"></div></div></div>
 
 <div class="modal" id="editBookModal"><div class="sheet">
-  <div class="sheet-head"><h3>⚙ Kitap Ayarları & Puanlama</h3><button class="btn small" data-close="editBookModal">✕</button></div>
-  <div class="row" style="margin-bottom:9px">
-    <button class="btn small" id="ebCoverFileBtn">🖼 Kapak</button><input type="file" id="ebCoverInput" accept="image/*" style="display:none">
-    <button class="btn small" id="ebCoverUrlBtn">🔗 URL</button><button class="btn small danger" id="ebCoverDelBtn">Kaldır</button>
-  </div>
+  <div class="sheet-head"><h3>⚙ Kitap Ayarları</h3><button class="btn small" data-close="editBookModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px"><button class="btn small" id="ebCoverFileBtn">🖼 Kapak</button><input type="file" id="ebCoverInput" accept="image/*" style="display:none"><button class="btn small" id="ebCoverUrlBtn">🔗 URL</button><button class="btn small danger" id="ebCoverDelBtn">Kaldır</button></div>
   <label>Kitap Adı</label><input id="ebTitle">
-  <label>Seri / Kategori</label><input id="ebSeries" placeholder="Örn: Shadow Slave">
+  <label>Seri</label><input id="ebSeries" placeholder="Örn: Shadow Slave">
   <label>Yazar</label><input id="ebAuthor">
-  <label>Puanım (1-5 Yıldız)</label>
-  <div class="row" id="ebStarRow"><button class="btn small grow" data-st="1">⭐1</button><button class="btn small grow" data-st="2">⭐2</button><button class="btn small grow" data-st="3">⭐3</button><button class="btn small grow" data-st="4">⭐4</button><button class="btn small grow" data-st="5">⭐5</button></div>
-  <label>Kişisel Yorumum</label><textarea id="ebReview" style="min-height:68px" placeholder="Bu kitap hakkındaki yorumun..."></textarea>
+  <label>Puanım</label><div class="row" id="ebStarRow"><button class="btn small grow" data-st="1">⭐1</button><button class="btn small grow" data-st="2">⭐2</button><button class="btn small grow" data-st="3">⭐3</button><button class="btn small grow" data-st="4">⭐4</button><button class="btn small grow" data-st="5">⭐5</button></div>
+  <label>Yorumum</label><textarea id="ebReview" style="min-height:60px"></textarea>
   <label>Raf</label><select id="ebShelf"><option value="auto">Otomatik</option><option value="reading">📖 Okunuyor</option><option value="want">📌 Okunacak</option><option value="done">✓ Bitirildi</option></select>
   <label class="switch"><span>⭐ Favoriler</span><input type="checkbox" id="ebFav"></label>
-  <div class="row" style="margin-top:11px"><button class="btn primary grow" id="ebSaveBtn">Kaydet</button></div>
-  <div class="card" style="margin-top:12px;padding:11px">
-    <h2 style="font-size:13.5px;color:var(--accent);margin-bottom:7px">⚡ Toplu Bölüm Çevirici</h2>
-    <div class="row"><input type="number" id="ebBatchFrom" value="1" min="1" style="width:66px;padding:6px"><span class="meta">→</span><input type="number" id="ebBatchTo" value="5" min="1" style="width:66px;padding:6px"><button class="btn pink small grow" id="ebBatchBtn">⚡ Başlat</button><button class="btn danger small" id="ebBatchStop" style="display:none">Durdur</button></div>
+  <div class="row" style="margin-top:10px"><button class="btn primary grow" id="ebSaveBtn">Kaydet</button></div>
+  <div class="card" style="margin-top:10px;padding:10px">
+    <h2 style="font-size:13px;color:var(--accent);margin-bottom:6px">⚡ Toplu Bölüm Çevirici</h2>
+    <div class="row"><input type="number" id="ebBatchFrom" value="1" min="1" style="width:62px;padding:5px"><span class="meta">→</span><input type="number" id="ebBatchTo" value="5" min="1" style="width:62px;padding:5px"><button class="btn pink small grow" id="ebBatchBtn">Başlat</button><button class="btn danger small" id="ebBatchStop" style="display:none">Dur</button></div>
     <div class="progress" id="ebBatchProg"><div></div></div><div class="status" id="ebBatchStatus"></div>
   </div>
-  <div class="row" style="margin-top:10px">
-    <button class="btn ok grow" id="ebExpEpub">⬇ .EPUB</button>
-    <button class="btn grow" id="ebExpHtml">⬇ .HTML</button>
-    <button class="btn danger" id="ebDelBtn">🗑️ Çöpe At</button>
-  </div>
-  <details style="margin-top:11px"><summary style="cursor:pointer;color:var(--accent);font-size:13.5px">Bölümleri Yönet</summary><div id="ebChapList" style="margin-top:9px"></div></details>
+  <div class="row" style="margin-top:9px"><button class="btn ok small grow" id="ebExpEpub">⬇ .EPUB</button><button class="btn small grow" id="ebExpHtml">⬇ .HTML</button><button class="btn danger small" id="ebDelBtn">🗑️ Çöpe At</button></div>
+  <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--accent);font-size:13px">Bölümleri Yönet</summary><div id="ebChapList" style="margin-top:8px"></div></details>
 </div></div>
 
 <div class="lightbox" id="lightbox"><img id="lbImg" alt=""></div>
