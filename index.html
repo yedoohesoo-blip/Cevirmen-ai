@@ -32,7 +32,6 @@ body{
 button,input,textarea,select{font:inherit;color:inherit}
 a{color:var(--accent)}
 
-/* S20 FE 120Hz GPU-Hızlandırmalı Seçilebilir Animasyonlar */
 .view{display:none;will-change:transform,opacity}
 .view.active{display:block}
 body.anim-fade .view.active{animation:aFade .18s cubic-bezier(.2,.8,.2,1)}
@@ -52,7 +51,6 @@ header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:9px;
 .icon-btn{width:33px;height:33px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:14.5px}
 .icon-btn:active{transform:scale(.93);border-color:var(--primary)}
 
-/* Pano Yakalama Şeridi */
 .clip-banner{display:none;align-items:center;gap:8px;padding:10px 14px;background:#241342;border-bottom:1px solid var(--primary);font-size:13px}
 .clip-banner.show{display:flex}
 
@@ -110,11 +108,9 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .seg button{flex:1;border:none;background:none;color:var(--muted);padding:7px 8px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
 .seg button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
 
-/* Moodbar & Çevirmen Notu Baloncuğu */
 .moodbar{height:4px;border-radius:4px;margin:8px 0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:background .4s}
 .tn-badge{display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:50%;background:#8b5cf633;border:1px solid var(--primary);color:var(--accent);font-size:11px;font-weight:800;margin-left:3px;cursor:pointer;vertical-align:middle}
 
-/* Tarayıcı, Sekmeler, FMHY */
 .native-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 22%,transparent),color-mix(in srgb,var(--pink) 18%,transparent));border:1px solid var(--primary);border-radius:14px;padding:11px 13px;margin-bottom:11px;font-size:12.5px}
 .tabs-strip{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:9px}
 .tabs-strip::-webkit-scrollbar{display:none}
@@ -130,7 +126,6 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .bm-name{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bm-del{position:absolute;top:4px;right:4px;width:19px;height:19px;border-radius:50%;border:none;background:#0008;color:#fda4af;font-size:10px;cursor:pointer;display:grid;place-items:center}
 
-/* Kütüphane & Heatmap */
 .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:11px}
 .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px 5px;text-align:center}
 .stat-box b{display:block;font-size:15.5px;color:var(--accent)}
@@ -165,14 +160,12 @@ input[type=range]{padding:0;height:6px;accent-color:var(--primary);background:no
 .list-item-title{font-size:13.5px;font-weight:650;word-break:break-word}
 .list-item-sub{font-size:11.5px;color:var(--muted);margin-top:2px;word-break:break-word}
 
-/* Alt Menü (Özelleştirilebilir) */
 nav.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;padding:7px 4px calc(7px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 96%,transparent);backdrop-filter:blur(14px);border-top:1px solid var(--border)}
 nav.bnav button{flex:1;background:none;border:none;color:var(--muted);font-size:10px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 1px;border-radius:11px;cursor:pointer}
 nav.bnav button svg{width:20px;height:20px}
 nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 18%,transparent)}
 nav.bnav button.active svg{color:var(--accent)}
 
-/* Okuyucu */
 .reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#07050c);color:var(--r-fg,#ece6f7)}
 .reader.open{display:flex}
 .reader.t-night{--r-bg:#07050c;--r-fg:#ece6f7;--r-bar:#110b1cf5;--r-bd:#2a1f3d;--r-mut:#9a8fb0}
@@ -235,7 +228,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   </div>
 </header>
 
-<!-- Pano İzleyici Şeridi -->
 <div class="clip-banner" id="clipBanner">
   <span class="grow" id="clipPreview" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Panoda metin algılandı</span>
   <button class="btn primary small" id="clipGoBtn">Çevir</button>
@@ -244,7 +236,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <main>
 
-  <!-- 1. METİN ÇEVİRİSİ + KALİTE DENETÇİSİ + MODEL YARIŞI -->
   <section id="view-text" class="view active">
     <div class="card">
       <div class="lang-bar">
@@ -289,10 +280,9 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 2. TARAYICI + FMHY OKUMA MERKEZİ + YÜZEN BALONCUK -->
   <section id="view-browser" class="view">
     <div id="nativeBadge" class="native-banner" style="display:none">
-      <b>🚀 Pro Tarayıcı (S20 FE Optimize)!</b> Romanlarda <b>🌐 Metin</b>, mangalarda <b>💬 Manga</b>, <b>⚙</b> menüsünde <b>Panel Kırpıcı</b>, <b>Alan Seç</b>, <b>Oto-Tarama</b>, <b>Karanlık Mod</b> ve <b>Sade Okuyucu</b>.
+      <b>🚀 Pro Tarayıcı (S20 FE Optimize)!</b> Romanlarda <b>🌐 Metin</b>, mangalarda <b>💬 Manga</b>, çevirdiğin bölümü Wiki & Sözlükle okumak için <b>📚 Oku</b> tuşuna bas!
     </div>
 
     <div class="card" style="padding:12px">
@@ -312,7 +302,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </div>
     </div>
 
-    <!-- FMHY Okuma Rehberi Merkezi -->
     <div class="card">
       <div class="card-head">
         <h2>🧭 FMHY Okuma Merkezi (Roman & Manga)</h2>
@@ -328,7 +317,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
     <div class="card">
       <div class="card-head"><h2>🫧 Ekran Üstü Yüzen Çeviri</h2></div>
-      <p class="hint" style="margin-top:0;margin-bottom:9px">Tam Ekran, Bölge Seç, <b>📌 Sabit Bölge Oto-Çevir</b>, <b>📋 OCR Kopyala</b>, <b>❓ Ekrana Soru Sor</b> ve <b>📎 Pano Çevir</b>.</p>
+      <p class="hint" style="margin-top:0;margin-bottom:9px">Tam Ekran, Bölge Seç, <b>📌 Sabit Bölge Oto-Çevir</b>, <b>�� OCR Kopyala</b>, <b>❓ Ekrana Soru Sor</b> ve <b>📎 Pano Çevir</b>.</p>
       <div class="row">
         <button class="btn pink grow" id="startOverlayBtn">🫧 Yüzen Çeviriyi Başlat</button>
         <button class="btn danger" id="stopOverlayBtn">Kapat</button>
@@ -346,11 +335,10 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 3. MANGA & BALONCUK STÜDYOSU -->
   <section id="view-manga" class="view">
     <div class="card">
       <div class="card-head"><h2>💬 Canlı Manga & Manhwa Tarayıcısı</h2></div>
-      <p class="hint" style="margin-top:0;margin-bottom:10px">Balon rengini çizimden otomatik algılar, yazıyı balona sığdırır. Yanlış çevrilen baloncuğun sağ üstündeki <b>↻</b> tuşuna basarak anında düzelttirebilirsin!</p>
+      <p class="hint" style="margin-top:0;margin-bottom:10px">Yüksek kontrastlı çizgi roman baloncuklarıyla her çizimde net okunur. Yanlış çevrilen baloncuğun sağ üstündeki <b>↻</b> tuşuna basarak anında düzelttirebilirsin!</p>
       <div class="row" style="margin-bottom:10px">
         <input id="mSiteInput" class="grow" placeholder="Manga/Manhwa ara veya URL..." style="border-radius:999px">
         <button class="btn pink pill" id="mSiteGoBtn">💬 Aç</button>
@@ -370,7 +358,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <option value="Impact, Arial Black, sans-serif">Kalın Aksiyon</option>
       </select>
       <label>Yazı Boyutu Çarpanı: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
-      <label>Opaklık: <b id="mOpVal">95</b>%</label><input type="range" id="mOpRange" min="0.65" max="1.0" step="0.05">
+      <label>Opaklık: <b id="mOpVal">96</b>%</label><input type="range" id="mOpRange" min="0.8" max="1.0" step="0.02">
       <label>Kenarlık Rengi</label>
       <div class="row" id="mBorderRow">
         <button class="btn small grow" data-bc="#8b5cf6" style="border-color:#8b5cf6">Mor</button>
@@ -381,7 +369,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 4. AKILLI KÜTÜPHANE (DOCX/FB2/MOBI/EPUB/PDF/CBZ + WIKI + ÇÖP KUTUSU + OPDS) -->
   <section id="view-library" class="view">
     <div class="stats-strip">
       <div class="stat-box"><b id="stTotal">0</b><span>Kitap</span></div>
@@ -423,7 +410,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 5. STÜDYO (PROMPT PAZARI + SÖZLÜK + SERİ WIKI + AMBİYANS SESLERİ) -->
   <section id="view-studio" class="view">
     <div class="seg" id="studioSeg">
       <button class="active" data-sub="prompts">✨ Promptlar</button>
@@ -485,7 +471,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 6. AYARLAR (API + TOKEN + TEMA + ANİMASYON + ALT MENÜ DÜZENLEYİCİ + DEPOLAMA + KONSOL) -->
   <section id="view-settings" class="view">
     <div class="card">
       <h2>Yapay Zeka API Ayarları</h2>
@@ -556,7 +541,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <nav class="bnav" id="bottomNav"></nav>
 
-<!-- FULLSCREEN READER -->
 <div class="reader t-night" id="reader">
   <div class="r-top">
     <button class="r-btn" id="rClose">←</button>
@@ -624,22 +608,28 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <div class="modal" id="tocModal"><div class="sheet"><div class="sheet-head"><h3>☰ İçindekiler & Yer İmleri</h3><button class="btn small" data-close="tocModal">✕</button></div><div class="seg" id="tocSeg"><button class="active" data-t="chapters">Bölümler</button><button data-t="bms">🔖 Yer İmleri</button></div><div id="tocList"></div></div></div>
 
-<!-- SERİ WIKI + BİLGİ KİTABI + GÖRSEL KARAKTER İLİŞKİ HARİTASI -->
 <div class="modal" id="wikiModal"><div class="sheet">
-  <div class="sheet-head"><h3>🧠 Seri Bilgi Kitabı (Wiki) & İlişki Haritası</h3><button class="btn small" data-close="wikiModal">✕</button></div>
-  <div class="row" style="margin-bottom:10px">
-    <button class="btn pink small grow" id="wikiScanChapBtn"><span class="spin"></span>Bu Bölümü Tara & Wiki Güncelle</button>
+  <div class="sheet-head">
+    <h3>🧠 Seri Bilgi Kitabı (Wiki)</h3>
+    <button class="btn small ok" id="wikiManualAddBtn">+ Ekle</button>
+    <button class="btn small" data-close="wikiModal">✕</button>
+  </div>
+  <div class="row" style="margin-bottom:9px">
+    <button class="btn pink small grow" id="wikiScanChapBtn"><span class="spin"></span>✨ Bu Bölümü Tara & Güncelle</button>
   </div>
   <div class="status" id="wikiStatus"></div>
-  <div class="seg" id="wikiSeg" style="margin-top:8px">
+  <div class="row" style="margin:8px 0">
+    <input id="wikiSearch" class="grow" placeholder="🔍 Karakter, güç sistemi veya terim ara..." style="padding:8px 12px;font-size:13.5px;border-radius:999px">
+  </div>
+  <div id="wikiStatsBar" class="meta" style="margin-bottom:8px;text-align:center"></div>
+  <div class="seg" id="wikiSeg">
     <button class="active" data-wt="chars">👤 Karakterler</button>
-    <button data-wt="graph">🕸️ İlişki Haritası</button>
     <button data-wt="lore">⚡ Güç & Terimler</button>
+    <button data-wt="graph">🕸️ İlişki Haritası</button>
   </div>
   <div id="wikiContent"></div>
 </div></div>
 
-<!-- MODEL YARIŞMASI -->
 <div class="modal" id="raceModal"><div class="sheet">
   <div class="sheet-head"><h3>⚔️ API Hız & Kalite Yarışması</h3><button class="btn small" data-close="raceModal">✕</button></div>
   <div class="row" style="margin-bottom:10px">
@@ -650,7 +640,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <div id="raceResults"></div>
 </div></div>
 
-<!-- TAKVİM & WRAPPED KARTI -->
 <div class="modal" id="wrappedModal"><div class="sheet">
   <div class="sheet-head"><h3>📊 Aktivite Takvimi & Wrapped Kartın</h3><button class="btn small" data-close="wrappedModal">✕</button></div>
   <div id="wrappedCard" class="card" style="background:linear-gradient(135deg,#2e1065,#4c1d95,#831843);border-color:var(--pink);text-align:center;padding:20px"></div>
@@ -658,13 +647,11 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <div class="heatmap" id="activityHeatmap"></div>
 </div></div>
 
-<!-- 7 GÜNLÜK ÇÖP KUTUSU -->
 <div class="modal" id="trashModal"><div class="sheet">
   <div class="sheet-head"><h3>🗑️ Çöp Kutusu (7 Gün Saklanır)</h3><button class="btn small danger" id="emptyTrashBtn">Boşalt</button><button class="btn small" data-close="trashModal">✕</button></div>
   <div id="trashList"></div>
 </div></div>
 
-<!-- OPDS KATALOG TARAYICISI -->
 <div class="modal" id="opdsModal"><div class="sheet">
   <div class="sheet-head"><h3>🌐 OPDS E-Kitap Katalogları</h3><button class="btn small" data-close="opdsModal">✕</button></div>
   <div class="row" style="margin-bottom:10px">
@@ -675,7 +662,6 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <div id="opdsList" style="margin-top:8px"></div>
 </div></div>
 
-<!-- HIZLI ARAMA / DEPOLAMA / ALT MENÜ DÜZENLEYİCİ / KONSOL / RECAP / SEÇİM / VURGU / KİTAP AYAR -->
 <div class="modal" id="quickSearchModal"><div class="sheet"><div class="sheet-head"><h3>🔍 Hızlı Arama (Her Şeyde)</h3><button class="btn small" data-close="quickSearchModal">✕</button></div><input id="qsInput" placeholder="Kitap, geçmiş, alıntı veya sözlük ara..." style="margin-bottom:10px"><div id="qsResults"></div></div></div>
 <div class="modal" id="storageModal"><div class="sheet"><div class="sheet-head"><h3>💾 Depolama Yöneticisi</h3><button class="btn small" data-close="storageModal">✕</button></div><div id="storageInfo"></div></div></div>
 <div class="modal" id="navCustModal"><div class="sheet"><div class="sheet-head"><h3>🧭 Alt Menü Düzenleyici</h3><button class="btn small" data-close="navCustModal">✕</button></div><p class="hint" style="margin-top:0;margin-bottom:10px">Alt çubukta görünmesini istediğin sekmeleri seç (Ayarlar her zaman görünür).</p><div id="navCustList"></div></div></div>
