@@ -2,9 +2,38 @@
 "use strict";
 const C = window.CAI;
 if(!C) return;
-const {$, $$, esc, uid, toast, openModal, closeModal, debugLog, DEBUG_LOGS, getS, saveState, callAI, splitChunks, dbAll, dbGet, dbPut, dbDel, openRealBrowser, renderLibrary, openBookReader, renderPromptUI, switchView, importBookFile, R} = C;
+const {$, $$, esc, uid, toast, haptic, copyText, openModal, closeModal, debugLog, getS, saveState, callAI, splitChunks, dbAll, dbGet, dbPut, dbDel, openRealBrowser, renderLibrary, openBookReader, renderCurrentChapter, renderGlossary, switchView, importBookFile, applyThemeAndAnim, R} = C;
 const isNative = () => !!(window.AndroidBridge && window.AndroidBridge.isNative && window.AndroidBridge.isNative());
 const b64Dec = b64 => { const bin=atob(b64), bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i); return new TextDecoder().decode(bytes); };
+
+/* ===================== NATIVE FETCH KÖPRÜSÜ (HTTP DURUM + CLOUDFLARE TESPİTİ) ===================== */
+const fetchInfoCbs = new Map();
+window.__onNativeFetchInfoDone = (reqId, b64) => {
+  const cb = fetchInfoCbs.get(reqId);
+  if(cb){ fetchInfoCbs.delete(reqId); try{ cb(JSON.parse(b64Dec(b64))); }catch{ cb({status:0,html:"",protected:false}); } }
+};
+const fetchTextCbs = new Map();
+window.__onNativeFetchDone = (reqId, b64) => {
+  const cb = fetchTextCbs.get(reqId);
+  if(cb){ fetchTextCbs.delete(reqId); cb(b64Dec(b64)); }
+};
+
+function fetchUrlInfo(url){
+  return new Promise(async resolve => {
+    if(isNative() && window.AndroidBridge.fetchUrlInfo){
+      const id = "fi_" + uid();
+      const t = setTimeout(() => { if(fetchInfoCbs.has(id)){ fetchInfoCbs.delete(id); resolve({status:0,html:"",protected:false,error:"Zaman aşımı"}); } }, 18000);
+      fetchInfoCbs.set(id, info => { clearTimeout(t); resolve(info || {status:0,html:""}); });
+      window.AndroidBridge.fetchUrlInfo(id, url);
+      return;
+    }
+    try{
+      const r = await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));
+      const html = r.ok ? await r.text() : "";
+      resolve({status:r.status, finalUrl:url, html, protected: r.status===403||r.status===503||/Just a moment|cf-browser/i.test(html)});
+    }catch(e){ resolve({status:0, html:"", protected:false, error:e.message}); }
+  });
+}
 
 /* ===================== 1. ADGUARD VPN KALKANI + APP SHORTCUTS ===================== */
 function updateVpnBtn(){
@@ -20,14 +49,15 @@ $("#vpnToggleBtn")?.addEventListener("click", () => {
   setTimeout(updateVpnBtn, 600);
 });
 
-// UYGULAMA İKONUNA UZUN BASINCA ÇIKAN HIZLI KISAYOLLAR
 window.__onAppShortcut = async sc => {
   if(sc === "overlay"){
     if(isNative() && window.AndroidBridge.startFloatingOverlay) window.AndroidBridge.startFloatingOverlay();
   } else if(sc === "chat"){
-    switchView("chat"); renderChat(); populateChatBooks();
+    switchView("chat"); renderChatFull(); populateChatBooks();
   } else if(sc === "browser"){
     switchView("browser");
+  } else if(sc === "notifs"){
+    openNotifModal();
   } else if(sc === "resume_book"){
     const books = (await dbAll()).filter(b=>!b.deletedAt).sort((a,b)=>(b.lastRead||0)-(a.lastRead||0));
     if(books.length){ switchView("library"); openBookReader(books[0].id); }
@@ -35,15 +65,19 @@ window.__onAppShortcut = async sc => {
   }
 };
 
-/* ===================== 2. DİYALOG RENKLENDİRME (OKUYUCU) ===================== */
+/* ===================== 2. ANLIK DİYALOG RENKLENDİRME (HATA #8 ÇÖZÜMÜ) ===================== */
 function colorizeDialoguesInBody(){
-  const S = getS();
-  if(!S.reader.dlgColor) return;
-  const body = $("#rBody"); if(!body) return;
+  const S = getS(), body = $("#rBody"); if(!body) return;
+  if(!S.reader.dlgColor){
+    // Kapatıldığında anında normale döndür!
+    body.querySelectorAll(".dlg-span").forEach(sp => sp.replaceWith(document.createTextNode(sp.textContent)));
+    body.normalize();
+    return;
+  }
   const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
   const nodes = [];
   let n; while((n = walker.nextNode())) {
-    if(n.parentElement && (n.parentElement.classList.contains("dlg-span") || n.parentElement.tagName === "SCRIPT" || n.parentElement.tagName === "STYLE")) continue;
+    if(n.parentElement && (n.parentElement.classList.contains("dlg-span") || /SCRIPT|STYLE|BUTTON/.test(n.parentElement.tagName))) continue;
     if(/[“"][^”"]{2,}[”"]/.test(n.nodeValue)) nodes.push(n);
   }
   for(const tn of nodes){
@@ -56,494 +90,731 @@ const rBodyEl = $("#rBody");
 if(rBodyEl){
   let dlgLock = false;
   new MutationObserver(() => {
-    if(dlgLock) return;
+    if(dlgLock || !getS().reader.dlgColor) return;
     dlgLock = true;
-    try{ colorizeDialoguesInBody(); }finally{ setTimeout(() => dlgLock = false, 20); }
+    try{ colorizeDialoguesInBody(); }finally{ setTimeout(() => dlgLock = false, 25); }
   }).observe(rBodyEl, {childList:true});
 }
 $("#rDlgColorToggle")?.addEventListener("change", e => {
   const S = getS(); S.reader.dlgColor = e.target.checked; saveState();
-  if(S.reader.dlgColor) colorizeDialoguesInBody();
-  else toast("Bir sonraki bölüm geçişinde normale döner");
+  colorizeDialoguesInBody();
 });
 
-/* ===================== 3. YENİ BÖLÜM TAKİPÇİSİ & BİLDİRİM GELEN KUTUSU ===================== */
-const nativeFetchCallbacks = new Map();
-window.__onNativeFetchDone = (reqId, b64) => {
-  const cb = nativeFetchCallbacks.get(reqId);
-  if(cb){ nativeFetchCallbacks.delete(reqId); cb(b64Dec(b64)); }
-};
-function fetchHtmlForWatch(url){
-  return new Promise(async resolve => {
-    if(isNative() && window.AndroidBridge.fetchUrlText){
-      const id = "w_" + uid();
-      const t = setTimeout(() => { if(nativeFetchCallbacks.has(id)){ nativeFetchCallbacks.delete(id); resolve(""); } }, 16000);
-      nativeFetchCallbacks.set(id, html => { clearTimeout(t); resolve(html || ""); });
-      window.AndroidBridge.fetchUrlText(id, url);
-      return;
-    }
-    try{ const r = await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url)); resolve(r.ok ? await r.text() : ""); }
-    catch{ resolve(""); }
+/* ===================== 3. LITEROUTER.COM CANLI MALİYET & ÇARPAN TARAYICISI ===================== */
+function updateLrBadge(){
+  const S = getS(), badge = $("#lrCostBadge"); if(!badge) return;
+  const active = (S.model || "").toLowerCase();
+  const match = (S.lrCosts || []).find(x => x.id.toLowerCase() === active || active.includes(x.id.toLowerCase()) || x.id.toLowerCase().includes(active.split("/").pop()||"___"));
+  if(match){
+    badge.textContent = `💰 ${match.mult || match.price || "?"}`;
+    badge.title = `${match.id}: ${match.mult || ""} ${match.price || ""}`;
+  } else {
+    badge.textContent = S.lrCosts?.length ? `💰 ${S.lrCosts.length} model` : "💰 Tara";
+  }
+}
+window.CAI_updateLrBadge = updateLrBadge;
+$("#lrCostBadge")?.addEventListener("click", () => { haptic("light"); switchView("costs"); renderLrCosts(); });
+
+function renderLrCosts(){
+  const S = getS(), listEl = $("#lrCostList"), st = $("#lrStatus"); if(!listEl) return;
+  const q = ($("#lrSearch")?.value || "").toLowerCase().trim();
+  const sort = $("#lrSort")?.value || "cheap";
+  let arr = [...(S.lrCosts || [])];
+  if(q) arr = arr.filter(x => (x.id+" "+(x.mult||"")+" "+(x.price||"")).toLowerCase().includes(q));
+  if(sort === "cheap") arr.sort((a,b) => (a.numCost ?? 999) - (b.numCost ?? 999));
+  else if(sort === "exp") arr.sort((a,b) => (b.numCost ?? -1) - (a.numCost ?? -1));
+  else arr.sort((a,b) => a.id.localeCompare(b.id));
+
+  if(S.lrLastScan && st && !st.textContent.includes("Taranıyor")) st.textContent = `Son tarama: ${new Date(S.lrLastScan).toLocaleTimeString("tr")} (${S.lrCosts.length} model)`;
+  if(!arr.length){
+    listEl.innerHTML = `<div class="card"><div class="meta">Henüz LiteRouter maliyet verisi yok. Yukarıdaki <b>🔄 Canlı Tara</b> butonuna bas!</div></div>`;
+    return;
+  }
+  listEl.innerHTML = arr.map(m => {
+    const isCur = S.model === m.id;
+    const tagCls = (m.numCost !== null && m.numCost <= 0.3) ? "ok" : (m.numCost >= 1.5 ? "danger" : "warn");
+    return `<div class="item" style="${isCur?"border-color:var(--primary)":""}">
+      <div class="item-body">
+        <div class="item-title">${isCur?"✅ ":""}${esc(m.id)}</div>
+        <div class="item-sub">${m.note ? esc(m.note) : "LiteRouter güncel optimizasyon maliyeti"}</div>
+      </div>
+      <span class="pill-tag ${tagCls}">${esc(m.mult || m.price || "?")}</span>
+      <button class="btn small primary" data-lrpick="${esc(m.id)}">Seç</button>
+    </div>`;
+  }).join("");
+  listEl.querySelectorAll("[data-lrpick]").forEach(b => b.onclick = () => {
+    const S = getS(); S.model = b.dataset.lrpick; saveState(true); applyThemeAndAnim(); renderLrCosts(); haptic("light"); toast("Aktif model: " + S.model);
   });
 }
+window.CAI_renderLrCosts = renderLrCosts;
+$("#lrSearch")?.addEventListener("input", renderLrCosts);
+$("#lrSort")?.addEventListener("change", renderLrCosts);
 
-function ensureWatchData(){
+async function scanLiteRouterCosts(){
+  const S = getS(), btn = $("#lrScanBtn"), st = $("#lrStatus");
+  btn.classList.add("busy"); st.className = "status"; st.textContent = "🔄 literouter.com ve API taranıyor…";
+  try{
+    const found = new Map();
+    // 1) Önce API /models uç noktasında pricing/multiplier varsa doğrudan çek
+    if(S.apiKey){
+      try{
+        const r = await fetch(S.baseUrl.replace(/\/+$/,"")+"/models", {headers:{"Authorization":"Bearer "+S.apiKey}});
+        if(r.ok){
+          const j = await r.json();
+          (j.data || []).forEach(m => {
+            const mult = m.multiplier || m.cost_multiplier || m.pricing?.multiplier;
+            const pr = m.pricing?.prompt ? `$${(Number(m.pricing.prompt)*1e6).toFixed(2)}/1M` : "";
+            if(mult || pr){
+              const num = mult ? parseFloat(String(mult)) : parseFloat(String(m.pricing?.prompt||0))*1e6;
+              found.set(m.id, {id:m.id, mult: mult ? `${mult}x` : pr, price:pr, numCost: isNaN(num)?999:num, note:"API canlı veri"});
+            }
+          });
+        }
+      }catch{}
+    }
+
+    // 2) literouter.com sayfalarını tara (ana sayfa / pricing / models)
+    let rawSiteText = "";
+    for(const u of ["https://literouter.com/models", "https://literouter.com/pricing", "https://literouter.com"]){
+      const info = await fetchUrlInfo(u);
+      if(info.html && info.html.length > 400){
+        const doc = new DOMParser().parseFromString(info.html, "text/html");
+        doc.querySelectorAll("script,style,svg").forEach(e=>e.remove());
+        const txt = (doc.body?.innerText || doc.body?.textContent || "").replace(/\s+/g," ").trim();
+        if(/multiplier|cost|price|x\b|gemini|claude|gpt|deepseek/i.test(txt)){ rawSiteText += `\n[${u}]\n` + txt.slice(0,12000); break; }
+      }
+    }
+
+    // 3) Web sayfasından AI ile güncel çarpanları & maliyetleri ayıkla
+    if(rawSiteText.length > 100 && S.apiKey && S.model){
+      st.textContent = "🤖 AI sitedeki güncel maliyet çarpanlarını ayrıştırıyor…";
+      const aiRaw = await callAI({
+        task:"chat", stream:false, temperature:0.1,
+        messages:[
+          {role:"system", content:`Verilen literouter.com sayfa içeriğinden TÜM AI modellerinin adlarını ve güncel maliyet çarpanlarını (ör. 0.2x, 0.5x, 1x, 2x veya $ fiyat) çıkar. SADECE JSON dizisi dön: [{"id":"model-adi","mult":"0.5x","numCost":0.5,"note":"kısa not"}]. Bulamazsan [].`},
+          {role:"user", content:rawSiteText.slice(0,14000)}
+        ]
+      });
+      try{
+        const s = aiRaw.indexOf("["), e = aiRaw.lastIndexOf("]");
+        if(s>=0 && e>s){
+          JSON.parse(aiRaw.slice(s,e+1)).forEach(x => {
+            if(x.id) found.set(x.id, {id:x.id, mult:x.mult||"?", numCost:Number(x.numCost)||parseFloat(String(x.mult||"99"))||99, note:x.note||"literouter.com"});
+          });
+        }
+      }catch{}
+    }
+
+    if(found.size){
+      S.lrCosts = [...found.values()];
+      S.lrLastScan = Date.now();
+      saveState(); updateLrBadge(); renderLrCosts();
+      st.className = "status ok"; st.textContent = `✅ ${S.lrCosts.length} modelin güncel maliyeti tarandı!`;
+      haptic("success");
+    } else {
+      st.className = "status warn"; st.textContent = "⚠️ Site dinamik (JS) korumalı veya veri dönmedi. Pro Tarayıcıda literouter.com'u açıp çerez aldıktan sonra tekrar dene.";
+    }
+  }catch(e){ st.className = "status error"; st.textContent = "❌ " + e.message; }
+  finally{ btn.classList.remove("busy"); }
+}
+$("#lrScanBtn")?.addEventListener("click", scanLiteRouterCosts);
+
+/* ===================== 4. AKILLI WEB NOVEL SERİ BÖLÜM İNDİRİCİ (SIRALI OLMAYAN URL DESTEKLİ!) ===================== */
+let scraperStopFlag = false;
+async function openScraperModal(title="", url="", bookId=""){
+  const books = (await dbAll()).filter(b=>!b.deletedAt);
+  $("#scrBookSel").innerHTML = `<option value="">Yeni kitap oluştur</option>` + books.map(b=>`<option value="${b.id}">${esc(b.title)}</option>`).join("");
+  if(title) $("#scrTitle").value = title;
+  if(url) $("#scrUrl").value = url;
+  if(bookId) $("#scrBookSel").value = bookId;
+  $("#scrStatus").textContent = "";
+  openModal("scraperModal");
+}
+$("#openScraperBtn")?.addEventListener("click", () => openScraperModal("", $("#bUrlInput")?.value || ""));
+window.__onOpenScraperFromBrowser = (t64, u64) => openScraperModal(b64Dec(t64), b64Dec(u64));
+$("#rFetchMoreBtn")?.addEventListener("click", () => {
+  if(!R.book) return;
+  const lastUrl = [...R.book.chapters].reverse().find(c=>c.url)?.url || R.book.sourceUrl || "";
+  if(!lastUrl) return toast("Bu kitap web kaynaklı değil (URL yok)");
+  closeModal("rSetModal");
+  openScraperModal(R.book.title, lastUrl, R.book.id);
+});
+
+// Sayfadaki gerçek "Sonraki Bölüm / Next" bağlantısını DOM'dan akıllıca bul (URL numarası tahmin etmez!)
+function findNextChapterUrl(doc, baseUrl){
+  const candidates = [];
+  const anchors = [...doc.querySelectorAll("a[href]")];
+  for(const a of anchors){
+    const rawHref = a.getAttribute("href") || "";
+    if(!rawHref || rawHref.startsWith("#") || rawHref.startsWith("javascript:")) continue;
+    let abs = "";
+    try{ abs = new URL(rawHref, baseUrl).href; }catch{ continue; }
+    if(abs === baseUrl) continue;
+    const txt = (a.textContent || "").replace(/\s+/g," ").trim().toLowerCase();
+    const cls = ((a.className||"") + " " + (a.id||"") + " " + (a.getAttribute("rel")||"") + " " + (a.getAttribute("title")||"")).toLowerCase();
+    let score = 0;
+    if(a.getAttribute("rel")==="next") score += 100;
+    if(/next\s*chap|sonraki\s*bölüm|ileri\s*bölüm|bölüm\s*ileri/i.test(txt)) score += 90;
+    else if(/^(next|sonraki|ileri|›|»|→|next\s*»|next\s*>)$/i.test(txt)) score += 75;
+    if(/next[-_]?chap|btn[-_]?next|chap[-_]?next|nav[-_]?next/i.test(cls)) score += 70;
+    if(/prev|önceki|geri|back|comment|login|home|index/i.test(txt+" "+cls)) score -= 120;
+    if(score >= 60) candidates.push({abs, score});
+  }
+  candidates.sort((a,b)=>b.score - a.score);
+  return candidates[0]?.abs || "";
+}
+
+function extractChapterFromHtml(html, url){
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const nextUrl = findNextChapterUrl(doc, url);
+  const title = (doc.querySelector("h1,.chapter-title,.chr-title,.entry-title,h2")?.textContent || doc.title || "Bölüm").replace(/\s+/g," ").trim();
+  const root = doc.querySelector("article,main,[role=main],.chapter-content,.cha-words,#chapter-content,.entry-content,.reading-content,#chr-content,.txt") || doc.body;
+  root.querySelectorAll("script,style,iframe,nav,aside,footer,form,.ads,[class*='ad-'],button").forEach(e=>e.remove());
+  const ps = [...root.querySelectorAll("p")].map(p=>p.textContent.replace(/\s+/g," ").trim()).filter(t=>t.length>8);
+  const text = ps.length >= 3 ? ps.join("\n\n") : (root.innerText || root.textContent || "").replace(/\n{3,}/g,"\n\n").trim();
+  return {title, text, nextUrl};
+}
+
+$("#scrStartBtn")?.addEventListener("click", async () => {
+  let curUrl = $("#scrUrl").value.trim();
+  const maxCount = Math.max(1, Math.min(100, Number($("#scrCount").value)||10));
+  const titleIn = $("#scrTitle").value.trim() || "Web Romanı";
+  const targetBookId = $("#scrBookSel").value;
+  if(!curUrl) return toast("Başlangıç URL'si gir");
+
+  scraperStopFlag = false;
+  $("#scrStartBtn").disabled = true; $("#scrStopBtn").disabled = false;
+  const prog = $("#scrProg"), st = $("#scrStatus");
+  prog.classList.add("on"); st.className = "status";
+
+  let book = targetBookId ? await dbGet(targetBookId) : null;
+  if(!book){
+    const host = curUrl.replace(/^https?:\/\//,"").split("/")[0];
+    book = {id:uid(), title:titleIn, author:host, format:"WEB", sourceHost:host, sourceUrl:curUrl, tags:["Web Novel"], curChap:0, lastRead:Date.now(), chapters:[]};
+  }
+  const visited = new Set(book.chapters.map(c=>c.url).filter(Boolean));
+  let added = 0;
+
+  for(let i=0; i<maxCount; i++){
+    if(scraperStopFlag || !curUrl) break;
+    prog.firstElementChild.style.width = Math.round(((i)/maxCount)*100) + "%";
+    st.textContent = `⚡ Bölüm ${i+1}/${maxCount} çekiliyor…`;
+    const info = await fetchUrlInfo(curUrl);
+    if(info.protected){
+      st.className = "status error";
+      st.textContent = `⚠️ Cloudflare/Bot koruması tespit edildi (${i} bölüm kaydedildi). Önce Pro Tarayıcıda bu siteyi açıp doğrulamayı geç, sonra tekrar dene!`;
+      break;
+    }
+    if(!info.html || info.html.length < 200){ st.textContent = `⚠️ Sayfa boş döndü, durduruldu (${added} eklendi).`; break; }
+    const {title, text, nextUrl} = extractChapterFromHtml(info.html, info.finalUrl || curUrl);
+    if(!visited.has(curUrl) && text.length > 80){
+      book.chapters.push({title, text, url:curUrl});
+      visited.add(curUrl);
+      added++;
+      await dbPut(book);
+    }
+    if(!nextUrl || visited.has(nextUrl)){
+      st.className = "status ok";
+      st.textContent = `✅ Bitti! Sonraki bölüm linki kalmadı (${added} yeni bölüm eklendi).`;
+      break;
+    }
+    curUrl = nextUrl;
+    await new Promise(r=>setTimeout(r, 700));
+  }
+  prog.firstElementChild.style.width = "100%";
+  $("#scrStartBtn").disabled = false; $("#scrStopBtn").disabled = true;
+  if(added > 0){
+    book.lastRead = Date.now(); await dbPut(book); renderLibrary(); haptic("success");
+    if(!st.textContent.includes("⚠️")) { st.className="status ok"; st.textContent=`✅ ${added} bölüm "${book.title}" kitabına kaydedildi!`; }
+  }
+});
+$("#scrStopBtn")?.addEventListener("click", () => { scraperStopFlag = true; toast("İndirme durduruluyor…"); });
+
+/* ===================== 5. YENİ BÖLÜM TAKİPÇİSİ & GERÇEK ANDROID BİLDİRİMİ ===================== */
+function ensureWatchData(){ const S=getS(); if(!Array.isArray(S.watchlist)) S.watchlist=[]; if(!Array.isArray(S.notifInbox)) S.notifInbox=[]; return S; }
+function updateNotifBadge(){
+  const S=ensureWatchData(), unread=S.notifInbox.filter(x=>!x.read).length, b=$("#notifBadge");
+  if(!b) return; b.textContent=unread>99?"99+":unread; b.classList.toggle("show", unread>0);
+}
+function renderWatchAndNotifs(){
+  const S=ensureWatchData();
+  $("#watchList").innerHTML = S.watchlist.length ? S.watchlist.map(w=>`
+    <div class="item">
+      <div class="item-body">
+        <div class="item-title">${esc(w.title)} ${w.statusTag?`<span class="pill-tag ${w.protected?"warn":"ok"}">${esc(w.statusTag)}</span>`:""}</div>
+        <div class="item-sub">${esc(w.url.slice(0,55))}</div>
+      </div>
+      <button class="btn small" data-wopen="${esc(w.url)}">🌐</button>
+      <button class="btn small ok" data-wscr="${w.id}" title="Yeni bölümleri çek">⚡</button>
+      <button class="btn small danger" data-wdel="${w.id}">✕</button>
+    </div>`).join("") : `<div class="meta">Takip edilen seri yok.</div>`;
+  $$("[data-wopen]").forEach(b=>b.onclick=()=>openRealBrowser(b.dataset.wopen));
+  $$("[data-wscr]").forEach(b=>b.onclick=()=>{ const w=S.watchlist.find(x=>x.id===b.dataset.wscr); if(w){closeModal("notifModal"); openScraperModal(w.title, w.lastUrl||w.url);} });
+  $$("[data-wdel]").forEach(b=>b.onclick=()=>{ S.watchlist=S.watchlist.filter(x=>x.id!==b.dataset.wdel); saveState(); renderWatchAndNotifs(); });
+
+  $("#notifList").innerHTML = S.notifInbox.length ? S.notifInbox.slice(0,30).map(n=>`
+    <div class="item" style="${!n.read?"border-color:var(--primary)":""}">
+      <div class="item-body">
+        <div class="item-title">${esc(n.title)}</div>
+        <div class="item-sub">${esc(n.body)} • ${new Date(n.ts).toLocaleTimeString("tr")}</div>
+      </div>
+      <button class="btn small primary" data-nopen="${esc(n.url)}">Aç</button>
+    </div>`).join("") : `<div class="meta">Henüz bildirim yok.</div>`;
+  $$("[data-nopen]").forEach(b=>b.onclick=()=>openRealBrowser(b.dataset.nopen));
+  updateNotifBadge();
+}
+function openNotifModal(){
+  const S=ensureWatchData(); S.notifInbox.forEach(x=>x.read=true); saveState();
+  renderWatchAndNotifs(); openModal("notifModal");
+}
+$("#hdrNotifBtn")?.addEventListener("click", openNotifModal);
+$("#addWatchBtn")?.addEventListener("click", () => {
+  const S=ensureWatchData(), t=$("#watchTitle").value.trim(), u=$("#watchUrl").value.trim();
+  if(!t||!u) return toast("Ad ve URL gir");
+  S.watchlist.unshift({id:uid(), title:t, url:u, lastSig:"", lastUrl:u, protected:false});
+  $("#watchTitle").value=""; $("#watchUrl").value=""; saveState(); renderWatchAndNotifs();
+});
+window.__onAddWatchFromBrowser = (t64, u64) => {
+  const S=ensureWatchData(), t=b64Dec(t64), u=b64Dec(u64);
+  if(!S.watchlist.some(x=>x.url===u)){ S.watchlist.unshift({id:uid(), title:t, url:u, lastSig:"", lastUrl:u}); saveState(); }
+};
+$("#checkWatchBtn")?.addEventListener("click", async () => {
+  const S=ensureWatchData(); if(!S.watchlist.length) return toast("Takip listesi boş");
+  toast("🔄 Seriler kontrol ediliyor…");
+  let foundNew = 0;
+  for(const w of S.watchlist){
+    const info = await fetchUrlInfo(w.url);
+    if(info.protected){ w.protected=true; w.statusTag="⚠️ Korumalı"; continue; }
+    w.protected = false;
+    const links = [...new DOMParser().parseFromString(info.html,"text/html").querySelectorAll("a[href]")].filter(a=>/chap|bölüm|episode|ch[-_ ]?\d/i.test(a.textContent+a.getAttribute("href")));
+    const sig = links.length + "|" + (links[0]?.textContent?.trim().slice(0,40) || info.html.length);
+    if(w.lastSig && w.lastSig !== sig){
+      foundNew++;
+      w.statusTag = "🆕 Yeni Bölüm!";
+      const msg = `${w.title} için yeni bölüm tespit edildi!`;
+      S.notifInbox.unshift({id:uid(), title:"🆕 " + w.title, body:msg, url:w.url, ts:Date.now(), read:false});
+      if(isNative() && window.AndroidBridge.showNotification) window.AndroidBridge.showNotification("Çevirmen AI — Yeni Bölüm!", msg, "notifs");
+    } else {
+      w.statusTag = "Güncel";
+    }
+    w.lastSig = sig;
+  }
+  saveState(); renderWatchAndNotifs();
+  toast(foundNew ? `🔔 ${foundNew} seride yeni bölüm bulundu!` : "Kontrol tamamlandı, yeni bölüm yok.");
+});
+
+/* ===================== 6. FMHY OKUMA MERKEZİ (ARAMA + ÖZEL KATEGORİ + SİTE TESTİ) ===================== */
+const DEFAULT_FMHY = [
+  {cat:"Web Novel", name:"NovelBin", url:"https://novelbin.com"},
+  {cat:"Web Novel", name:"RoyalRoad", url:"https://www.royalroad.com"},
+  {cat:"Web Novel", name:"NovelUpdates", url:"https://www.novelupdates.com"},
+  {cat:"Web Novel", name:"WuxiaWorld", url:"https://www.wuxiaworld.com"},
+  {cat:"Manga / Manhwa", name:"MangaDex", url:"https://mangadex.org"},
+  {cat:"Manga / Manhwa", name:"Comick", url:"https://comick.io"},
+  {cat:"Manga / Manhwa", name:"AsuraScans", url:"https://asuracomic.net"},
+  {cat:"E-Kitap / EPUB", name:"Anna's Archive", url:"https://annas-archive.org"},
+  {cat:"E-Kitap / EPUB", name:"Standard Ebooks", url:"https://standardebooks.org"},
+  {cat:"Rehber", name:"FMHY Reading", url:"https://fmhy.net/reading"}
+];
+function getFmhyList(){ const S=getS(); if(!Array.isArray(S.fmhySites)||!S.fmhySites.length) S.fmhySites=structuredClone(DEFAULT_FMHY); return S.fmhySites; }
+function renderFmhyQuick(){
+  const el = $("#fmhyQuickChips"); if(!el) return;
+  el.innerHTML = getFmhyList().slice(0,10).map(s=>`<span class="chip" data-fq="${esc(s.url)}">${esc(s.name)}</span>`).join("");
+  el.querySelectorAll("[data-fq]").forEach(c=>c.onclick=()=>openRealBrowser(c.dataset.fq));
+}
+function renderFmhyModal(){
+  const list = getFmhyList(), q = ($("#fmhySearch")?.value||"").toLowerCase().trim();
+  const filtered = list.filter(s=>!q || (s.name+" "+s.cat+" "+s.url).toLowerCase().includes(q));
+  const cats = [...new Set(filtered.map(s=>s.cat))];
+  $("#fmhyBody").innerHTML = cats.map(c=>`
+    <h4 style="font-size:12px;color:var(--accent);margin:8px 0 5px">${esc(c)}</h4>
+    <div class="list">${filtered.filter(x=>x.cat===c).map((s,idx)=>`
+      <div class="item">
+        <div class="item-body">
+          <div class="item-title">${s.ping==="ok"?"🟢 ":s.ping==="cf"?"🟡 ":s.ping==="err"?"🔴 ":""}${esc(s.name)}</div>
+          <div class="item-sub">${esc(s.url)}</div>
+        </div>
+        <button class="btn small primary" data-fgo="${esc(s.url)}">Aç</button>
+        <button class="btn small danger" data-fdel="${esc(s.url)}">✕</button>
+      </div>`).join("")}</div>`).join("") || `<div class="meta">Sonuç yok.</div>`;
+  $$("[data-fgo]").forEach(b=>b.onclick=()=>{ closeModal("fmhyModal"); openRealBrowser(b.dataset.fgo); });
+  $$("[data-fdel]").forEach(b=>b.onclick=()=>{ const S=getS(); S.fmhySites=getFmhyList().filter(x=>x.url!==b.dataset.fdel); saveState(); renderFmhyModal(); renderFmhyQuick(); });
+}
+$("#openFmhyBtn")?.addEventListener("click", () => { renderFmhyModal(); openModal("fmhyModal"); });
+$("#fmhySearch")?.addEventListener("input", renderFmhyModal);
+$("#fmhyAddCatBtn")?.addEventListener("click", () => { const b=$("#fmhyAddBox"); b.style.display=b.style.display==="none"?"block":"none"; });
+$("#fmhySaveNewBtn")?.addEventListener("click", () => {
+  const cat=$("#fmhyNewCat").value.trim()||"Özel", name=$("#fmhyNewName").value.trim(), url=$("#fmhyNewUrl").value.trim();
+  if(!name||!url) return toast("Ad ve URL gir");
+  getFmhyList().push({cat, name, url}); saveState(); renderFmhyModal(); renderFmhyQuick();
+  $("#fmhyNewName").value=""; $("#fmhyNewUrl").value=""; $("#fmhyAddBox").style.display="none"; toast("Site eklendi!");
+});
+$("#fmhyTestAllBtn")?.addEventListener("click", async () => {
+  const list = getFmhyList(); toast("📡 Siteler test ediliyor…");
+  for(const s of list){
+    const info = await fetchUrlInfo(s.url);
+    s.ping = info.protected ? "cf" : (info.status>=200 && info.status<400 ? "ok" : "err");
+    renderFmhyModal();
+  }
+  toast("📡 Site erişim testi tamamlandı!");
+});
+
+/* ===================== 7. AI SOHBET (0 TİTREME STREAMING + MARKDOWN + ÇOKLU OTURUM + SPOİLER KORUMASI) ===================== */
+function ensureChatState(){
   const S = getS();
-  if(!Array.isArray(S.watchlist)) S.watchlist = [];
-  if(!Array.isArray(S.notifInbox)) S.notifInbox = [];
+  if(!Array.isArray(S.chatSessions) || !S.chatSessions.length){
+    S.chatSessions = [{id:uid(), title:"Genel Sohbet", persona:"Sen yardımcı, akıllı ve Türkçe konuşan bir kitap/çeviri asistanısın.", msgs:[]}];
+    S.activeChatId = S.chatSessions[0].id;
+  }
+  if(!S.chatSessions.some(x=>x.id===S.activeChatId)) S.activeChatId = S.chatSessions[0].id;
   return S;
 }
-function updateNotifBadge(){
-  const S = ensureWatchData();
-  const unread = S.notifInbox.filter(x=>!x.read).length;
-  const b = $("#notifBadge"); if(!b) return;
-  b.textContent = unread > 99 ? "99+" : unread;
-  b.classList.toggle("show", unread > 0);
+function getActiveChat(){ const S=ensureChatState(); return S.chatSessions.find(x=>x.id===S.activeChatId) || S.chatSessions[0]; }
+
+function renderMarkdown(md){
+  let s = esc(md || "");
+  // Kod blokları (tek tık kopyala butonlu)
+  s = s.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+    `<div class="md-pre"><div class="md-pre-hd"><span>${lang||"kod"}</span><button class="btn small" onclick="window.CAI.copyText(this.parentElement.nextElementSibling.textContent)">📋 Kopyala</button></div><code>${code}</code></div>`);
+  s = s.replace(/`([^`\n]+)`/g, '<span class="md-ic">$1</span>');
+  s = s.replace(/^### (.+)$/gm, '<h4>$1</h4>').replace(/^## (.+)$/gm, '<h3>$1</h3>');
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/\*([^*\n]+)\*/g, '<i>$1</i>');
+  s = s.replace(/^- (.+)$/gm, '<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>');
+  s = s.replace(/\n/g, '<br>');
+  return s;
 }
-function extractLatestChapterFromHtml(html, baseUrl){
-  if(!html) return null;
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const title = (doc.querySelector("h1")?.textContent || doc.title || "").replace(/\s+/g," ").trim();
-  const links = [...doc.querySelectorAll("a[href]")].map(a => {
-    let abs = ""; try{ abs = new URL(a.getAttribute("href"), baseUrl).href; }catch{}
-    const txt = (a.textContent || "").replace(/\s+/g," ").trim();
-    return {txt, url:abs};
-  }).filter(l => l.url && l.txt && l.txt.length < 95);
-
-  // Bölüm numarası içeren linklerden en yüksek numaralıyı bul
-  let best = null, bestNum = -1;
-  for(const l of links){
-    const m = (l.txt + " " + l.url).match(/(?:chapter|ch\.?|bölüm|bolum|episode|ep\.?)[-\s_/:]*(\d+(?:\.\d+)?)/i);
-    if(m){
-      const num = parseFloat(m[1]);
-      if(num > bestNum){ bestNum = num; best = {label: l.txt || `Bölüm ${m[1]}`, url: l.url, sig: `ch_${m[1]}`}; }
-    }
-  }
-  if(best) return {seriesTitle: title, ...best};
-  return {seriesTitle: title, label: title || baseUrl, url: baseUrl, sig: "t_" + title.slice(0,60)};
-}
-
-window.__onAddWatchFromBrowser = (t64, u64) => {
-  const title = b64Dec(t64).replace(/\s*[-|–:]\s*(Chapter|Bölüm|Ch\.?).*$/i,"").trim() || "Takip Edilen Seri";
-  const url = b64Dec(u64).trim();
-  if(!url) return;
-  const S = ensureWatchData();
-  if(!S.watchlist.some(w=>w.url === url)){
-    S.watchlist.unshift({id:uid(), name:title.slice(0,55), url, lastSig:"", lastLabel:"Henüz taranmadı", lastCheck:0});
-    saveState();
-  }
-};
-
-async function checkAllWatchedSeries(silent=false){
-  const S = ensureWatchData();
-  if(!S.watchlist.length){ if(!silent) toast("Takip listesi boş"); return; }
-  const btn = $("#watchCheckNowBtn"), st = $("#notifStatus");
-  if(btn){ btn.classList.add("busy"); btn.disabled = true; }
-  if(st && !silent){ st.className="status"; st.textContent="🔍 Takip edilen seriler kontrol ediliyor…"; }
-
-  let newCount = 0;
-  for(const item of S.watchlist){
-    const html = await fetchHtmlForWatch(item.url);
-    const info = extractLatestChapterFromHtml(html, item.url);
-    item.lastCheck = Date.now();
-    if(!info) continue;
-    if(item.lastSig && info.sig !== item.lastSig){
-      S.notifInbox.unshift({
-        id:uid(), date:Date.now(), read:false,
-        series: item.name, label: info.label, url: info.url
-      });
-      if(S.notifInbox.length > 60) S.notifInbox.length = 60;
-      newCount++;
-    }
-    item.lastSig = info.sig;
-    item.lastLabel = info.label;
-  }
-  S.lastAutoWatchCheck = Date.now();
-  saveState(); updateNotifBadge(); renderNotifModal();
-  if(btn){ btn.classList.remove("busy"); btn.disabled = false; }
-  if(st && !silent){
-    st.className = newCount ? "status ok" : "status";
-    st.textContent = newCount ? `🎉 ${newCount} yeni bölüm bildirim kutuna düştü!` : "Tüm seriler kontrol edildi, yeni bölüm yok.";
-  } else if(newCount > 0){
-    toast(`🔔 ${newCount} yeni bölüm yayınlandı!`);
-  }
-}
-
-let notifTab = "inbox";
-function renderNotifModal(){
-  const S = ensureWatchData();
-  $("#notifInboxArea").style.display = notifTab === "inbox" ? "block" : "none";
-  $("#notifWatchArea").style.display = notifTab === "watch" ? "block" : "none";
-
-  const ib = $("#notifInboxList");
-  if(ib){
-    ib.innerHTML = S.notifInbox.length ? S.notifInbox.map(n=>`
-      <div class="list-item" style="${n.read?'opacity:.65':'border-color:var(--primary);background:#8b5cf618'}">
-        <div class="list-item-body" data-nopen="${n.id}" style="cursor:pointer">
-          <div class="list-item-title">${n.read?'':'🔴 '}${esc(n.series)}</div>
-          <div class="list-item-sub" style="color:var(--accent)">${esc(n.label)} · ${new Date(n.date).toLocaleString("tr")}</div>
-        </div>
-        <button class="btn small danger" data-ndel="${n.id}">✕</button>
-      </div>`).join("") : `<div class="hint" style="text-align:center;padding:22px">Gelen kutusu boş. Takip ettiğin serilerde yeni bölüm çıkınca burada birikir!</div>`;
-    ib.querySelectorAll("[data-nopen]").forEach(el=>el.onclick=()=>{
-      const it = S.notifInbox.find(x=>x.id===el.dataset.nopen); if(!it) return;
-      it.read = true; saveState(); updateNotifBadge(); closeModal("notifModal");
-      openRealBrowser(it.url);
-    });
-    ib.querySelectorAll("[data-ndel]").forEach(b=>b.onclick=()=>{ S.notifInbox=S.notifInbox.filter(x=>x.id!==b.dataset.ndel); saveState(); updateNotifBadge(); renderNotifModal(); });
-  }
-
-  const wl = $("#watchList");
-  if(wl){
-    wl.innerHTML = S.watchlist.length ? S.watchlist.map(w=>`
-      <div class="list-item">
-        <div class="list-item-body" data-wgo="${esc(w.url)}" style="cursor:pointer">
-          <div class="list-item-title">👁️ ${esc(w.name)}</div>
-          <div class="list-item-sub">Son: ${esc(w.lastLabel||"-")}</div>
-        </div>
-        <button class="btn small danger" data-wdel="${w.id}">✕</button>
-      </div>`).join("") : `<div class="hint" style="text-align:center;padding:18px">Henüz takip edilen seri yok. Yukarıdan link ekle veya tarayıcıda ⚙ → 🔔 Takibe Ekle de!</div>`;
-    wl.querySelectorAll("[data-wgo]").forEach(el=>el.onclick=()=>{ closeModal("notifModal"); openRealBrowser(el.dataset.wgo); });
-    wl.querySelectorAll("[data-wdel]").forEach(b=>b.onclick=()=>{ S.watchlist=S.watchlist.filter(x=>x.id!==b.dataset.wdel); saveState(); renderNotifModal(); });
-  }
-}
-
-$$("#notifSeg button").forEach(b=>b.onclick=()=>{ notifTab=b.dataset.nt; $$("#notifSeg button").forEach(x=>x.classList.toggle("active",x===b)); renderNotifModal(); });
-$("#openNotifBtn")?.addEventListener("click", () => { renderNotifModal(); openModal("notifModal"); });
-$("#watchCheckNowBtn")?.addEventListener("click", () => checkAllWatchedSeries(false));
-$("#watchAddBtn")?.addEventListener("click", () => {
-  const raw = ($("#watchUrlInput").value||"").trim(); if(!raw) return toast("Seri linki yapıştır");
-  const url = /^https?:\/\//i.test(raw) ? raw : "https://"+raw;
-  const name = prompt("Seri adı:", url.replace(/^https?:\/\/(www\.)?/,"").split("/").slice(0,2).join(" / "));
-  if(!name) return;
-  const S = ensureWatchData();
-  S.watchlist.unshift({id:uid(), name:name.trim(), url, lastSig:"", lastLabel:"Kontrol bekleniyor", lastCheck:0});
-  $("#watchUrlInput").value = ""; saveState(); renderNotifModal(); toast("Takip listesine eklendi 🔔");
-});
-$("#notifMarkAllBtn")?.addEventListener("click", () => { ensureWatchData().notifInbox.forEach(n=>n.read=true); saveState(); updateNotifBadge(); renderNotifModal(); });
-$("#notifClearBtn")?.addEventListener("click", () => { ensureWatchData().notifInbox=[]; saveState(); updateNotifBadge(); renderNotifModal(); });
-
-/* ===================== 4. FMHY OKUMA MERKEZİ ===================== */
-const FMHY_DEFAULTS = {
-  novels: [
-    {id:"fn1", name:"NovelBin", url:"https://novelbin.com"},{id:"fn2", name:"NovelFire", url:"https://novelfire.net"},
-    {id:"fn3", name:"RoyalRoad", url:"https://www.royalroad.com"},{id:"fn4", name:"WebNovel", url:"https://www.webnovel.com"},
-    {id:"fn5", name:"WuxiaWorld", url:"https://www.wuxiaworld.com"},{id:"fn6", name:"NovelUpdates", url:"https://www.novelupdates.com"},
-    {id:"fn7", name:"ScribbleHub", url:"https://www.scribblehub.com"},{id:"fn8", name:"AO3", url:"https://archiveofourown.org"}
-  ],
-  manga: [
-    {id:"fm1", name:"MangaDex", url:"https://mangadex.org"},{id:"fm2", name:"ComicK", url:"https://comick.io"},
-    {id:"fm3", name:"AsuraScans", url:"https://asuracomic.net"},{id:"fm4", name:"Webtoons", url:"https://www.webtoons.com/en/"},
-    {id:"fm5", name:"MANGA Plus", url:"https://mangaplus.shueisha.co.jp"},{id:"fm6", name:"MangaFire", url:"https://mangafire.to"},
-    {id:"fm7", name:"Bato.to", url:"https://bato.to"},{id:"fm8", name:"WeebCentral", url:"https://weebcentral.com"}
-  ],
-  ebooks: [
-    {id:"fe1", name:"Anna's Archive", url:"https://annas-archive.org"},{id:"fe2", name:"Standard Ebooks", url:"https://standardebooks.org"},
-    {id:"fe3", name:"Gutenberg", url:"https://www.gutenberg.org"},{id:"fe4", name:"Open Library", url:"https://openlibrary.org"},
-    {id:"fe5", name:"OceanofPDF", url:"https://oceanofpdf.com"},{id:"fe6", name:"FMHY Reading", url:"https://fmhy.net/reading"}
-  ]
-};
-function ensureFmhyData(){ const S=getS(); if(!S.fmhySites||!S.fmhySites.novels){S.fmhySites=structuredClone(FMHY_DEFAULTS);saveState();} return S.fmhySites; }
-let fmhyCat = "novels";
-function renderFmhy(){
-  const data=ensureFmhyData(), list=data[fmhyCat]||[], g=$("#fmhyGrid");
-  if(g){
-    g.innerHTML = list.length ? list.map(s=>`<div class="bm-tile" data-furl="${esc(s.url)}"><button class="bm-del" data-fdel="${esc(s.id)}">✕</button><div class="bm-ico" style="background:linear-gradient(135deg,var(--primary),#c026d3)">${esc((s.name||"S")[0].toUpperCase())}</div><div class="bm-name">${esc(s.name)}</div></div>`).join("") : `<div class="hint" style="grid-column:1/-1;text-align:center;padding:12px">Liste boş.</div>`;
-    g.querySelectorAll(".bm-tile").forEach(el=>el.onclick=e=>{if(!e.target.dataset.fdel)openRealBrowser(el.dataset.furl);});
-    g.querySelectorAll("[data-fdel]").forEach(btn=>btn.onclick=e=>{e.stopPropagation();data[fmhyCat]=data[fmhyCat].filter(x=>x.id!==btn.dataset.fdel);saveState();renderFmhy();toast("Kaldırıldı");});
-  }
-  const mg=$("#mangaSitesGrid");
-  if(mg){
-    mg.innerHTML=(data.manga||[]).map(s=>`<div class="bm-tile" data-ms="${esc(s.url)}"><div class="bm-ico" style="background:linear-gradient(135deg,#c026d3,#8b5cf6)">${esc((s.name||"M")[0].toUpperCase())}</div><div class="bm-name">${esc(s.name)}</div></div>`).join("");
-    mg.querySelectorAll("[data-ms]").forEach(el=>el.onclick=()=>openRealBrowser(el.dataset.ms));
-  }
-}
-$$("#fmhySeg button").forEach(b=>b.onclick=()=>{fmhyCat=b.dataset.fc;$$("#fmhySeg button").forEach(x=>x.classList.toggle("active",x===b));renderFmhy();});
-$("#openFmhyDirect").onclick=()=>openRealBrowser("https://fmhy.net/reading");
-$("#fmhyAddBtn")?.addEventListener("click",()=>{ const u=prompt("Site URL:","https://");if(!u)return;const cu=/^https?:\/\//i.test(u.trim())?u.trim():"https://"+u.trim();const n=prompt("Site adı:",cu.replace(/^https?:\/\/(www\.)?/,"").split("/")[0]);if(!n)return;ensureFmhyData()[fmhyCat].unshift({id:uid(),name:n.trim(),url:cu});saveState();renderFmhy();toast("Eklendi ✅"); });
-$("#fmhyRefreshBtn")?.addEventListener("click",()=>{ if(!confirm("Varsayılan siteler geri yüklensin mi?"))return;const d=ensureFmhyData(),ex=new Set(d[fmhyCat].map(x=>x.url));for(const x of (FMHY_DEFAULTS[fmhyCat]||[]))if(!ex.has(x.url))d[fmhyCat].push({...x});saveState();renderFmhy();toast("Yenilendi ↻"); });
-$("#mSiteGoBtn").onclick=()=>{const q=$("#mSiteInput").value.trim();openRealBrowser(q||"https://mangadex.org");};
-$("#mSiteInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("#mSiteGoBtn").click();});
-
-/* ===================== 5. AI SOHBET (GÖRSEL/DOSYA + ÖZEL PROMPT + KİTAPLA SOHBET) ===================== */
-const CHAT_PERSONAS = {
-  default:"Sen Çevirmen AI uygulamasının akıllı Türkçe asistanısın. Samimi, net ve yardımcı ol. Site önerirken tıklanabilir gerçek URL'ler (https://...) ver.",
-  recommender:"Sen web novel, hafif roman, manga ve manhwa uzmanısın. Kullanıcının zevkine göre nokta atışı seri ve çalışan okuma siteleri (https://...) öner.",
-  teacher:"Sen sabırlı bir İngilizce/Japonca dil öğretmenisin. Kelimeleri, grameri ve deyimleri örnek cümlelerle kolayca öğret.",
-  editor:"Sen profesyonel bir edebiyat editörüsün. Metinleri edebi açıdan incele, akıcılık ve üslup önerileri ver.",
-  rp:"Sen yaratıcı bir hikaye ve rol yapma (RP) partnerisin. Kullanıcının kurduğu evrene tamamen uyum sağlayarak sürükleyici yanıtlar ver."
-};
-
-let chatCtrl = null, chatAttachment = null; // {kind:'img'|'file', name, data}
-function ensureChat(){ const S=getS(); if(!Array.isArray(S.chatHistory))S.chatHistory=[]; if(!S.chatSysPrompt)S.chatSysPrompt=CHAT_PERSONAS.default; return S.chatHistory; }
-function formatChatHtml(txt){ return esc(txt).replace(/(https?:\/\/[^\s<>"')]+)/g, u => `<a href="#" data-chaturl="${u}">${u}</a>`); }
 
 async function populateChatBooks(){
   const sel = $("#chatBookSel"); if(!sel) return;
+  const books = (await dbAll()).filter(b=>!b.deletedAt);
   const cur = sel.value;
-  const books = (await dbAll()).filter(b=>!b.deletedAt).sort((a,b)=>(b.lastRead||0)-(a.lastRead||0));
-  sel.innerHTML = `<option value="">📚 Kitap Bağlama: Yok (Genel Sohbet)</option>` +
-    books.map(b=>`<option value="${b.id}">📖 ${esc(b.title)} (${b.chapters.length} Bölüm)</option>`).join("");
-  if(books.some(b=>b.id===cur)) sel.value = cur;
+  sel.innerHTML = `<option value="">📚 Kitap bağlama (Genel Sohbet)</option>` + books.map(b=>`<option value="${b.id}">📖 ${esc(b.title)} (Bölüm ${(b.curChap||0)+1}/${b.chapters.length})</option>`).join("");
+  if(cur) sel.value = cur;
 }
 
-function renderChat(){
-  const msgs=ensureChat(), box=$("#chatMsgs"); if(!box)return;
-  if(!msgs.length){ box.innerHTML=`<div class="chat-msg ai">Merhaba! Fotoğraf/dosya gönderebilir, üstten kütüphanendeki bir kitabı bağlayıp <b>Kitapla Sohbet</b> edebilir veya <b>⚙ Prompt</b> tuşundan kendi özel sohbet kişiliğini yazabilirsin. ✨</div>`; return; }
-  box.innerHTML = msgs.map(m => {
-    const imgHtml = m.img ? `<img src="${m.img}" alt="">` : "";
-    const fileTag = m.fileName ? `<div class="meta" style="margin-bottom:4px">📎 ${esc(m.fileName)}</div>` : "";
-    return `<div class="chat-msg ${m.role==='user'?'user':'ai'}">${imgHtml}${fileTag}${m.role==='user'?esc(m.content):formatChatHtml(m.content)}</div>`;
-  }).join("");
-  box.querySelectorAll("[data-chaturl]").forEach(a=>a.onclick=e=>{e.preventDefault();openRealBrowser(a.dataset.chaturl);});
-  box.scrollTop = box.scrollHeight;
+function renderChatSessions(){
+  const S = ensureChatState(), sel = $("#chatSessionSel"); if(!sel) return;
+  sel.innerHTML = S.chatSessions.map(c=>`<option value="${c.id}">💬 ${esc(c.title)} (${c.msgs.length})</option>`).join("");
+  sel.value = S.activeChatId;
 }
 
-// Görsel / Dosya Ekleme
-$("#chatAttachBtn")?.addEventListener("click", () => $("#chatFileInput").click());
-$("#chatFileInput")?.addEventListener("change", async e => {
-  const f = e.target.files[0]; if(!f) return;
-  if(f.type.startsWith("image/")){
-    const img = new Image(); img.src = URL.createObjectURL(f); await new Promise(r=>img.onload=r);
-    const c = document.createElement("canvas"), sc = Math.min(1, 1024/img.width);
-    c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    chatAttachment = {kind:"img", name:f.name, data:c.toDataURL("image/jpeg", 0.84)};
-    $("#chatAttachImg").src = chatAttachment.data; $("#chatAttachImg").style.display = "block";
-  } else {
-    const txt = (await f.text()).slice(0, 14000);
-    chatAttachment = {kind:"file", name:f.name, data:txt};
-    $("#chatAttachImg").style.display = "none";
+function renderChatFull(){
+  renderChatSessions();
+  const chat = getActiveChat(), box = $("#chatMsgs"); if(!box) return;
+  if(!chat.msgs.length){
+    box.innerHTML = `<div class="meta" style="text-align:center;margin:auto">👋 Yeni sohbet hazır. Görsel, PDF veya kitap bağlayarak soru sorabilirsin!</div>`;
+    return;
   }
-  $("#chatAttachName").textContent = f.name;
-  $("#chatAttachBox").classList.add("show");
+  box.innerHTML = chat.msgs.map((m, idx) => `
+    <div class="cmsg ${m.role==="user"?"user":"ai"}" data-cidx="${idx}">
+      ${(m.images||[]).map(src=>`<img src="${src}" onclick="document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('open')">`).join("")}
+      <div class="cmsg-body">${m.role==="user" ? esc(m.text) : renderMarkdown(m.text)}</div>
+      <div class="cmsg-acts">
+        <button data-ccopy="${idx}">📋</button>
+        ${m.role==="assistant" ? `<button data-cregen="${idx}">🔄</button><button data-ctts="${idx}">🔊</button><button data-ctotext="${idx}">🌐 Metne</button>` : `<button data-cedit="${idx}">✏️</button>`}
+      </div>
+    </div>`).join("");
+  box.scrollTop = box.scrollHeight;
+  bindChatMsgActions();
+}
+
+function bindChatMsgActions(){
+  const chat = getActiveChat();
+  $$("[data-ccopy]").forEach(b=>b.onclick=()=>copyText(chat.msgs[b.dataset.ccopy]?.text));
+  $$("[data-ctts]").forEach(b=>b.onclick=()=>{ const t=chat.msgs[b.dataset.ctts]?.text; if(t && window.speechSynthesis){ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="tr-TR"; speechSynthesis.speak(u); } });
+  $$("[data-ctotext]").forEach(b=>b.onclick=()=>{ const t=chat.msgs[b.dataset.ctotext]?.text; if(t){ $("#srcText").value=t; switchView("text"); toast("Metin sekmesine aktarıldı"); } });
+  $$("[data-cedit]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cedit); $("#chatInput").value=chat.msgs[i].text; chat.msgs=chat.msgs.slice(0,i); saveState(); renderChatFull(); });
+  $$("[data-cregen]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cregen); if(i>0){ chat.msgs=chat.msgs.slice(0,i); saveState(); renderChatFull(); sendChatMessage(true); } });
+}
+
+let chatAttachments = []; // {type:'img'|'text', name, data}
+$("#chatFileBtn")?.addEventListener("click", () => $("#chatFileInput").click());
+$("#chatFileInput")?.addEventListener("change", async e => {
+  for(const f of [...(e.target.files||[])]){
+    if(f.type.startsWith("image/")){
+      const url = await new Promise(res=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.readAsDataURL(f); });
+      chatAttachments.push({type:"img", name:f.name, data:url});
+    } else {
+      const txt = (await f.text()).slice(0, 12000);
+      chatAttachments.push({type:"text", name:f.name, data:txt});
+    }
+  }
   e.target.value = "";
+  renderChatAtts();
 });
-$("#chatAttachClear")?.addEventListener("click", () => { chatAttachment = null; $("#chatAttachBox").classList.remove("show"); });
+function renderChatAtts(){
+  $("#chatAttPreview").innerHTML = chatAttachments.map((a,i)=>`<span class="chat-att-chip">${a.type==="img"?"🖼️":"📄"} ${esc(a.name.slice(0,18))} <b data-rmatt="${i}" style="cursor:pointer">×</b></span>`).join("");
+  $$("[data-rmatt]").forEach(b=>b.onclick=()=>{ chatAttachments.splice(Number(b.dataset.rmatt),1); renderChatAtts(); });
+}
 
-// Özel Sohbet Promptu Modalı
-$("#chatPromptBtn")?.addEventListener("click", () => {
-  ensureChat(); $("#chatSysPromptInput").value = getS().chatSysPrompt || CHAT_PERSONAS.default;
-  openModal("chatPromptModal");
-});
-$$("#chatPersonaBtns button").forEach(b=>b.onclick=()=>{ $("#chatSysPromptInput").value = CHAT_PERSONAS[b.dataset.cp] || CHAT_PERSONAS.default; });
-$("#saveChatPromptBtn")?.addEventListener("click", () => {
-  getS().chatSysPrompt = $("#chatSysPromptInput").value.trim() || CHAT_PERSONAS.default;
-  saveState(); closeModal("chatPromptModal"); toast("Özel sohbet promptu kaydedildi ✨");
-});
+async function sendChatMessage(isRegen=false){
+  const chat = getActiveChat(), inp = $("#chatInput");
+  if(!isRegen){
+    const txt = inp.value.trim();
+    if(!txt && !chatAttachments.length) return;
+    const imgs = chatAttachments.filter(a=>a.type==="img").map(a=>a.data);
+    const filesTxt = chatAttachments.filter(a=>a.type==="text").map(a=>`\n[Dosya: ${a.name}]\n${a.data}`).join("\n");
+    if(!chat.msgs.length && txt) chat.title = txt.slice(0,26);
+    chat.msgs.push({role:"user", text:(txt + filesTxt).trim(), images:imgs});
+    inp.value = ""; chatAttachments = []; renderChatAtts(); saveState(); renderChatFull();
+  }
 
-async function sendChatMessage(overrideText=null){
-  const S=getS(), inp=$("#chatInput");
-  const text=(overrideText!==null?overrideText:inp.value).trim();
-  if(!text && !chatAttachment) return;
-  if(!S.apiKey||!S.model) return toast("Ayarlar'dan API Key ve Model seç!");
-  if(overrideText===null) inp.value="";
-
-  const att = chatAttachment; chatAttachment = null; $("#chatAttachBox").classList.remove("show");
-  const msgs = ensureChat();
-  msgs.push({role:"user", content:text || (att?.kind==="img"?"Bu görseli incele ve açıkla.":"Bu dosyayı incele."), img:att?.kind==="img"?att.data:null, fileName:att?.kind==="file"?att.name:null});
-  msgs.push({role:"assistant", content:"…"});
-  if(msgs.length > 40) msgs.splice(0, msgs.length - 40);
-  saveState(); renderChat();
-
-  // Kitap bağlıysa kitabın Wiki + aktif/yakın bölümlerini bağlam olarak ekle
-  let sysText = S.chatSysPrompt || CHAT_PERSONAS.default;
+  // Sistem bağlamı + SPOİLER KORUMASI!
+  let sys = chat.persona || "Sen akıllı bir Türkçe asistansın.";
   const bookId = $("#chatBookSel")?.value;
   if(bookId){
     const bk = await dbGet(bookId);
     if(bk){
+      const guard = $("#chatSpoilerGuard")?.checked;
       const curIdx = bk.curChap || 0;
-      let excerpt = "";
-      for(let i=Math.max(0,curIdx-1); i<=Math.min(bk.chapters.length-1,curIdx+1); i++){
-        const d = document.createElement("div"); d.innerHTML = bk.chapters[i].trHtml || bk.chapters[i].html;
-        excerpt += `\n[${bk.chapters[i].title}]: ${(d.innerText||"").slice(0,3200)}`;
-      }
-      sysText += `\n\nBAĞLI KİTAP: "${bk.title}" (${bk.chapters.length} bölüm, kullanıcı şu an ${curIdx+1}. bölümde).\nWIKI: ${JSON.stringify(bk.wiki||{}).slice(0,2200)}\nBÖLÜM İÇERİĞİ:${excerpt.slice(0,8500)}`;
+      const maxIdx = guard ? curIdx : Math.min(bk.chapters.length-1, curIdx + 1);
+      const ctx = bk.chapters.slice(Math.max(0, curIdx-2), maxIdx+1).map((c,k)=>`[${c.title}]\n${(c.trText||c.text||"").slice(0,2200)}`).join("\n\n");
+      sys += `\nBAĞLI KİTAP: "${bk.title}" (Okuyucu şu an ${curIdx+1}. bölümde).` +
+             (guard ? "\nKESİN KURAL: SPOİLER KORUMASI AÇIK! Okuyucunun henüz okumadığı ileriki bölümlerden ASLA bahsetme." : "") +
+             `\nBÖLÜM İÇERİĞİ:\n${ctx}`;
     }
   }
 
-  const apiMsgs = [{role:"system", content:sysText}];
-  const histSlice = msgs.slice(0, -1).slice(-12);
-  histSlice.forEach((m, idx) => {
-    const isLast = idx === histSlice.length - 1;
-    if(isLast && att?.kind === "img"){
-      apiMsgs.push({role:"user", content:[{type:"text",text:m.content},{type:"image_url",image_url:{url:att.data}}]});
-    } else if(isLast && att?.kind === "file"){
-      apiMsgs.push({role:"user", content:`${m.content}\n\n[EKLİ DOSYA: ${att.name}]\n${att.data}`});
-    } else {
-      apiMsgs.push({role:m.role, content:m.content});
-    }
+  const apiMsgs = [{role:"system", content:sys}];
+  chat.msgs.slice(-10).forEach(m => {
+    if(m.role==="user" && m.images?.length){
+      const arr = [{type:"text", text:m.text||"Görseli incele"}];
+      m.images.forEach(u=>arr.push({type:"image_url", image_url:{url:u}}));
+      apiMsgs.push({role:"user", content:arr});
+    } else apiMsgs.push({role:m.role==="user"?"user":"assistant", content:m.text});
   });
 
-  chatCtrl?.abort(); chatCtrl = new AbortController();
-  const btn=$("#chatSendBtn"), stop=$("#chatStopBtn");
-  btn.classList.add("busy"); btn.disabled=true; stop.style.display="";
+  // Hata #2 Çözümü: Sadece tek bir hedef AI balonu ekle ve streaming sırasında YALNIZCA onu güncelle!
+  const aiMsg = {role:"assistant", text:""};
+  chat.msgs.push(aiMsg);
+  const box = $("#chatMsgs");
+  const div = document.createElement("div");
+  div.className = "cmsg ai";
+  div.innerHTML = `<div class="cmsg-body">⏳ Düşünüyor…</div>`;
+  box.appendChild(div);
+  const bodyEl = div.querySelector(".cmsg-body");
+  box.scrollTop = box.scrollHeight;
+
   try{
-    const res = await fetch(S.baseUrl.replace(/\/+$/,"")+"/chat/completions", {
-      method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.apiKey},
-      body:JSON.stringify({model:S.model, temperature:0.6, stream:!!S.stream, messages:apiMsgs}), signal:chatCtrl.signal
-    });
-    if(!res.ok) throw new Error("API ("+res.status+")");
-    const last = msgs[msgs.length-1]; last.content = "";
-    if(!S.stream || !res.body){
-      const j = await res.json(); last.content = j?.choices?.[0]?.message?.content || ""; renderChat();
-    } else {
-      const reader = res.body.getReader(), dec = new TextDecoder(); let buf = "";
-      while(true){
-        const {done, value} = await reader.read(); if(done) break;
-        buf += dec.decode(value,{stream:true}); const lines = buf.split("\n"); buf = lines.pop()||"";
-        for(const l of lines){ const t=l.trim(); if(!t.startsWith("data:"))continue; const p=t.slice(5).trim(); if(p==="[DONE]")continue; try{const j=JSON.parse(p);const d=j?.choices?.[0]?.delta?.content??j?.choices?.[0]?.message?.content??"";if(d){last.content+=d;renderChat();}}catch{} }
+    const hasImg = chat.msgs.some(m=>m.images?.length);
+    await callAI({
+      task: hasImg ? "vision" : "chat",
+      messages: apiMsgs,
+      onDelta: (_, full) => {
+        aiMsg.text = full;
+        bodyEl.textContent = full; // 120Hz sıfır titreme akış!
+        if(box.scrollHeight - box.scrollTop - box.clientHeight < 120) box.scrollTop = box.scrollHeight;
       }
-    }
+    });
     saveState();
+    renderChatFull(); // Akış bitince 1 kez Markdown & aksiyon butonlarını çiz
+    haptic("light");
   }catch(e){
-    const last=msgs[msgs.length-1]; last.content = e.name==="AbortError" ? (last.content||"Durduruldu.") : ("❌ Hata: "+e.message); renderChat();
-  }finally{ btn.classList.remove("busy"); btn.disabled=false; stop.style.display="none"; }
+    aiMsg.text = "❌ Hata: " + e.message;
+    bodyEl.textContent = aiMsg.text;
+  }
 }
-$("#chatSendBtn")?.addEventListener("click",()=>sendChatMessage());
-$("#chatStopBtn")?.addEventListener("click",()=>chatCtrl?.abort());
-$("#chatClearBtn")?.addEventListener("click",()=>{if(confirm("Sohbet temizlensin mi?")){getS().chatHistory=[];saveState();renderChat();}});
-$("#chatInput")?.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMessage();}});
-$$("#chatChips .chat-chip").forEach(ch=>ch.onclick=()=>sendChatMessage(ch.dataset.cq));
+$("#chatSendBtn")?.addEventListener("click", () => sendChatMessage(false));
+$("#chatInput")?.addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendChatMessage(false); } });
+$("#chatSessionSel")?.addEventListener("change", e => { const S=ensureChatState(); S.activeChatId=e.target.value; saveState(); renderChatFull(); });
+$("#newChatBtn")?.addEventListener("click", () => { const S=ensureChatState(); const id=uid(); S.chatSessions.unshift({id,title:"Yeni Sohbet",persona:"Sen akıllı bir Türkçe asistansın.",msgs:[]}); S.activeChatId=id; saveState(); renderChatFull(); });
+$("#delChatBtn")?.addEventListener("click", () => { const S=ensureChatState(); if(S.chatSessions.length<=1){ S.chatSessions[0].msgs=[]; saveState(); renderChatFull(); return; } S.chatSessions=S.chatSessions.filter(x=>x.id!==S.activeChatId); S.activeChatId=S.chatSessions[0].id; saveState(); renderChatFull(); });
+$("#chatPersonaBtn")?.addEventListener("click", () => { const c=getActiveChat(); const p=prompt("AI Sohbet Kişiliği / Sistem Promptu:", c.persona); if(p!==null){ c.persona=p; saveState(); toast("Kişilik güncellendi"); } });
 
-/* ===================== 6. PROMPT PAZARI, WIKI, TTS, AMBİYANS & DİĞERLERİ ===================== */
-const PROMPT_MARKET = [
-  {name:"⚔️ Xianxia / Wuxia / Cultivation", desc:"Yetişim seviyeleri, mezhepler ve kadim üslup.", text:"Sen uzman bir Xianxia/Wuxia çevirmenisin. Yetişim (cultivation) alemlerini, mezhep (sect) isimlerini, Qi/Dao terimlerini ve saygı ifadelerini doğal Türkçe ile çevir. Sadece çeviriyi yaz."},
-  {name:"💬 Manhwa / Webtoon (Sokak Dili)", desc:"Günlük konuşma, espri ve gençlik tonu.", text:"Sen deneyimli bir Kore webtoon/manhwa çevirmenisin. Diyalogları gerçek günlük Türkçe konuşma diliyle, kısa ve vurucu çevir. Sadece çeviriyi yaz."},
-  {name:"🎓 Akademik & Teknik", desc:"Bilimsel terimleri koruyan resmi dil.", text:"Sen akademik bir çevirmensin. Teknik terimleri doğruluğunu bozmadan profesyonel Türkçe ile çevir. Sadece çeviriyi yaz."},
-  {name:"🎮 Oyun & RPG Diyalog", desc:"Eşya açıklaması ve görev metinleri.", text:"Sen video oyunu yerelleştirme uzmanısın. Eşya, yetenek ve diyalogları doğal Türkçe oyun diliyle çevir. Sadece çeviriyi yaz."},
-  {name:"🕵️ Korku / Gerilim", desc:"Gerilimli atmosferik üslup.", text:"Sen gerilim ve korku edebiyatı çevirmenisin. Metnin tekinsiz atmosferini koruyarak çevir. Sadece çeviriyi yaz."}
-];
-function renderPromptMarket(){
-  const box=$("#promptMarketList"); if(!box)return;
-  box.innerHTML=PROMPT_MARKET.map((p,i)=>`<div class="list-item"><div class="list-item-body"><div class="list-item-title">${esc(p.name)}</div><div class="list-item-sub">${esc(p.desc)}</div></div><button class="btn primary small" data-pmadd="${i}">+ Ekle</button></div>`).join("");
-  box.querySelectorAll("[data-pmadd]").forEach(b=>b.onclick=()=>{const S=getS(),it=PROMPT_MARKET[Number(b.dataset.pmadd)],np={id:uid(),name:it.name,builtIn:false,text:it.text};S.prompts.push(np);S.activePromptId=np.id;saveState();renderPromptUI();toast("Eklendi ✨");});
+/* ===================== 8. SERİ WİKİ & ETKİLEŞİMLİ ZOOM/PAN İLİŞKİ HARİTASI ===================== */
+let wikiZoom = 1, wikiPanX = 0, wikiPanY = 0;
+function updateWikiViewBox(){
+  const svg = $("#wikiSvg"); if(!svg) return;
+  const w = 500 / wikiZoom, h = 260 / wikiZoom;
+  svg.setAttribute("viewBox", `${wikiPanX} ${wikiPanY} ${w} ${h}`);
+}
+$("#wikiZoomIn")?.addEventListener("click", () => { wikiZoom = Math.min(3, wikiZoom + 0.3); updateWikiViewBox(); });
+$("#wikiZoomOut")?.addEventListener("click", () => { wikiZoom = Math.max(0.5, wikiZoom - 0.3); updateWikiViewBox(); });
+$("#wikiZoomReset")?.addEventListener("click", () => { wikiZoom = 1; wikiPanX = 0; wikiPanY = 0; updateWikiViewBox(); });
+
+function renderWikiModal(){
+  const bk = R.book; if(!bk) return;
+  const wiki = bk.wiki || {chars:[], rels:[]};
+  const svg = $("#wikiSvg"), list = $("#wikiList"), det = $("#wikiNodeDetail");
+  det.style.display = "none";
+  if(!wiki.chars.length){
+    svg.innerHTML = `<text x="250" y="130" text-anchor="middle" fill="#9287aa" font-size="13">Henüz karakter taranmadı. Yukarıdan tara!</text>`;
+    list.innerHTML = "";
+    return;
+  }
+  const n = wiki.chars.length, cx = 250, cy = 130;
+  const pos = wiki.chars.map((c, i) => {
+    const ring = i < 10 ? 0 : 1;
+    const countInRing = ring === 0 ? Math.min(10, n) : (n - 10);
+    const idxInRing = ring === 0 ? i : (i - 10);
+    const rx = ring === 0 ? 155 : 215, ry = ring === 0 ? 85 : 112;
+    const ang = (idxInRing / Math.max(1, countInRing)) * Math.PI * 2 - Math.PI/2;
+    return {x: cx + Math.cos(ang)*rx, y: cy + Math.sin(ang)*ry, c};
+  });
+  let html = "";
+  (wiki.rels || []).forEach(r => {
+    const a = pos.find(p=>p.c.name===r.from), b = pos.find(p=>p.c.name===r.to);
+    if(a && b) html += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#a855f788" stroke-width="1.8"/><text x="${(a.x+b.x)/2}" y="${(a.y+b.y)/2}" fill="#c4b5fd" font-size="8.5" text-anchor="middle">${esc(r.label||"")}</text>`;
+  });
+  pos.forEach((p, idx) => {
+    html += `<g class="wnode" data-wi="${idx}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="18" fill="#1b1130" stroke="#e879f9" stroke-width="2"/><text x="${p.x}" y="${p.y+3}" fill="#fff" font-size="9.5" font-weight="700" text-anchor="middle">${esc(p.c.name.slice(0,11))}</text></g>`;
+  });
+  svg.innerHTML = html;
+  updateWikiViewBox();
+  svg.querySelectorAll(".wnode").forEach(g => g.onclick = () => {
+    const c = wiki.chars[Number(g.dataset.wi)];
+    const rels = (wiki.rels||[]).filter(r=>r.from===c.name||r.to===c.name).map(r=>`${r.from} ↔ ${r.to} (${r.label})`).join(" • ");
+    det.innerHTML = `<div class="item-title" style="color:var(--accent)">👤 ${esc(c.name)} ${c.orig?`(${esc(c.orig)})`:""}</div><div class="item-sub" style="color:var(--text)">${esc(c.desc||"")}</div>${rels?`<div class="meta" style="margin-top:4px">🔗 ${esc(rels)}</div>`:""}`;
+    det.style.display = "block";
+  });
+  list.innerHTML = wiki.chars.map(c=>`<div class="item"><div class="item-body"><div class="item-title">👤 ${esc(c.name)} ${c.orig?`<span class="meta">(${esc(c.orig)})</span>`:""}</div><div class="item-sub">${esc(c.desc||"")}</div></div></div>`).join("");
 }
 
-let wikiTab = "chars";
-$$("#wikiSeg button").forEach(b=>b.onclick=()=>{wikiTab=b.dataset.wt;$$("#wikiSeg button").forEach(x=>x.classList.toggle("active",x===b));renderWikiContent();});
-$("#wikiSearch")?.addEventListener("input", renderWikiContent);
-$("#rWikiBtn").onclick=()=>{if(!R.book)return;R.book.wiki=R.book.wiki||{chars:[],relations:[],lore:[]};if($("#wikiSearch"))$("#wikiSearch").value="";renderWikiContent();openModal("wikiModal");};
-$("#wikiManualAddBtn")?.addEventListener("click",async()=>{if(!R.book)return;R.book.wiki=R.book.wiki||{chars:[],relations:[],lore:[]};if(wikiTab==="lore"){const n=prompt("Orijinal Terim:");if(!n)return;R.book.wiki.lore.unshift({name:n.trim(),tr:(prompt("Türkçe:",n)||n).trim(),desc:(prompt("Açıklama:")||"").trim()});}else{const n=prompt("Karakter Adı:");if(!n)return;R.book.wiki.chars.unshift({name:n.trim(),role:(prompt("Rol/Seviye:")||"").trim(),desc:(prompt("Bilgi:")||"").trim()});}await dbPut(R.book);renderWikiContent();toast("Eklendi ✅");});
-$("#wikiScanChapBtn").onclick=async()=>{
-  if(!R.book)return; const ch=R.book.chapters[R.visChaps[R.chapIdx].origIdx], tmp=document.createElement("div"); tmp.innerHTML=ch.trHtml||ch.html;
-  const btn=$("#wikiScanChapBtn"), st=$("#wikiStatus"), cur=R.book.wiki||{chars:[],relations:[],lore:[]};
-  btn.classList.add("busy"); btn.disabled=true; st.className="status"; st.textContent="🧠 Taranıyor…";
+async function scanWikiRange(startIdx, endIdx){
+  if(!R.book) return;
+  toast("🧬 Wiki taranıyor…");
+  const sample = R.book.chapters.slice(startIdx, endIdx+1).map(c=>(c.trText||c.text||"").slice(0,2200)).join("\n---\n").slice(0,14000);
   try{
-    const raw=await callAI(`MEVCUT WIKI:\n${JSON.stringify(cur).slice(0,3200)}\n\nYENİ BÖLÜM (${ch.title}):\n${(tmp.innerText||"").slice(0,9500)}`,{system:`Roman Wiki editörüsün. Mevcut Wiki'yi yeni bölümle GÜNCELLE. SADECE JSON: {"chars":[{"name":"Ad","role":"Rol","desc":"Bilgi"}],"relations":[{"a":"K1","b":"K2","type":"İlişki"}],"lore":[{"name":"Orijinal","tr":"Türkçe","desc":"Açıklama"}]}`,streamOverride:false,temperature:0.2});
-    const m=raw.match(/\{[\s\S]*\}/); if(!m)throw new Error("JSON alınamadı"); const nw=JSON.parse(m[0]);
-    R.book.wiki={chars:Array.isArray(nw.chars)?nw.chars:cur.chars,relations:Array.isArray(nw.relations)?nw.relations:cur.relations,lore:Array.isArray(nw.lore)?nw.lore:cur.lore};
-    await dbPut(R.book); renderWikiContent(); st.className="status ok"; st.textContent="✅ Güncellendi!";
-  }catch(e){st.className="status error";st.textContent=e.message;} finally{btn.classList.remove("busy");btn.disabled=false;}
-};
-function renderWikiContent(){
-  const box=$("#wikiContent"),w=R.book?.wiki||{chars:[],relations:[],lore:[]},q=($("#wikiSearch")?.value||"").trim().toLowerCase();
-  if($("#wikiStatsBar"))$("#wikiStatsBar").textContent=`👤 ${w.chars?.length||0} Karakter · ⚡ ${w.lore?.length||0} Terim · 🕸️ ${w.relations?.length||0} İlişki`;
-  if(wikiTab==="chars"){
-    const list=(w.chars||[]).map((c,i)=>({...c,_i:i})).filter(c=>!q||(c.name+" "+c.role+" "+c.desc).toLowerCase().includes(q));
-    if(!list.length){box.innerHTML=`<div class="hint" style="text-align:center;padding:18px">Bulunamadı.</div>`;return;}
-    box.innerHTML=list.map(c=>{const rels=(w.relations||[]).filter(r=>r.a===c.name||r.b===c.name).map(r=>`<span style="display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:999px;background:#8b5cf624;border:1px solid var(--border);margin:3px 4px 0 0;color:var(--accent)">${esc(r.a===c.name?r.b:r.a)} (${esc(r.type)})</span>`).join("");return `<div class="card" style="padding:10px;margin-bottom:8px;background:var(--surface2)"><div class="row" style="margin-bottom:4px"><div style="width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--pink));display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff;flex:0 0 28px">${esc((c.name||"?")[0].toUpperCase())}</div><div class="grow"><div style="font-size:13.5px;font-weight:700;color:#fff">${esc(c.name)}</div>${c.role?`<div style="font-size:11px;color:var(--accent)">${esc(c.role)}</div>`:""}</div><button class="btn small danger" data-wcdel="${c._i}">✕</button></div><div style="font-size:12.5px">${esc(c.desc||"")}</div>${rels?`<div style="margin-top:5px">${rels}</div>`:""}</div>`;}).join("");
-    box.querySelectorAll("[data-wcdel]").forEach(b=>b.onclick=async()=>{R.book.wiki.chars.splice(Number(b.dataset.wcdel),1);await dbPut(R.book);renderWikiContent();});
-  } else if(wikiTab==="lore"){
-    const list=(w.lore||[]).map((l,i)=>({...l,_i:i})).filter(l=>!q||(l.name+" "+l.tr+" "+l.desc).toLowerCase().includes(q));
-    if(!list.length){box.innerHTML=`<div class="hint" style="text-align:center;padding:18px">Bulunamadı.</div>`;return;}
-    box.innerHTML=list.map(l=>`<div class="card" style="padding:10px;margin-bottom:8px;background:var(--surface2)"><div class="row" style="margin-bottom:4px"><div class="grow" style="font-size:13.5px;font-weight:700">⚡ ${esc(l.name)} → <span style="color:var(--accent)">${esc(l.tr||l.name)}</span></div><button class="btn small danger" data-wldel="${l._i}">✕</button></div><div style="font-size:12.5px;color:var(--muted)">${esc(l.desc||"")}</div></div>`).join("");
-    box.querySelectorAll("[data-wldel]").forEach(b=>b.onclick=async()=>{R.book.wiki.lore.splice(Number(b.dataset.wldel),1);await dbPut(R.book);renderWikiContent();});
-  } else {
-    const rels=(w.relations||[]).filter(r=>!q||(r.a+" "+r.b+" "+r.type).toLowerCase().includes(q));
-    const names=[...new Set([...(w.chars||[]).map(c=>c.name),...rels.flatMap(r=>[r.a,r.b])])].filter(n=>!q||n.toLowerCase().includes(q)||rels.some(r=>r.a===n||r.b===n)).slice(0,12);
-    if(names.length<2){box.innerHTML=`<div class="hint" style="text-align:center;padding:18px">En az 2 karakter gerekli.</div>`;return;}
-    const cx=175,cy=155,rad=112,pos={}; names.forEach((n,i)=>{const a=(2*Math.PI*i)/names.length-Math.PI/2;pos[n]={x:Math.round(cx+rad*Math.cos(a)),y:Math.round(cy+rad*Math.sin(a))};});
-    const lines=rels.filter(r=>pos[r.a]&&pos[r.b]).map(r=>{const p1=pos[r.a],p2=pos[r.b],mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;return `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#a855f7" stroke-width="1.8" stroke-opacity="0.75"/><rect x="${mx-30}" y="${my-10}" width="60" height="14" rx="5" fill="#110b1cee"/><text x="${mx}" y="${my}" fill="#fde68a" font-size="8.5" font-weight="600" text-anchor="middle">${esc((r.type||"").slice(0,13))}</text>`;}).join("");
-    const nodes=names.map(n=>{const p=pos[n];return `<circle cx="${p.x}" cy="${p.y}" r="23" fill="#1a1229" stroke="#d946ef" stroke-width="2"/><text x="${p.x}" y="${p.y+3}" fill="#fff" font-size="9.5" font-weight="700" text-anchor="middle">${esc(n.slice(0,10))}</text>`;}).join("");
-    box.innerHTML=`<svg viewBox="0 0 350 310" style="width:100%;height:auto;background:#0a0612;border:1px solid var(--border);border-radius:14px">${lines}${nodes}</svg>`;
-  }
+    const raw = await callAI({task:"chat", stream:false, messages:[
+      {role:"system", content:`Bu hikaye bölümlerindeki karakterleri, orijinal isimlerini, kısa rollerini ve aralarındaki ilişkileri çıkar. SADECE JSON dön: {"chars":[{"name":"Türkçe Ad","orig":"Orijinal Ad","desc":"kısa rol"}],"rels":[{"from":"Ad1","to":"Ad2","label":"dost/düşman/usta"}]}`},
+      {role:"user", content:sample}
+    ]});
+    const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}")+1));
+    const cur = R.book.wiki || {chars:[], rels:[]};
+    (j.chars||[]).forEach(nc => { if(!cur.chars.some(x=>x.name.toLowerCase()===nc.name.toLowerCase())) cur.chars.push(nc); });
+    (j.rels||[]).forEach(nr => { if(!cur.rels.some(x=>x.from===nr.from && x.to===nr.to)) cur.rels.push(nr); });
+    R.book.wiki = cur; await dbPut(R.book); renderWikiModal(); haptic("success"); toast(`🧬 Wiki güncellendi (${cur.chars.length} karakter)!`);
+  }catch(e){ toast("Wiki hatası: "+e.message); }
 }
 
-let ttsOn=false, ttsBtn=null, aiAudio=null;
-function populateVoices(){ const sel=$("#rVoiceSel"); if(!sel)return; if(!("speechSynthesis" in window)){sel.innerHTML="<option>Desteklenmiyor</option>";return;} const v=speechSynthesis.getVoices().filter(x=>/tr|en/i.test(x.lang)); sel.innerHTML=`<option value="">Otomatik En Doğal Türkçe</option>`+v.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} (${x.lang})</option>`).join(""); sel.value=getS().reader.voiceName||""; if($("#rDlgColorToggle"))$("#rDlgColorToggle").checked=!!getS().reader.dlgColor; }
-function stopTTS(){ if("speechSynthesis" in window)speechSynthesis.cancel(); if(aiAudio){aiAudio.pause();aiAudio=null;} ttsOn=false; if(ttsBtn){ttsBtn.textContent="🎧";ttsBtn=null;} }
-async function toggleTTS(text, btn){
-  if(ttsOn){stopTTS();return;} const S=getS(), clean=(text||"").trim(); if(!clean)return toast("Metin yok");
-  ttsOn=true; ttsBtn=btn; btn.textContent="⏹";
-  if(S.reader.ttsMode==="ai" && S.apiKey){
-    const parts=splitChunks(clean,1500);
-    for(let i=0;i<parts.length&&ttsOn;i++){
-      try{
-        const res=await fetch(S.baseUrl.replace(/\/+$/,"")+"/audio/speech",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+S.apiKey},body:JSON.stringify({model:"tts-1",voice:"alloy",input:parts[i],speed:S.reader.ttsRate||1})});
-        if(!res.ok)throw new Error("AI TTS desteklenmiyor");
-        const url=URL.createObjectURL(await res.blob());
-        await new Promise((r2,j2)=>{if(!ttsOn){URL.revokeObjectURL(url);return r2();}aiAudio=new Audio(url);aiAudio.onended=()=>{URL.revokeObjectURL(url);r2();};aiAudio.onerror=()=>{URL.revokeObjectURL(url);j2(new Error("Ses hatası"));};aiAudio.play().catch(j2);});
-      }catch(e){toast(e.message);stopTTS();break;}
+$("#rWikiBtn")?.addEventListener("click", () => { closeModal("rSetModal"); renderWikiModal(); openModal("wikiModal"); });
+$("#wikiScanCurBtn")?.addEventListener("click", () => scanWikiRange(R.chapIdx, R.chapIdx));
+$("#wikiScanMultiBtn")?.addEventListener("click", () => {
+  const rng = prompt(`Hangi bölüm aralığı taransın? (1-${R.book?.chapters?.length||1})`, `${Math.max(1,R.chapIdx+1)}-${Math.min(R.book?.chapters?.length||1, R.chapIdx+5)}`);
+  if(!rng) return;
+  const [a,b] = rng.split("-").map(x=>Math.max(1, Number(x)||1));
+  scanWikiRange(a-1, Math.min((R.book?.chapters?.length||1)-1, (b||a)-1));
+});
+$("#wikiSyncGlossBtn")?.addEventListener("click", () => {
+  const S = getS(), chars = R.book?.wiki?.chars || [];
+  let added = 0;
+  chars.forEach(c => {
+    if(c.orig && c.name && c.orig !== c.name && !S.glossary.some(g=>g.src===c.orig && g.bookId===R.book.id)){
+      S.glossary.unshift({id:uid(), src:c.orig, tgt:c.name, bookId:R.book.id}); added++;
     }
-    stopTTS(); return;
-  }
-  if(!("speechSynthesis" in window)){stopTTS();return toast("Desteklenmiyor");}
-  const voices=speechSynthesis.getVoices(), trV=voices.filter(v=>v.lang.startsWith("tr"));
-  const mv=voices.find(v=>v.name===S.reader.voiceName)||trV.find(v=>/google|neural|network|natural/i.test(v.name))||trV[0];
-  const segments=[];
-  if(S.reader.ttsMode==="multi"){
-    let ci=0; const pitches=[1.14,0.88,1.24,0.82];
-    for(const seg of clean.split(/([“"][^”"]+[”"])/g)){ const t=seg.trim(); if(!t)continue; const isQ=/^[“"]/.test(t), pitch=isQ?pitches[(ci++)%pitches.length]:0.98; (t.match(/[^.!?\n]+[.!?\n]*/g)||[t]).forEach(s=>{if(s.trim())segments.push({txt:s.trim().replace(/^[“"]|[”"]$/g,""),pitch,rate:(S.reader.ttsRate||1)*(isQ?1.04:1)});}); }
-  } else { (clean.match(/[^.!?\n]+[.!?\n]*/g)||[clean]).forEach(s=>{if(s.trim())segments.push({txt:s.trim(),pitch:1,rate:S.reader.ttsRate||1});}); }
-  let idx=0; const speakNext=()=>{if(!ttsOn||idx>=segments.length){stopTTS();return;}const sg=segments[idx++],u=new SpeechSynthesisUtterance(sg.txt);u.lang=S.tgtLang==="tr"?"tr-TR":S.tgtLang;if(mv)u.voice=mv;u.pitch=sg.pitch;u.rate=sg.rate;u.onend=speakNext;u.onerror=stopTTS;speechSynthesis.speak(u);};
-  speakNext();
+  });
+  saveState(); renderGlossary(); toast(added ? `📖 ${added} karakter kitap sözlüğüne aktarıldı!` : "Aktarılacak yeni karakter bulunamadı");
+});
+
+/* ===================== 9. GELİŞMİŞ SESLİ KİTAP (TTS — PARAGRAF VURGULAMA + SÜREKLİ DİNLEME) ===================== */
+let ttsQueue = [], ttsPos = 0;
+function stopTts(){
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  R.ttsSpeaking = false;
+  $$("#rBody p.tts-active").forEach(p=>p.classList.remove("tts-active"));
+  const b = $("#rTtsBtn"); if(b) b.textContent = "🔊 Oku";
 }
-$("#rTtsBtn").onclick=()=>toggleTTS($("#rBody").innerText,$("#rTtsBtn"));
-
-let ambCtx=null,ambGain=null,ambSrc=null,ambMode="";
-function stopAmbient(){try{ambSrc?.stop();ambCtx?.close();}catch{}ambCtx=null;ambGain=null;ambSrc=null;ambMode="";$$("#ambBtns button").forEach(b=>b.classList.remove("primary"));}
-function startAmbient(mode){if(ambMode===mode){stopAmbient();return;}stopAmbient();ambMode=mode;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;ambCtx=new AC();const sr=ambCtx.sampleRate,len=sr*4,buf=ambCtx.createBuffer(1,len,sr),data=buf.getChannelData(0);let last=0;for(let i=0;i<len;i++){const w=Math.random()*2-1;last=(last+0.02*w)/1.02;data[i]=mode==="rain"?w*0.22+last*1.4:mode==="fire"?last*2.2+(Math.random()>0.9985?(Math.random()*2-1)*0.7:0):mode==="wind"?last*2.8*(0.65+0.35*Math.sin(i/(sr*0.9))):last*2.4+w*0.06;}ambSrc=ambCtx.createBufferSource();ambSrc.buffer=buf;ambSrc.loop=true;const f=ambCtx.createBiquadFilter();f.type=mode==="rain"?"bandpass":"lowpass";f.frequency.value=mode==="rain"?1100:mode==="fire"?420:mode==="wind"?500:650;ambGain=ambCtx.createGain();ambGain.gain.value=(Number($("#ambVolRange").value)||35)/100*0.35;ambSrc.connect(f);f.connect(ambGain);ambGain.connect(ambCtx.destination);ambSrc.start();$$("#ambBtns button").forEach(b=>b.classList.toggle("primary",b.dataset.amb===mode));toast("Ambiyans başladı 🎧");}
-$$("#ambBtns button").forEach(b=>b.onclick=()=>startAmbient(b.dataset.amb));
-$("#stopAmbBtn").onclick=()=>{stopAmbient();toast("Durduruldu");};
-$("#ambVolRange").oninput=e=>{$("#ambVolVal").textContent=e.target.value;if(ambGain)ambGain.gain.value=(Number(e.target.value)/100)*0.35;};
-
-async function renderTrash(){const list=$("#trashList"),tr=(await dbAll()).filter(b=>b.deletedAt);if(!tr.length){list.innerHTML=`<div class="hint" style="text-align:center;padding:18px">Çöp kutusu boş.</div>`;return;}list.innerHTML=tr.map(b=>`<div class="list-item"><div class="list-item-body"><div class="list-item-title">${esc(b.title)}</div><div class="list-item-sub">${Math.max(0,7-Math.floor((Date.now()-b.deletedAt)/86400000))} gün kaldı</div></div><button class="btn small ok" data-trest="${b.id}">Geri Al</button><button class="btn small danger" data-tdel="${b.id}">Sil</button></div>`).join("");list.querySelectorAll("[data-trest]").forEach(el=>el.onclick=async()=>{const b=await dbGet(el.dataset.trest);if(b){b.deletedAt=0;await dbPut(b);renderTrash();renderLibrary();toast("Geri yüklendi");}});list.querySelectorAll("[data-tdel]").forEach(el=>el.onclick=async()=>{await dbDel(el.dataset.tdel);renderTrash();});}
-$("#openTrashBtn").onclick=()=>{renderTrash();openModal("trashModal");};
-$("#emptyTrashBtn").onclick=async()=>{if(!confirm("Boşaltılsın mı?"))return;for(const b of (await dbAll()).filter(x=>x.deletedAt))await dbDel(b.id);renderTrash();};
-
-$("#openWrappedBtn").onclick=async()=>{const S=getS(),books=(await dbAll()).filter(b=>!b.deletedAt),mins=Math.floor((S.stats.totalSecs||0)/60),words=S.stats.totalWords||0,fav=[...books].sort((a,b)=>(b.progress||0)-(a.progress||0))[0];$("#wrappedCard").innerHTML=`<div style="font-size:11px;letter-spacing:1px;opacity:.85">✨ ÇEVİRMEN AI WRAPPED ✨</div><div style="font-size:24px;font-weight:800;margin:6px 0">${words.toLocaleString("tr")} Kelime</div><div style="font-size:13px">⏱ ${mins} Dk · 🔥 ${S.stats.streak||0} Gün · 📚 ${books.length} Kitap</div>${fav?`<div style="margin-top:8px;font-size:12px;background:#0005;padding:6px 9px;border-radius:9px">🏆 En Çok Okunan: <b>${esc(fav.title)}</b> (%${fav.progress||0})</div>`:""}`;const hm=$("#activityHeatmap");hm.innerHTML="";const now=new Date();for(let d=69;d>=0;d--){const dt=new Date(now.getTime()-d*86400000).toISOString().slice(0,10),sec=S.dailyActivity?.[dt]||0;hm.innerHTML+=`<div class="hm-cell ${sec>1800?"hm-4":sec>600?"hm-3":sec>180?"hm-2":sec>0?"hm-1":""}" title="${dt}"></div>`;}openModal("wrappedModal");};
-
-$("#openOpdsBtn").onclick=()=>openModal("opdsModal");
-$("#opdsLoadBtn").onclick=async()=>{const url=$("#opdsUrlInput").value.trim(),st=$("#opdsStatus"),list=$("#opdsList");if(!url)return;st.className="status";st.textContent="Yükleniyor…";list.innerHTML="";try{let xml="";try{const r=await fetch(url);if(r.ok)xml=await r.text();}catch{}if(!xml){const r2=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));if(r2.ok)xml=await r2.text();}if(!xml)throw new Error("Alınamadı");const doc=new DOMParser().parseFromString(xml,"application/xml"),entries=[...doc.querySelectorAll("entry")];list.innerHTML=entries.slice(0,30).map(e=>{const t=e.querySelector("title")?.textContent?.trim()||"Kitap",a=e.querySelector("author name")?.textContent?.trim()||"",ep=[...e.querySelectorAll("link")].find(l=>(l.getAttribute("type")||"").includes("epub"))?.getAttribute("href")||"",abs=ep?new URL(ep,url).href:"";return `<div class="list-item"><div class="list-item-body"><div class="list-item-title">${esc(t)}</div><div class="list-item-sub">${esc(a)}</div></div>${abs?`<button class="btn primary small" data-opdl="${esc(abs)}" data-opnm="${esc(t)}">⬇</button>`:""}</div>`;}).join("");list.querySelectorAll("[data-opdl]").forEach(b=>b.onclick=async()=>{toast("İndiriliyor…");try{const r=await fetch(b.dataset.opdl);if(!r.ok)throw 0;await importBookFile(new File([await r.blob()],b.dataset.opnm.slice(0,40)+".epub"));renderLibrary();}catch{openRealBrowser(b.dataset.opdl);closeModal("opdsModal");}});st.className="status ok";st.textContent=`${entries.length} öğe.`;}catch(e){st.className="status error";st.textContent=e.message;}};
-
-$("#openQuickSearch").onclick=()=>{$("#qsInput").value="";$("#qsResults").innerHTML="";openModal("quickSearchModal");setTimeout(()=>$("#qsInput").focus(),120);};
-$("#qsInput").oninput=async e=>{const q=e.target.value.trim().toLowerCase(),box=$("#qsResults");if(!q){box.innerHTML="";return;}const S=getS(),books=(await dbAll()).filter(b=>!b.deletedAt&&(b.title+" "+(b.author||"")+" "+(b.series||"")).toLowerCase().includes(q)),quotes=S.highlights.filter(h=>(h.text+" "+h.note).toLowerCase().includes(q)),gloss=S.glossary.filter(g=>(g.src+" "+g.tgt).toLowerCase().includes(q));let html="";books.slice(0,6).forEach(b=>html+=`<div class="list-item" data-qb="${b.id}" style="cursor:pointer"><div class="list-item-body"><div class="list-item-title">📚 ${esc(b.title)}</div><div class="list-item-sub">${esc(b.format)} · %${b.progress||0}</div></div></div>`);quotes.slice(0,5).forEach(h=>html+=`<div class="list-item"><div class="list-item-body"><div class="list-item-title">🖍️ "${esc(h.text.slice(0,70))}"</div><div class="list-item-sub">${esc(h.bookTitle)}</div></div></div>`);gloss.slice(0,5).forEach(g=>html+=`<div class="list-item"><div class="list-item-body"><div class="list-item-title">📖 ${esc(g.src)} → ${esc(g.tgt)}</div></div></div>`);box.innerHTML=html||`<div class="hint" style="text-align:center;padding:14px">Sonuç yok.</div>`;box.querySelectorAll("[data-qb]").forEach(el=>el.onclick=()=>{closeModal("quickSearchModal");openBookReader(el.dataset.qb);});};
-
-$("#openStorageBtn").onclick=async()=>{const books=await dbAll(),lsKB=Math.round((localStorage.getItem("cevirmen_ai_native_v5")||"").length/1024),estMB=(books.reduce((a,b)=>a+JSON.stringify(b).length,0)/(1024*1024)).toFixed(2);$("#storageInfo").innerHTML=`<div class="list-item"><div class="list-item-body"><div class="list-item-title">📚 Kütüphane</div><div class="list-item-sub">${books.length} kitap · ~${estMB} MB</div></div></div><div class="list-item"><div class="list-item-body"><div class="list-item-title">⚙ Ayarlar</div><div class="list-item-sub">${lsKB} KB</div></div><button class="btn small danger" id="stClearHist">Geçmişi Sil</button></div>`;$("#stClearHist").onclick=()=>{getS().history=[];saveState();toast("Temizlendi");$("#openStorageBtn").click();};openModal("storageModal");};
-
-const ALL_NAV_ITEMS = [
-  {id:"text", label:"Metin", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l6 6M4 14l6-6 2-3M2 5h12M7 2h1M22 22l-5-10-5 10M14 18h6"/></svg>`},
-  {id:"browser", label:"Tarayıcı", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`},
-  {id:"chat", label:"Sohbet", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`},
-  {id:"manga", label:"Manga", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 10h8M8 14h5"/></svg>`},
-  {id:"library", label:"Kütüphane", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`},
-  {id:"studio", label:"Stüdyo", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>`},
-  {id:"settings", label:"Ayarlar", svg:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`}
-];
-
-function renderBottomNav(){
-  const S=getS(), nav=$("#bottomNav");
-  if(!S.v6ChatAdded){ S.navTabs=S.navTabs||ALL_NAV_ITEMS.map(x=>x.id); if(!S.navTabs.includes("chat"))S.navTabs.splice(2,0,"chat"); S.v6ChatAdded=true; saveState(); }
-  const enabled=new Set(S.navTabs||ALL_NAV_ITEMS.map(x=>x.id)); enabled.add("settings");
-  const activeView=document.querySelector(".view.active")?.id?.replace("view-","")||"text";
-  nav.innerHTML=ALL_NAV_ITEMS.filter(it=>enabled.has(it.id)).map(it=>`<button class="${it.id===activeView?'active':''}" data-view="${it.id}">${it.svg}<span>${it.label}</span></button>`).join("");
-  nav.querySelectorAll("button").forEach(b=>b.onclick=()=>{ switchView(b.dataset.view); if(b.dataset.view==="chat"){renderChat();populateChatBooks();} if(b.dataset.view==="browser")updateVpnBtn(); });
-}
-
-$("#openNavCustBtn").onclick=()=>{const S=getS(),en=new Set(S.navTabs||ALL_NAV_ITEMS.map(x=>x.id));$("#navCustList").innerHTML=ALL_NAV_ITEMS.filter(x=>x.id!=="settings").map(it=>`<label class="switch" style="margin:7px 0"><span>${it.label}</span><input type="checkbox" class="nc-chk" value="${it.id}" ${en.has(it.id)?"checked":""}></label>`).join("");$$(".nc-chk").forEach(c=>c.onchange=()=>{S.navTabs=[...$$(".nc-chk:checked").map(x=>x.value),"settings"];saveState();renderBottomNav();});openModal("navCustModal");};
-$("#openDebugBtn").onclick=()=>{$("#debugLogs").textContent=DEBUG_LOGS.length?DEBUG_LOGS.join("\n"):"Henüz hata yok ✅";openModal("debugModal");};
-$("#clearDebugBtn").onclick=()=>{DEBUG_LOGS.length=0;$("#debugLogs").textContent="Temizlendi.";};
-
-C.toggleTTS=toggleTTS; C.stopTTS=stopTTS; C.populateVoices=populateVoices;
-C.initExtras=()=>{
-  renderFmhy(); renderPromptMarket(); renderBottomNav(); renderChat(); populateChatBooks(); updateNotifBadge(); updateVpnBtn();
-  // Uygulama açılınca takip listesini (son kontrolden 30 dk geçtiyse) otomatik arka planda kontrol et
-  const S = ensureWatchData();
-  if(S.watchlist.length && (Date.now() - (S.lastAutoWatchCheck||0)) > 1800000){
-    setTimeout(() => checkAllWatchedSeries(true), 2500);
+function speakNextPara(){
+  if(!R.ttsSpeaking) return;
+  $$("#rBody p.tts-active").forEach(p=>p.classList.remove("tts-active"));
+  if(ttsPos >= ttsQueue.length){
+    // Bölüm bitti! Sürekli dinleme açıksa sonraki bölüme geç
+    if(getS().reader.ttsCont && R.book && R.chapIdx < R.book.chapters.length - 1){
+      R.chapIdx++; renderCurrentChapter();
+      setTimeout(startTtsFromChapter, 500);
+    } else stopTts();
+    return;
   }
-  debugLog("SYS","Çevirmen AI v7.0 hazır");
-};
-C.initExtras();
+  const el = ttsQueue[ttsPos];
+  el.classList.add("tts-active");
+  el.scrollIntoView({behavior:"smooth", block:"center"});
+  const u = new SpeechSynthesisUtterance(el.textContent);
+  u.lang = "tr-TR";
+  u.rate = getS().reader.ttsRate || 1.0;
+  u.onend = () => { ttsPos++; speakNextPara(); };
+  u.onerror = () => stopTts();
+  speechSynthesis.speak(u);
+}
+function startTtsFromChapter(){
+  if(!window.speechSynthesis) return toast("TTS desteklenmiyor");
+  ttsQueue = $$("#rBody p").filter(p=>p.textContent.trim().length > 1);
+  if(!ttsQueue.length) return toast("Okunacak metin yok");
+  ttsPos = 0; R.ttsSpeaking = true;
+  $("#rTtsBtn").textContent = "⏹ Durdur";
+  speakNextPara();
+}
+$("#rTtsBtn")?.addEventListener("click", () => { if(R.ttsSpeaking) stopTts(); else startTtsFromChapter(); });
+
+/* ===================== 10. AMBİYANS SES MİKSERİ (ÇOKLU SES AYNI ANDA — ÇEVRİMDIŞI) ===================== */
+let ambCtx = null;
+const ambNodes = {};
+function setAmbienceLevel(kind, vol){
+  if(vol <= 0.01){
+    if(ambNodes[kind]){ try{ ambNodes[kind].src.stop(); }catch{} delete ambNodes[kind]; }
+    return;
+  }
+  if(!ambCtx) ambCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if(ambCtx.state === "suspended") ambCtx.resume();
+  if(!ambNodes[kind]){
+    const len = ambCtx.sampleRate * 3, buf = ambCtx.createBuffer(1, len, ambCtx.sampleRate), data = buf.getChannelData(0);
+    let last = 0;
+    for(let i=0;i<len;i++){
+      const w = Math.random()*2 - 1;
+      if(kind==="rain") data[i] = (last + 0.08*w)/1.08;
+      else if(kind==="fire") data[i] = (last + 0.02*w)/1.02 + (Math.random()>0.997 ? (Math.random()-0.5)*0.6 : 0);
+      else if(kind==="wind") data[i] = Math.sin(i/3200)*0.2 + (last + 0.03*w)/1.03;
+      else if(kind==="cafe") data[i] = (last + 0.05*w)/1.05 * 0.7;
+      else data[i] = Math.sin(i/120)*0.03 + (last + 0.015*w)/1.015;
+      last = data[i];
+    }
+    const src = ambCtx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const filter = ambCtx.createBiquadFilter(); filter.type = "lowpass";
+    filter.frequency.value = kind==="rain"?1400 : kind==="fire"?600 : kind==="wind"?450 : kind==="cafe"?950 : 320;
+    const gain = ambCtx.createGain();
+    src.connect(filter); filter.connect(gain); gain.connect(ambCtx.destination);
+    src.start();
+    ambNodes[kind] = {src, gain};
+  }
+  ambNodes[kind].gain.gain.setTargetAtTime(vol * 0.45, ambCtx.currentTime, 0.05);
+}
+$$("#ambMixer [data-amb]").forEach(r => r.oninput = e => setAmbienceLevel(e.target.dataset.amb, Number(e.target.value)));
+$("#stopAmbBtn")?.addEventListener("click", () => {
+  $$("#ambMixer [data-amb]").forEach(r => { r.value = 0; setAmbienceLevel(r.dataset.amb, 0); });
+  toast("Ambiyans sesleri durduruldu");
+});
+$("#rAmbBtn")?.addEventListener("click", () => {
+  // Okuyucudan tek tıkla ambiyans mikserine ulaş veya yağmuru aç/kapat
+  const rainEl = $('#ambMixer [data-amb="rain"]');
+  const cur = Number(rainEl?.value || 0);
+  const nxt = cur > 0 ? 0 : 0.45;
+  if(rainEl) rainEl.value = nxt;
+  setAmbienceLevel("rain", nxt);
+  toast(nxt > 0 ? "🌧️ Yağmur ambiyansı açıldı (Mikser için Stüdyo)" : "🔇 Ambiyans kapatıldı");
+});
+
+/* ===================== 11. OPDS KATALOG & VURGULAR LİSTESİ ===================== */
+$("#opdsBtn")?.addEventListener("click", () => openModal("opdsModal"));
+$("#opdsLoadBtn")?.addEventListener("click", async () => {
+  const u = $("#opdsUrl").value.trim(); if(!u) return;
+  $("#opdsList").innerHTML = `<div class="meta">⏳ Katalog yükleniyor…</div>`;
+  const info = await fetchUrlInfo(u);
+  if(!info.html) return $("#opdsList").innerHTML = `<div class="status error">Katalog alınamadı</div>`;
+  const doc = new DOMParser().parseFromString(info.html, "text/xml");
+  const entries = [...doc.querySelectorAll("entry")].slice(0,30);
+  $("#opdsList").innerHTML = entries.map(e => {
+    const title = e.querySelector("title")?.textContent || "Kitap";
+    const epub = [...e.querySelectorAll("link")].find(l=>(l.getAttribute("type")||"").includes("epub"))?.getAttribute("href");
+    const abs = epub ? new URL(epub, u).href : "";
+    return `<div class="item"><div class="item-body"><div class="item-title">${esc(title)}</div></div>${abs?`<button class="btn small primary" data-opdsdl="${esc(abs)}">İndir</button>`:""}</div>`;
+  }).join("") || `<div class="meta">Kitap bulunamadı</div>`;
+  $$("[data-opdsdl]").forEach(b=>b.onclick=()=>openRealBrowser(b.dataset.opdsdl));
+});
+
+$("#rHlListBtn")?.addEventListener("click", () => {
+  const hls = getS().highlights.filter(h=>h.bookId===R.book?.id);
+  alert(hls.length ? hls.map((h,i)=>`${i+1}. [Bölüm ${h.chapIdx+1}] "${h.text}"`).join("\n\n") : "Bu kitapta henüz vurgu yok.");
+});
+
+// İlk başlatma
+updateVpnBtn(); updateNotifBadge(); updateLrBadge(); renderFmhyQuick(); renderChatFull(); populateChatBooks();
 })();
