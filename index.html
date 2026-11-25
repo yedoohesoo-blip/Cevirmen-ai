@@ -42,66 +42,35 @@ body.anim-none .view.active{animation:none}
 @keyframes aSlide{from{opacity:0;transform:translate3d(14px,0,0)}to{opacity:1;transform:none}}
 @keyframes aZoom{from{opacity:0;transform:scale3d(.97,.97,1)}to{opacity:1;transform:none}}
 
-/* MODERN KOMPAKT HEADER */
-header{
-  position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;
-  padding:9px 12px;padding-top:calc(9px + env(safe-area-inset-top));
-  background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(18px);
-  border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent);
-}
-.logo{
-  width:32px;height:32px;border-radius:10px;display:grid;place-items:center;
-  font-weight:800;font-size:15px;flex:0 0 32px;color:#fff;
-  background:linear-gradient(135deg,var(--primary),var(--pink));
-  box-shadow:0 4px 14px color-mix(in srgb,var(--primary) 40%,transparent);
-}
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;padding:9px 12px;padding-top:calc(9px + env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent)}
+.logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:15px;flex:0 0 32px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
 .hdr-mid{flex:1;min-width:0}
-.hdr-mid h1{font-size:14.5px;font-weight:750;letter-spacing:-.2px;line-height:1.1}
-.hdr-model{
-  display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:500;
-  background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;
-  margin-top:2px;cursor:pointer;max-width:46vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.hdr-actions{display:flex;gap:5px;flex:0 0 auto}
-.icon-btn{
-  width:30px;height:30px;border-radius:9px;border:1px solid var(--border);
-  background:var(--surface2);color:var(--text);display:grid;place-items:center;
-  cursor:pointer;font-size:13.5px;transition:.14s;
-}
+.hdr-mid h1{font-size:14.5px;font-weight:750;line-height:1.1}
+.hdr-model{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:500;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;margin-top:2px;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-actions{display:flex;gap:4px;flex:0 0 auto}
+.icon-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:13.5px;position:relative}
 .icon-btn:active{transform:scale(.92);border-color:var(--primary)}
+.notif-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:999px;background:var(--danger);color:#fff;font-size:9.5px;font-weight:800;display:none;align-items:center;justify-content:center;padding:0 4px}
+.notif-badge.show{display:flex}
 
 .clip-banner{display:none;align-items:center;gap:8px;padding:8px 12px;background:#20113a;border-bottom:1px solid var(--primary);font-size:12.5px}
 .clip-banner.show{display:flex}
 
 main{max-width:860px;margin:0 auto;padding:11px}
-
-/* ZARİF CAM KARTLAR */
-.card{
-  background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--bg) 96%,transparent));
-  border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:10px;
-}
+.card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--bg) 96%,transparent));border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:10px}
 .card-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap}
-.card-head h2{font-size:13.5px;color:var(--accent);font-weight:700;letter-spacing:-.1px;flex:1;min-width:100px}
+.card-head h2{font-size:13.5px;color:var(--accent);font-weight:700;flex:1;min-width:100px}
 label{display:block;font-size:11.5px;color:var(--muted);margin:8px 0 4px;font-weight:500}
-input,textarea,select{
-  width:100%;background:var(--surface2);color:var(--text);
-  border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:13.5px;outline:none;transition:.15s;
-}
+input,textarea,select{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:13.5px;outline:none}
 input:focus,textarea:focus,select:focus{border-color:var(--primary);background:var(--surface3)}
 textarea{resize:vertical;min-height:118px;line-height:1.58}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .row > .grow{flex:1;min-width:0}
 
-/* İNCE, MODERN & KOMPAKT BUTONLAR */
-.btn{
-  flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);color:var(--text);
-  padding:6px 11px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
-  transition:transform .12s,border-color .15s,background .15s;
-}
+.btn{flex:0 0 auto;border:1px solid var(--border);background:var(--surface2);color:var(--text);padding:6px 11px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
 .btn:active{transform:scale(.96)}
 .btn:disabled{opacity:.45;pointer-events:none}
-.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border:none;color:#fff;box-shadow:0 3px 12px color-mix(in srgb,var(--primary) 35%,transparent)}
+.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));border:none;color:#fff}
 .btn.pink{background:linear-gradient(135deg,var(--primary2),var(--pink));border:none;color:#fff}
 .btn.danger{background:#f43f5e18;border-color:#f43f5e44;color:#fda4af}
 .btn.ok{background:#10b98118;border-color:#10b98144;color:#6ee7b7}
@@ -113,11 +82,7 @@ textarea{resize:vertical;min-height:118px;line-height:1.58}
 .lang-bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .lang-bar select{flex:1;padding:7px 10px;font-size:13px}
 .swap{width:32px;height:32px;padding:0;border-radius:50%;flex:0 0 32px;font-size:14px}
-
-.out-box{
-  white-space:pre-wrap;word-wrap:break-word;line-height:1.82;font-size:15.5px;min-height:105px;
-  background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text);
-}
+.out-box{white-space:pre-wrap;word-wrap:break-word;line-height:1.82;font-size:15.5px;min-height:105px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;color:var(--text)}
 .out-box:empty::before{content:"Çeviri burada rahat okunacak şekilde görünecek.";color:var(--muted);font-size:13px}
 .meta{font-size:11.5px;color:var(--muted)}
 .progress{height:3px;background:var(--surface2);border-radius:4px;overflow:hidden;margin-top:8px;display:none}
@@ -147,21 +112,27 @@ input[type=range]{padding:0;height:5px;accent-color:var(--primary);background:no
 
 .moodbar{height:3px;border-radius:4px;margin:6px 0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:background .4s}
 .tn-badge{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#8b5cf633;border:1px solid var(--primary);color:var(--accent);font-size:10px;font-weight:800;margin-left:3px;cursor:pointer;vertical-align:middle}
+.dlg-span{color:#d8b4fe;font-weight:500}
+.reader.t-sepia .dlg-span{color:#7c2d12}
+.reader.t-day .dlg-span{color:#6d28d9}
 
-/* AI SOHBET TASARIMI */
-.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 154px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:380px}
+/* AI SOHBET (GÖRSEL/DOSYA + KİTAPLA SOHBET + ÖZEL PROMPT) */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:380px}
 .chat-msgs{flex:1;overflow-y:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:9px}
-.chat-msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.58;white-space:pre-wrap;word-break:break-word}
+.chat-msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.58;white-space:pre-wrap;word-break:break-word}
 .chat-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:4px}
 .chat-msg.ai{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
 .chat-msg a{color:#fde047;text-decoration:underline;font-weight:600}
-.chat-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:7px}
+.chat-msg img{max-width:200px;border-radius:9px;display:block;margin-bottom:6px}
+.chat-chips{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px}
 .chat-chips::-webkit-scrollbar{display:none}
-.chat-chip{flex:0 0 auto;padding:5px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:11.5px;color:var(--accent);cursor:pointer}
-.chat-bar{display:flex;gap:6px;align-items:flex-end;padding-top:8px;border-top:1px solid var(--border)}
-.chat-bar textarea{min-height:38px;max-height:110px;padding:8px 11px;border-radius:18px;font-size:13.5px;resize:none}
+.chat-chip{flex:0 0 auto;padding:4px 9px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:11px;color:var(--accent);cursor:pointer}
+.chat-attach-preview{display:none;align-items:center;gap:8px;padding:6px 9px;background:var(--surface2);border:1px solid var(--primary);border-radius:10px;margin-bottom:6px;font-size:11.5px}
+.chat-attach-preview.show{display:flex}
+.chat-attach-preview img{width:34px;height:34px;object-fit:cover;border-radius:6px}
+.chat-bar{display:flex;gap:5px;align-items:flex-end;padding-top:7px;border-top:1px solid var(--border)}
+.chat-bar textarea{min-height:36px;max-height:105px;padding:7px 11px;border-radius:18px;font-size:13px;resize:none}
 
-/* TARAYICI, SEKMELER & FMHY */
 .native-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 18%,transparent),color-mix(in srgb,var(--pink) 14%,transparent));border:1px solid color-mix(in srgb,var(--primary) 60%,transparent);border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:12px}
 .tabs-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:5px;margin-bottom:7px}
 .tabs-strip::-webkit-scrollbar{display:none}
@@ -171,13 +142,12 @@ input[type=range]{padding:0;height:5px;accent-color:var(--primary);background:no
 .tab-chip-x{width:16px;height:16px;border-radius:50%;border:none;background:#ffffff18;color:#fda4af;font-size:9.5px;display:grid;place-items:center;cursor:pointer}
 
 .bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:7px}
-.bm-tile{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer;position:relative;transition:.14s}
+.bm-tile{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer;position:relative}
 .bm-tile:active{transform:scale(.95);border-color:var(--primary)}
 .bm-ico{width:32px;height:32px;border-radius:9px;margin:0 auto 5px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
 .bm-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bm-del{position:absolute;top:3px;right:3px;width:17px;height:17px;border-radius:50%;border:none;background:#0009;color:#fda4af;font-size:9.5px;cursor:pointer;display:grid;place-items:center}
 
-/* KÜTÜPHANE */
 .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
 .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center}
 .stat-box b{display:block;font-size:14.5px;color:var(--accent)}
@@ -212,22 +182,12 @@ input[type=range]{padding:0;height:5px;accent-color:var(--primary);background:no
 .list-item-title{font-size:13px;font-weight:650;word-break:break-word}
 .list-item-sub{font-size:11px;color:var(--muted);margin-top:2px;word-break:break-word}
 
-/* YÜZEN MODERN ALT MENÜ */
-nav.bnav{
-  position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;
-  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
-  background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);
-  border-top:1px solid var(--border);
-}
-nav.bnav button{
-  flex:1;background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:600;
-  display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;border-radius:10px;cursor:pointer;
-}
+nav.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);border-top:1px solid var(--border)}
+nav.bnav button{flex:1;background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;border-radius:10px;cursor:pointer}
 nav.bnav button svg{width:19px;height:19px}
 nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 16%,transparent)}
 nav.bnav button.active svg{color:var(--accent)}
 
-/* OKUYUCU */
 .reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#06040b);color:var(--r-fg,#f0eafb)}
 .reader.open{display:flex}
 .reader.t-night{--r-bg:#06040b;--r-fg:#f0eafb;--r-bar:#0e0918f5;--r-bd:#261c3a;--r-mut:#9287aa}
@@ -283,6 +243,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <button class="hdr-model" id="hdrModelBtn"><span>⚡</span><span id="hdrModelName">Model seçilmedi</span><span>▾</span></button>
   </div>
   <div class="hdr-actions">
+    <button class="icon-btn" id="openNotifBtn" title="Yeni Bölüm Bildirim Kutusu">🔔<span class="notif-badge" id="notifBadge">0</span></button>
     <button class="icon-btn" id="openQuickSearch" title="Hızlı Arama">🔍</button>
     <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Çeviri">🫧</button>
     <button class="icon-btn" id="openQuotesBtn" title="Alıntılar">🖍️</button>
@@ -298,7 +259,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 
 <main>
 
-  <!-- 1. METİN ÇEVİRİSİ -->
+  <!-- 1. METİN -->
   <section id="view-text" class="view active">
     <div class="card">
       <div class="lang-bar">
@@ -340,15 +301,16 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 2. TARAYICI + FMHY (YENİLE / EKLE / KALDIR) -->
+  <!-- 2. TARAYICI + ADGUARD VPN KALKANI + FMHY -->
   <section id="view-browser" class="view">
     <div id="nativeBadge" class="native-banner" style="display:none">
-      <b>🚀 Pro Tarayıcı!</b> Üstteki <b>🛡️</b> ile reklam engelleyiciyi anında aç/kapa, alttaki <b>🌐 Metin</b> / <b>💬 Manga</b> ile çevir, <b>📚 Oku</b> ile Wiki & Sözlükte oku.
+      <b>🚀 Pro Tarayıcı + AdGuard VPN!</b> Reklamları kökünden kesmek için aşağıdaki veya tarayıcı üstündeki <b>🛡️ AdGuard VPN</b> kalkanını aç!
     </div>
 
     <div class="card">
       <div class="card-head" style="margin-bottom:7px">
         <h2>📑 Sekmeler (<span id="tabCount">1</span>)</h2>
+        <button class="btn ok small" id="vpnToggleBtn">🛡️ AdGuard VPN</button>
         <button class="btn primary small" id="newTabBtn">+ Sekme</button>
       </div>
       <div class="tabs-strip" id="tabsStrip"></div>
@@ -366,8 +328,8 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     <div class="card">
       <div class="card-head">
         <h2>🧭 FMHY Okuma Merkezi</h2>
-        <button class="btn small ok" id="fmhyAddBtn" title="Bu kategoriye site ekle">+ Ekle</button>
-        <button class="btn small" id="fmhyRefreshBtn" title="Varsayılan listeyi yenile">↻</button>
+        <button class="btn small ok" id="fmhyAddBtn">+ Ekle</button>
+        <button class="btn small" id="fmhyRefreshBtn">↻</button>
         <button class="btn small" id="openFmhyDirect">fmhy ↗</button>
       </div>
       <div class="seg" id="fmhySeg">
@@ -397,29 +359,41 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
     </div>
   </section>
 
-  <!-- 3. AI SOHBET BÖLÜMÜ -->
+  <!-- 3. AI SOHBET (GÖRSEL/DOSYA + KİTAPLA SOHBET + ÖZEL PROMPT) -->
   <section id="view-chat" class="view">
     <div class="card chat-wrap" style="padding:10px 11px;margin-bottom:0">
       <div class="card-head" style="margin-bottom:6px">
-        <h2>🤖 AI Asistan & Site Öneri Sohbeti</h2>
+        <h2>🤖 AI Sohbet</h2>
+        <button class="btn small" id="chatPromptBtn" title="Özel Sohbet Promptu & Kişilik">⚙ Prompt</button>
         <button class="btn small danger" id="chatClearBtn">Temizle</button>
       </div>
+      <div class="row" style="margin-bottom:7px">
+        <select id="chatBookSel" class="grow" style="padding:5px 9px;font-size:12px">
+          <option value="">📚 Kitap Bağlama: Yok (Genel Sohbet)</option>
+        </select>
+      </div>
       <div class="chat-chips" id="chatChips">
-        <button class="chat-chip" data-cq="Ücretsiz İngilizce web novel ve hafif roman okuyabileceğim en iyi güncel siteleri linkleriyle öner.">📖 Roman siteleri öner</button>
-        <button class="chat-chip" data-cq="Manhwa ve manga okuyabileceğim en kaliteli, az reklamlı siteleri linkleriyle öner.">💬 Manga siteleri öner</button>
-        <button class="chat-chip" data-cq="Shadow Slave ve Solo Leveling tarzı sürükleyici 5 web novel öner.">⚔️ LitRPG öner</button>
-        <button class="chat-chip" data-cq="Türkçe çeviride akıcılığı artıracak ipuçları ver.">✨ Çeviri ipuçları</button>
+        <button class="chat-chip" data-cq="Ücretsiz İngilizce web novel ve hafif roman okuyabileceğim en iyi güncel siteleri linkleriyle öner.">📖 Roman siteleri</button>
+        <button class="chat-chip" data-cq="Manhwa ve manga okuyabileceğim en kaliteli siteleri linkleriyle öner.">💬 Manga siteleri</button>
+        <button class="chat-chip" data-cq="Bağlı kitabın ana karakterlerini ve olay örgüsünü özetle.">📚 Kitabı özetle</button>
       </div>
       <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-attach-preview" id="chatAttachBox">
+        <img id="chatAttachImg" style="display:none" alt="">
+        <span class="grow" id="chatAttachName">Ekli dosya</span>
+        <button class="btn small danger" id="chatAttachClear">✕</button>
+      </div>
       <div class="chat-bar">
-        <textarea id="chatInput" rows="1" placeholder="Yapay zekaya bir şey sor veya site önerisi iste..."></textarea>
+        <button class="icon-btn" id="chatAttachBtn" title="Görsel veya Dosya Ekle" style="flex:0 0 34px;height:36px">📎</button>
+        <input type="file" id="chatFileInput" accept="image/*,.txt,.md,.json,.html,.htm,.csv" style="display:none">
+        <textarea id="chatInput" rows="1" placeholder="Soru sor, dosya/görsel gönder veya kitapla sohbet et..."></textarea>
         <button class="btn primary pill" id="chatSendBtn"><span class="spin"></span>Gönder</button>
         <button class="btn danger pill" id="chatStopBtn" style="display:none">■</button>
       </div>
     </div>
   </section>
 
-  <!-- 4. MANGA STÜDYOSU -->
+  <!-- 4. MANGA -->
   <section id="view-manga" class="view">
     <div class="card">
       <div class="card-head"><h2>💬 Canlı Manga & Manhwa</h2></div>
@@ -429,27 +403,13 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       </div>
       <div class="bm-grid" id="mangaSitesGrid"></div>
     </div>
-
     <div class="card">
       <h2>🎨 Baloncuk Stili</h2>
-      <label>Okuma Yönü</label>
-      <select id="mDirSel"><option value="webtoon">📜 Webtoon / Manhwa (Yukarıdan Aşağıya)</option><option value="manga">📖 Manga (Sağdan Sola)</option></select>
-      <label>Baloncuk Yazı Tipi</label>
-      <select id="mFontSel">
-        <option value="Comic Sans MS, Chalkboard SE, cursive, sans-serif">💬 Çizgi Roman (Comic)</option>
-        <option value="system-ui, sans-serif">Modern Temiz</option>
-        <option value="Georgia, serif">Klasik Serif</option>
-        <option value="Impact, Arial Black, sans-serif">Kalın Aksiyon</option>
-      </select>
-      <label>Yazı Boyutu: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
+      <label>Okuma Yönü</label><select id="mDirSel"><option value="webtoon">📜 Webtoon / Manhwa</option><option value="manga">📖 Manga (Sağdan Sola)</option></select>
+      <label>Yazı Tipi</label><select id="mFontSel"><option value="Comic Sans MS, Chalkboard SE, cursive, sans-serif">💬 Çizgi Roman</option><option value="system-ui, sans-serif">Modern</option><option value="Georgia, serif">Serif</option><option value="Impact, Arial Black, sans-serif">Kalın</option></select>
+      <label>Boyut: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
       <label>Opaklık: <b id="mOpVal">98</b>%</label><input type="range" id="mOpRange" min="0.85" max="1.0" step="0.01">
-      <label>Kenarlık Rengi</label>
-      <div class="row" id="mBorderRow">
-        <button class="btn small grow" data-bc="#8b5cf6" style="border-color:#8b5cf6">Mor</button>
-        <button class="btn small grow" data-bc="#d946ef" style="border-color:#d946ef">Pembe</button>
-        <button class="btn small grow" data-bc="#111111" style="border-color:#555">Siyah</button>
-        <button class="btn small grow" data-bc="#3b82f6" style="border-color:#3b82f6">Mavi</button>
-      </div>
+      <label>Kenarlık</label><div class="row" id="mBorderRow"><button class="btn small grow" data-bc="#8b5cf6">Mor</button><button class="btn small grow" data-bc="#d946ef">Pembe</button><button class="btn small grow" data-bc="#111111">Siyah</button><button class="btn small grow" data-bc="#3b82f6">Mavi</button></div>
     </div>
   </section>
 
@@ -461,16 +421,10 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <div class="stat-box"><b id="stMins">0</b><span>Dk ⏱</span></div>
       <div class="stat-box"><b id="stWords">0</b><span>Kelime</span></div>
     </div>
-
     <div class="card">
       <div class="row" style="margin-bottom:8px">
         <input id="libSearch" class="grow" placeholder="🔍 Kitap, yazar, seri ara..." style="padding:7px 10px;font-size:13px">
-        <select id="libSort" style="width:auto;padding:7px 8px;font-size:12px">
-          <option value="recent">Son Okunan</option>
-          <option value="rating">⭐ Puan</option>
-          <option value="title">A-Z</option>
-          <option value="prog">İlerleme</option>
-        </select>
+        <select id="libSort" style="width:auto;padding:7px 8px;font-size:12px"><option value="recent">Son Okunan</option><option value="rating">⭐ Puan</option><option value="title">A-Z</option><option value="prog">İlerleme</option></select>
       </div>
       <div class="row" style="margin-bottom:8px">
         <button class="btn primary small grow" id="addBookBtn">+ Kitap</button>
@@ -488,58 +442,17 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
         <button class="shelf-pill" data-shelf="want">📌 Okunacak</button>
       </div>
     </div>
-
     <div class="book-grid" id="bookGrid"></div>
-    <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:28px 14px;display:none">
-      Henüz kitap yok. <b>EPUB, PDF, DOCX, FB2, MOBI, CBZ, TXT, HTML</b> ekleyebilir veya Tarayıcıdan kaydedebilirsin.
-    </div>
+    <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:28px 14px;display:none">Henüz kitap yok.</div>
   </section>
 
   <!-- 6. STÜDYO -->
   <section id="view-studio" class="view">
-    <div class="seg" id="studioSeg">
-      <button class="active" data-sub="prompts">✨ Prompt</button>
-      <button data-sub="market">🛒 Pazar</button>
-      <button data-sub="glossary">📖 Sözlük</button>
-      <button data-sub="ambient">🌧️ Ambiyans</button>
-    </div>
-
-    <div id="sub-prompts">
-      <div class="card">
-        <div class="card-head"><h2>Aktif Çeviri Profili</h2><button class="btn small" id="newPromptBtn">+ Yeni</button></div>
-        <select id="promptSelect"></select>
-        <label>Profil Adı</label><input id="promptName">
-        <label>Sistem Talimatı</label><textarea id="promptText" style="min-height:160px"></textarea>
-        <div class="row" style="margin-top:9px">
-          <button class="btn primary" id="savePromptBtn">Kaydet</button>
-          <button class="btn" id="resetPromptBtn">Sıfırla</button>
-          <button class="btn danger" id="delPromptBtn">Sil</button>
-        </div>
-      </div>
-    </div>
-
+    <div class="seg" id="studioSeg"><button class="active" data-sub="prompts">✨ Prompt</button><button data-sub="market">🛒 Pazar</button><button data-sub="glossary">📖 Sözlük</button><button data-sub="ambient">🌧️ Ambiyans</button></div>
+    <div id="sub-prompts"><div class="card"><div class="card-head"><h2>Aktif Çeviri Profili</h2><button class="btn small" id="newPromptBtn">+ Yeni</button></div><select id="promptSelect"></select><label>Profil Adı</label><input id="promptName"><label>Sistem Talimatı</label><textarea id="promptText" style="min-height:160px"></textarea><div class="row" style="margin-top:9px"><button class="btn primary" id="savePromptBtn">Kaydet</button><button class="btn" id="resetPromptBtn">Sıfırla</button><button class="btn danger" id="delPromptBtn">Sil</button></div></div></div>
     <div id="sub-market" style="display:none"><div class="card"><h2>🛒 Prompt Pazar Yeri</h2><div id="promptMarketList"></div></div></div>
-
-    <div id="sub-glossary" style="display:none">
-      <div class="card">
-        <div class="card-head"><h2>Terim Sözlüğü</h2><label class="switch" style="margin:0;gap:7px"><span>Aktif</span><input type="checkbox" id="glossEnabled"></label></div>
-        <div class="row"><input id="glossSrc" class="grow" placeholder="Orijinal"><input id="glossTgt" class="grow" placeholder="Çevirisi"><button class="btn primary small" id="addGlossBtn">Ekle</button></div>
-      </div>
-      <div id="glossList"></div>
-    </div>
-
-    <div id="sub-ambient" style="display:none">
-      <div class="card">
-        <div class="card-head"><h2>🌧️ Ambiyans Sesleri</h2><button class="btn small danger" id="stopAmbBtn">Durdur</button></div>
-        <div class="row" id="ambBtns">
-          <button class="btn small grow" data-amb="rain">🌧️ Yağmur</button>
-          <button class="btn small grow" data-amb="fire">🔥 Şömine</button>
-          <button class="btn small grow" data-amb="wind">🌲 Rüzgar</button>
-          <button class="btn small grow" data-amb="cafe">☕ Kafe</button>
-        </div>
-        <label>Ses: <b id="ambVolVal">35</b>%</label><input type="range" id="ambVolRange" min="5" max="100" step="5" value="35">
-      </div>
-    </div>
+    <div id="sub-glossary" style="display:none"><div class="card"><div class="card-head"><h2>Terim Sözlüğü</h2><label class="switch" style="margin:0;gap:7px"><span>Aktif</span><input type="checkbox" id="glossEnabled"></label></div><div class="row"><input id="glossSrc" class="grow" placeholder="Orijinal"><input id="glossTgt" class="grow" placeholder="Çevirisi"><button class="btn primary small" id="addGlossBtn">Ekle</button></div></div><div id="glossList"></div></div>
+    <div id="sub-ambient" style="display:none"><div class="card"><div class="card-head"><h2>🌧️ Ambiyans Sesleri</h2><button class="btn small danger" id="stopAmbBtn">Durdur</button></div><div class="row" id="ambBtns"><button class="btn small grow" data-amb="rain">🌧️ Yağmur</button><button class="btn small grow" data-amb="fire">🔥 Şömine</button><button class="btn small grow" data-amb="wind">🌲 Rüzgar</button><button class="btn small grow" data-amb="cafe">☕ Kafe</button></div><label>Ses: <b id="ambVolVal">35</b>%</label><input type="range" id="ambVolRange" min="5" max="100" step="5" value="35"></div></div>
   </section>
 
   <!-- 7. AYARLAR -->
@@ -550,57 +463,18 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
       <label>Base URL</label><input id="baseUrl" placeholder="https://api.literouter.com/v1">
       <label>Aktif Model</label><input id="modelInput" list="modelDatalist" placeholder="Örn: gemini-2.5-flash">
       <datalist id="modelDatalist"></datalist>
-      <div class="row" style="margin-top:9px">
-        <button class="btn small" id="fetchModelsBtn">Modelleri Getir</button>
-        <button class="btn primary small" id="testApiBtn">Test Et</button>
-      </div>
+      <div class="row" style="margin-top:9px"><button class="btn small" id="fetchModelsBtn">Modelleri Getir</button><button class="btn primary small" id="testApiBtn">Test Et</button></div>
       <div class="status" id="apiStatus"></div>
     </div>
-
-    <div class="card">
-      <div class="card-head"><h2>🪙 Token & Hız</h2><button class="btn small danger" id="resetUsageBtn">Sıfırla</button></div>
-      <div class="stats-strip" style="margin-bottom:0">
-        <div class="stat-box"><b id="uReqs">0</b><span>İstek</span></div>
-        <div class="stat-box"><b id="uIn">0</b><span>Giriş</span></div>
-        <div class="stat-box"><b id="uOut">0</b><span>Çıkış</span></div>
-        <div class="stat-box"><b id="uSpd">0s</b><span>Hız</span></div>
-      </div>
-    </div>
-
+    <div class="card"><div class="card-head"><h2>🪙 Token & Hız</h2><button class="btn small danger" id="resetUsageBtn">Sıfırla</button></div><div class="stats-strip" style="margin-bottom:0"><div class="stat-box"><b id="uReqs">0</b><span>İstek</span></div><div class="stat-box"><b id="uIn">0</b><span>Giriş</span></div><div class="stat-box"><b id="uOut">0</b><span>Çıkış</span></div><div class="stat-box"><b id="uSpd">0s</b><span>Hız</span></div></div></div>
     <div class="card">
       <h2>🎨 Görünüm & Özelleştirme</h2>
-      <div class="row" id="appThemeRow" style="margin-bottom:6px">
-        <button class="btn small grow" data-ath="default">Mor</button>
-        <button class="btn small grow" data-ath="pink">Pembe</button>
-        <button class="btn small grow" data-ath="blue">Mavi</button>
-        <button class="btn small grow" data-ath="emerald">Zümrüt</button>
-        <button class="btn small grow" data-ath="amoled">AMOLED</button>
-      </div>
-      <label>Geçiş Animasyonu</label>
-      <select id="animStyleSel"><option value="fade">Yumuşak (Fade)</option><option value="slide">Kayma (Slide)</option><option value="zoom">Yakınlaşma (Zoom)</option><option value="none">Yok</option></select>
-      <div class="row" style="margin-top:9px">
-        <button class="btn small grow" id="openNavCustBtn">🧭 Alt Menü</button>
-        <button class="btn small grow" id="openStorageBtn">💾 Depolama</button>
-        <button class="btn small" id="openDebugBtn">🐞 Konsol</button>
-      </div>
+      <div class="row" id="appThemeRow" style="margin-bottom:6px"><button class="btn small grow" data-ath="default">Mor</button><button class="btn small grow" data-ath="pink">Pembe</button><button class="btn small grow" data-ath="blue">Mavi</button><button class="btn small grow" data-ath="emerald">Zümrüt</button><button class="btn small grow" data-ath="amoled">AMOLED</button></div>
+      <label>Geçiş Animasyonu</label><select id="animStyleSel"><option value="fade">Yumuşak (Fade)</option><option value="slide">Kayma (Slide)</option><option value="zoom">Yakınlaşma (Zoom)</option><option value="none">Yok</option></select>
+      <div class="row" style="margin-top:9px"><button class="btn small grow" id="openNavCustBtn">🧭 Alt Menü</button><button class="btn small grow" id="openStorageBtn">💾 Depolama</button><button class="btn small" id="openDebugBtn">🐞 Konsol</button></div>
     </div>
-
-    <div class="card">
-      <h2>Çeviri & Ekran</h2>
-      <label class="switch"><span>Canlı Akış (Streaming)</span><input type="checkbox" id="streamToggle"></label>
-      <label class="switch"><span>Okuyucuda Ekranı Açık Tut</span><input type="checkbox" id="keepScreenToggle"></label>
-      <label>Yaratıcılık: <b id="tempVal">0.3</b></label><input type="range" id="tempRange" min="0" max="1.5" step="0.05">
-      <label>Parça Boyutu: <b id="chunkVal">6000</b></label><input type="range" id="chunkRange" min="1500" max="30000" step="500">
-    </div>
-
-    <div class="card">
-      <h2>Yedekleme (.JSON)</h2>
-      <div class="row">
-        <button class="btn primary small grow" id="exportBackupBtn">⬇ Tam Yedek</button>
-        <button class="btn small grow" id="importBackupBtn">⬆ Geri Yükle</button>
-        <input type="file" id="backupFileInput" accept=".json" style="display:none">
-      </div>
-    </div>
+    <div class="card"><h2>Çeviri & Ekran</h2><label class="switch"><span>Canlı Akış (Streaming)</span><input type="checkbox" id="streamToggle"></label><label class="switch"><span>Okuyucuda Ekranı Açık Tut</span><input type="checkbox" id="keepScreenToggle"></label><label>Yaratıcılık: <b id="tempVal">0.3</b></label><input type="range" id="tempRange" min="0" max="1.5" step="0.05"><label>Parça Boyutu: <b id="chunkVal">6000</b></label><input type="range" id="chunkRange" min="1500" max="30000" step="500"></div>
+    <div class="card"><h2>Yedekleme (.JSON)</h2><div class="row"><button class="btn primary small grow" id="exportBackupBtn">⬇ Tam Yedek</button><button class="btn small grow" id="importBackupBtn">⬆ Geri Yükle</button><input type="file" id="backupFileInput" accept=".json" style="display:none"></div></div>
   </section>
 
 </main>
@@ -639,19 +513,60 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 </div>
 
 <div class="sel-bar" id="selBar">
-  <button class="btn primary small pill" id="selTransBtn">🌐 Çevir</button>
+  <button class="btn primary small pill" id="selTransBtn">�� Çevir</button>
   <button class="btn ok small pill" id="selDictBtn">📖 Sözlük</button>
   <button class="btn warn small pill" id="selHlBtn">🖍️ Vurgula</button>
   <button class="btn small pill" id="selCloseBtn">✕</button>
 </div>
 
 <!-- MODALS -->
+<!-- YENİ BÖLÜM BİLDİRİM GELEN KUTUSU & TAKİP LİSTESİ -->
+<div class="modal" id="notifModal"><div class="sheet">
+  <div class="sheet-head">
+    <h3>🔔 Yeni Bölüm Bildirim Kutusu</h3>
+    <button class="btn primary small" id="watchCheckNowBtn"><span class="spin"></span>Kontrol Et</button>
+    <button class="btn small" data-close="notifModal">✕</button>
+  </div>
+  <div class="seg" id="notifSeg">
+    <button class="active" data-nt="inbox">📬 Gelen Kutusu</button>
+    <button data-nt="watch">👁️ Takip Listem</button>
+  </div>
+  <div id="notifStatus" class="status" style="margin-top:0;margin-bottom:8px"></div>
+  <div id="notifInboxArea">
+    <div class="row" style="margin-bottom:8px"><button class="btn small ok grow" id="notifMarkAllBtn">Tümünü Okundu Yap</button><button class="btn small danger" id="notifClearBtn">Temizle</button></div>
+    <div id="notifInboxList"></div>
+  </div>
+  <div id="notifWatchArea" style="display:none">
+    <div class="row" style="margin-bottom:9px">
+      <input id="watchUrlInput" class="grow" placeholder="Roman/Manga seri linki yapıştır...">
+      <button class="btn ok small" id="watchAddBtn">+ Ekle</button>
+    </div>
+    <div id="watchList"></div>
+  </div>
+</div></div>
+
+<!-- ÖZEL AI SOHBET PROMPTU & KİŞİLİKLER -->
+<div class="modal" id="chatPromptModal"><div class="sheet">
+  <div class="sheet-head"><h3>⚙ AI Sohbet Promptu & Kişilikler</h3><button class="btn small" data-close="chatPromptModal">✕</button></div>
+  <label>Hazır Kişilik Seç (Veya Aşağıya Kendin Yaz)</label>
+  <div class="row" id="chatPersonaBtns" style="margin-bottom:8px">
+    <button class="btn small" data-cp="default">🤖 Genel Asistan</button>
+    <button class="btn small" data-cp="recommender">📖 Roman/Manga Uzmanı</button>
+    <button class="btn small" data-cp="teacher">🎓 İngilizce Öğretmeni</button>
+    <button class="btn small" data-cp="editor">✍️ Edebiyat Editörü</button>
+    <button class="btn small" data-cp="rp">🎭 Rol Yapma (RP)</button>
+  </div>
+  <label>Özel Sohbet Sistem Promptun</label>
+  <textarea id="chatSysPromptInput" style="min-height:150px" placeholder="Yapay zekanın sohbet ederken nasıl davranmasını istediğini buraya yaz..."></textarea>
+  <button class="btn primary" id="saveChatPromptBtn" style="width:100%;margin-top:10px">Promptu Kaydet</button>
+</div></div>
+
 <div class="modal" id="modelModal"><div class="sheet"><div class="sheet-head"><h3>⚡ Model Değiştirici</h3><button class="btn small" id="mRefreshBtn">↻</button><button class="btn small" data-close="modelModal">✕</button></div><div class="row" style="margin-bottom:9px"><input id="mAddInput" class="grow" list="modelDatalist" placeholder="Model adı..."><button class="btn primary small" id="mAddFavBtn">⭐ Ekle</button></div><div id="mFavList"></div></div></div>
 
 <div class="modal" id="aaModal"><div class="sheet"><div class="sheet-head"><h3>Aa Görünüm & Sesli Kitap</h3><button class="btn small" data-close="aaModal">✕</button></div>
   <div class="row" id="rThemeRow"><button class="btn small grow" data-theme="night">Gece</button><button class="btn small grow" data-theme="amoled">AMOLED</button><button class="btn small grow" data-theme="sepia">Sepya</button><button class="btn small grow" data-theme="day">Gündüz</button></div>
-  <label>Yazı Tipi</label>
-  <select id="rFontSel"><option value="system-ui,-apple-system,sans-serif">Modern</option><option value="Georgia,serif">Georgia</option><option value="Palatino Linotype,Book Antiqua,serif">Palatino</option><option value="Verdana,sans-serif">Verdana</option><option value="Trebuchet MS,sans-serif">Trebuchet</option><option value="ui-monospace,monospace">Mono</option></select>
+  <label class="switch"><span>🎭 Diyalogları Renklendir ("...")</span><input type="checkbox" id="rDlgColorToggle"></label>
+  <label>Yazı Tipi</label><select id="rFontSel"><option value="system-ui,-apple-system,sans-serif">Modern</option><option value="Georgia,serif">Georgia</option><option value="Palatino Linotype,Book Antiqua,serif">Palatino</option><option value="Verdana,sans-serif">Verdana</option><option value="Trebuchet MS,sans-serif">Trebuchet</option><option value="ui-monospace,monospace">Mono</option></select>
   <label>Boyut: <b id="rSizeVal">18</b>px</label><input type="range" id="rSizeRange" min="14" max="30" step="1">
   <label>Satır Aralığı: <b id="rLhVal">1.8</b></label><input type="range" id="rLhRange" min="1.35" max="2.4" step="0.05">
   <label>Genişlik</label><select id="rWidthSel"><option value="620px">Dar</option><option value="760px">Orta</option><option value="960px">Geniş</option><option value="100%">Tam</option></select>
@@ -701,7 +616,7 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
   <div class="row" style="margin-top:10px"><button class="btn primary grow" id="ebSaveBtn">Kaydet</button></div>
   <div class="card" style="margin-top:10px;padding:10px">
     <h2 style="font-size:13px;color:var(--accent);margin-bottom:6px">⚡ Toplu Bölüm Çevirici</h2>
-    <div class="row"><input type="number" id="ebBatchFrom" value="1" min="1" style="width:62px;padding:5px"><span class="meta">→</span><input type="number" id="ebBatchTo" value="5" min="1" style="width:62px;padding:5px"><button class="btn pink small grow" id="ebBatchBtn">Başlat</button><button class="btn danger small" id="ebBatchStop" style="display:none">Dur</button></div>
+    <div class="row"><input type="number" id="ebBatchFrom" value="1" min="1" style="width:62px;padding:5px"><span class="meta">→</span><input type="number" id="ebBatchTo" value="5" min="1" style="width:62px;padding:5px"><button class="btn pink small grow" id="ebBatchBtn">Başlat</button><button class="btn danger small" id="ebBatchStop" style="display:none">Durdur</button></div>
     <div class="progress" id="ebBatchProg"><div></div></div><div class="status" id="ebBatchStatus"></div>
   </div>
   <div class="row" style="margin-top:9px"><button class="btn ok small grow" id="ebExpEpub">⬇ .EPUB</button><button class="btn small grow" id="ebExpHtml">⬇ .HTML</button><button class="btn danger small" id="ebDelBtn">🗑️ Çöpe At</button></div>
