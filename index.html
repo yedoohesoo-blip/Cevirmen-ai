@@ -15,38 +15,45 @@
 body.th-pink{--primary:#ec4899;--primary2:#d946ef;--accent:#f9a8d4;--pink:#fb7185;--border:#381c30}
 body.th-blue{--primary:#3b82f6;--primary2:#6366f1;--accent:#93c5fd;--pink:#818cf8;--bg:#040712;--surface:#0a1020;--surface2:#111a33;--border:#1d2b4d}
 body.th-emerald{--primary:#10b981;--primary2:#14b8a6;--accent:#6ee7b7;--pink:#2dd4bf;--bg:#030a08;--surface:#081612;--surface2:#0f221c;--border:#19382e}
-body.th-amoled{--bg:#000000;--surface:#07070b;--surface2:#111117;--border:#20202b}
+body.th-amoled{--bg:#000000;--surface:#050508;--surface2:#0d0d13;--surface3:#151520;--border:#1b1b26;--border2:#2b2b3d}
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  background:
-    radial-gradient(650px 380px at 95% -5%,color-mix(in srgb,var(--primary) 22%,transparent),transparent 65%),
-    radial-gradient(580px 420px at -10% 105%,color-mix(in srgb,var(--pink) 14%,transparent),transparent 65%),
-    var(--bg);
-  background-attachment:fixed;color:var(--text);min-height:100vh;
-  padding-bottom:calc(78px + env(safe-area-inset-bottom));line-height:1.45;
-  font-size:14px;-webkit-font-smoothing:antialiased;
+  background:var(--bg);color:var(--text);min-height:100vh;
+  padding-bottom:calc(74px + env(safe-area-inset-bottom));line-height:1.45;
+  font-size:14px;-webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
+/* S20 FE 120Hz GPU dostu sabit arka plan katmanı */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(620px 360px at 95% -5%,color-mix(in srgb,var(--primary) 20%,transparent),transparent 65%),
+    radial-gradient(540px 380px at -10% 105%,color-mix(in srgb,var(--pink) 13%,transparent),transparent 65%);
+}
+body.th-amoled::before{background:none}
 button,input,textarea,select{font:inherit;color:inherit}
 a{color:var(--accent)}
 
 .view{display:none;will-change:transform,opacity}
 .view.active{display:block}
-body.anim-fade .view.active{animation:aFade .16s ease-out}
-body.anim-slide .view.active{animation:aSlide .2s cubic-bezier(.2,.8,.2,1)}
-body.anim-zoom .view.active{animation:aZoom .18s cubic-bezier(.2,.8,.2,1)}
+body.anim-fade .view.active{animation:aFade .15s ease-out}
+body.anim-slide .view.active{animation:aSlide .19s cubic-bezier(.2,.8,.2,1)}
+body.anim-zoom .view.active{animation:aZoom .17s cubic-bezier(.2,.8,.2,1)}
 body.anim-none .view.active{animation:none}
 @keyframes aFade{from{opacity:0}to{opacity:1}}
 @keyframes aSlide{from{opacity:0;transform:translate3d(14px,0,0)}to{opacity:1;transform:none}}
 @keyframes aZoom{from{opacity:0;transform:scale3d(.97,.97,1)}to{opacity:1;transform:none}}
 
-header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;padding:9px 12px;padding-top:calc(9px + env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(18px);border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent)}
-.logo{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:15px;flex:0 0 32px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
+header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:7px;padding:8px 11px;padding-top:calc(8px + env(safe-area-inset-top));background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid color-mix(in srgb,var(--border) 75%,transparent)}
+body.th-amoled header{background:#000}
+.logo{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:15px;flex:0 0 31px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
 .hdr-mid{flex:1;min-width:0}
-.hdr-mid h1{font-size:14.5px;font-weight:750;line-height:1.1}
-.hdr-model{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:500;background:var(--surface2);border:1px solid var(--border);padding:2px 8px;border-radius:999px;margin-top:2px;cursor:pointer;max-width:42vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-mid h1{font-size:14px;font-weight:750;line-height:1.1;display:flex;align-items:center;gap:5px}
+.hdr-pills{display:flex;align-items:center;gap:4px;margin-top:2px;flex-wrap:nowrap;overflow:hidden}
+.hdr-model{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:10.5px;font-weight:600;background:var(--surface2);border:1px solid var(--border);padding:2px 7px;border-radius:999px;cursor:pointer;max-width:34vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-badge{display:inline-flex;align-items:center;gap:3px;color:#fde68a;font-size:10.5px;font-weight:700;background:#f59e0b1a;border:1px solid #f59e0b55;padding:2px 7px;border-radius:999px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
 .hdr-actions{display:flex;gap:4px;flex:0 0 auto}
 .icon-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);display:grid;place-items:center;cursor:pointer;font-size:13.5px;position:relative}
 .icon-btn:active{transform:scale(.92);border-color:var(--primary)}
@@ -56,14 +63,15 @@ header{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;
 .clip-banner{display:none;align-items:center;gap:8px;padding:8px 12px;background:#20113a;border-bottom:1px solid var(--primary);font-size:12.5px}
 .clip-banner.show{display:flex}
 
-main{max-width:860px;margin:0 auto;padding:11px}
-.card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 92%,transparent),color-mix(in srgb,var(--bg) 96%,transparent));border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:10px}
+main{max-width:860px;margin:0 auto;padding:10px}
+.card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 94%,transparent),color-mix(in srgb,var(--bg) 97%,transparent));border:1px solid var(--border);border-radius:var(--radius);padding:12px 13px;margin-bottom:10px}
+body.th-amoled .card{background:#050508}
 .card-head{display:flex;align-items:center;gap:7px;margin-bottom:9px;flex-wrap:wrap}
 .card-head h2{font-size:13.5px;color:var(--accent);font-weight:700;flex:1;min-width:100px}
 label{display:block;font-size:11.5px;color:var(--muted);margin:8px 0 4px;font-weight:500}
 input,textarea,select{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 11px;font-size:13.5px;outline:none}
 input:focus,textarea:focus,select:focus{border-color:var(--primary);background:var(--surface3)}
-textarea{resize:vertical;min-height:118px;line-height:1.58}
+textarea{resize:vertical;min-height:112px;line-height:1.58}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .row > .grow{flex:1;min-width:0}
 
@@ -99,139 +107,128 @@ textarea{resize:vertical;min-height:118px;line-height:1.58}
 .switch input{width:38px;height:21px;appearance:none;background:var(--border);border-radius:20px;position:relative;cursor:pointer;padding:0;border:none;flex:0 0 38px}
 .switch input::after{content:"";position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.16s}
 .switch input:checked{background:var(--primary)}
-.switch input:checked::after{left:19.5px}
-input[type=range]{padding:0;height:5px;accent-color:var(--primary);background:none;border:none}
-.hint{font-size:11.5px;color:var(--muted);margin-top:5px;line-height:1.45}
-.pw{position:relative}
-.pw input{padding-right:62px}
-.pw button{position:absolute;right:5px;top:50%;transform:translateY(-50%)}
+.switch input:checked::after{transform:translateX(17px)}
 
-.seg{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:9px;overflow-x:auto}
-.seg button{flex:1;border:none;background:none;color:var(--muted);padding:6px 8px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;white-space:nowrap}
-.seg button.active{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{padding:5px 10px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.chip.active{background:color-mix(in srgb,var(--primary) 22%,transparent);border-color:var(--primary);color:var(--accent)}
+.pill-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;padding:2px 7px;border-radius:999px;background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--primary) 35%,transparent)}
+.pill-tag.ok{background:#10b98120;color:#6ee7b7;border-color:#10b98144}
+.pill-tag.warn{background:#f59e0b20;color:#fde68a;border-color:#f59e0b44}
+.pill-tag.danger{background:#f43f5e20;color:#fda4af;border-color:#f43f5e44}
 
-.moodbar{height:3px;border-radius:4px;margin:6px 0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:background .4s}
-.tn-badge{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#8b5cf633;border:1px solid var(--primary);color:var(--accent);font-size:10px;font-weight:800;margin-left:3px;cursor:pointer;vertical-align:middle}
-.dlg-span{color:#d8b4fe;font-weight:500}
-.reader.t-sepia .dlg-span{color:#7c2d12}
-.reader.t-day .dlg-span{color:#6d28d9}
+.list{display:flex;flex-direction:column;gap:7px}
+.item{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:9px 11px;display:flex;gap:8px;align-items:flex-start}
+.item-body{flex:1;min-width:0}
+.item-title{font-size:13px;font-weight:650;word-break:break-word}
+.item-sub{font-size:11.5px;color:var(--muted);margin-top:3px;word-break:break-word}
 
-/* AI SOHBET (GÖRSEL/DOSYA + KİTAPLA SOHBET + ÖZEL PROMPT) */
-.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 150px - env(safe-area-inset-top) - env(safe-area-inset-bottom));min-height:380px}
-.chat-msgs{flex:1;overflow-y:auto;padding:4px 2px 10px;display:flex;flex-direction:column;gap:9px}
-.chat-msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.58;white-space:pre-wrap;word-break:break-word}
-.chat-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:4px}
-.chat-msg.ai{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px}
-.chat-msg a{color:#fde047;text-decoration:underline;font-weight:600}
-.chat-msg img{max-width:200px;border-radius:9px;display:block;margin-bottom:6px}
-.chat-chips{display:flex;gap:5px;overflow-x:auto;padding-bottom:6px}
-.chat-chips::-webkit-scrollbar{display:none}
-.chat-chip{flex:0 0 auto;padding:4px 9px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);font-size:11px;color:var(--accent);cursor:pointer}
-.chat-attach-preview{display:none;align-items:center;gap:8px;padding:6px 9px;background:var(--surface2);border:1px solid var(--primary);border-radius:10px;margin-bottom:6px;font-size:11.5px}
-.chat-attach-preview.show{display:flex}
-.chat-attach-preview img{width:34px;height:34px;object-fit:cover;border-radius:6px}
-.chat-bar{display:flex;gap:5px;align-items:flex-end;padding-top:7px;border-top:1px solid var(--border)}
-.chat-bar textarea{min-height:36px;max-height:105px;padding:7px 11px;border-radius:18px;font-size:13px;resize:none}
+/* 120Hz Liste Optimizasyonu */
+#bookGrid, #histList, #chatMsgs, #lrCostList{content-visibility:auto;contain-intrinsic-size:500px}
 
-.native-banner{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 18%,transparent),color-mix(in srgb,var(--pink) 14%,transparent));border:1px solid color-mix(in srgb,var(--primary) 60%,transparent);border-radius:12px;padding:9px 11px;margin-bottom:10px;font-size:12px}
-.tabs-strip{display:flex;gap:6px;overflow-x:auto;padding-bottom:5px;margin-bottom:7px}
-.tabs-strip::-webkit-scrollbar{display:none}
-.tab-chip{flex:0 0 auto;max-width:170px;display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);cursor:pointer}
-.tab-chip.active{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 18%,transparent)}
-.tab-chip-title{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
-.tab-chip-x{width:16px;height:16px;border-radius:50%;border:none;background:#ffffff18;color:#fda4af;font-size:9.5px;display:grid;place-items:center;cursor:pointer}
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.book-card{background:var(--surface2);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative;transition:transform .14s}
+.book-card:active{transform:scale(.98)}
+.book-cov{height:155px;background:linear-gradient(135deg,#241442,#120b24);display:grid;place-items:center;position:relative;overflow:hidden}
+.book-cov img{width:100%;height:100%;object-fit:cover}
+.book-cov .ph{font-size:32px;opacity:.7}
+.book-badge{position:absolute;top:6px;left:6px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;background:#06040bd8;color:var(--accent);border:1px solid var(--border2)}
+.book-info{padding:8px 9px;flex:1;display:flex;flex-direction:column;gap:4px}
+.book-title{font-size:12.5px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.book-meta{font-size:10.5px;color:var(--muted)}
+.book-prog{height:3px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:auto}
+.book-prog>div{height:100%;background:linear-gradient(90deg,var(--primary),var(--pink))}
+.book-acts{display:flex;gap:4px;padding:0 7px 7px}
+.book-acts .btn{flex:1;padding:4px 5px;font-size:11px}
 
-.bm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:7px}
-.bm-tile{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center;cursor:pointer;position:relative}
-.bm-tile:active{transform:scale(.95);border-color:var(--primary)}
-.bm-ico{width:32px;height:32px;border-radius:9px;margin:0 auto 5px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--primary),var(--pink))}
-.bm-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bm-del{position:absolute;top:3px;right:3px;width:17px;height:17px;border-radius:50%;border:none;background:#0009;color:#fda4af;font-size:9.5px;cursor:pointer;display:grid;place-items:center}
+/* Alt Menü — Ferah & Kaydırılabilir */
+nav.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;gap:3px;padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 93%,transparent);backdrop-filter:blur(16px);border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+nav.bnav::-webkit-scrollbar{display:none}
+body.th-amoled nav.bnav{background:#000}
+nav.bnav button{flex:1 0 58px;border:none;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:600;padding:4px 2px;border-radius:10px;cursor:pointer}
+nav.bnav button span.ic{font-size:17px;line-height:1}
+nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--primary) 16%,transparent)}
 
-.stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
-.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center}
-.stat-box b{display:block;font-size:14.5px;color:var(--accent)}
-.stat-box span{font-size:9.5px;color:var(--muted)}
-.shelf-bar{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px}
-.shelf-bar::-webkit-scrollbar{display:none}
-.shelf-pill{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer}
-.shelf-pill.active{background:var(--primary);border-color:var(--primary);color:#fff}
+/* AI Sohbet & Markdown */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 210px);min-height:360px}
+.chat-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px}
+.cmsg{max-width:90%;padding:10px 12px;border-radius:14px;font-size:13.5px;line-height:1.58;word-break:break-word}
+.cmsg.user{align-self:flex-end;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-bottom-right-radius:4px;white-space:pre-wrap}
+.cmsg.ai{align-self:flex-start;background:var(--surface2);border:1px solid var(--border);border-bottom-left-radius:4px}
+.cmsg img{max-width:210px;border-radius:10px;margin-bottom:6px;display:block;cursor:pointer}
+.cmsg-acts{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;padding-top:5px;border-top:1px solid var(--border)}
+.cmsg-acts button{background:var(--surface3);border:1px solid var(--border);color:var(--muted);font-size:10.5px;padding:2px 6px;border-radius:6px;cursor:pointer}
+.md-pre{background:#07040e;border:1px solid var(--border2);border-radius:9px;margin:7px 0;overflow:hidden}
+.md-pre-hd{display:flex;justify-content:space-between;align-items:center;padding:4px 9px;background:#130c24;font-size:10.5px;color:var(--accent)}
+.md-pre code{display:block;padding:9px;overflow-x:auto;font-family:ui-monospace,monospace;font-size:12px;white-space:pre}
+.md-ic{background:#221738;padding:1px 5px;border-radius:5px;font-family:ui-monospace,monospace;font-size:12.5px}
+.cmsg.ai h3,.cmsg.ai h4{color:var(--accent);margin:6px 0 3px;font-size:14px}
+.cmsg.ai ul{padding-left:18px;margin:4px 0}
+.cmsg.ai table{width:100%;border-collapse:collapse;margin:6px 0;font-size:12px}
+.cmsg.ai th,.cmsg.ai td{border:1px solid var(--border2);padding:4px 6px;text-align:left}
+.chat-att-preview{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.chat-att-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--primary);padding:4px 8px;border-radius:9px;font-size:11.5px}
 
-.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(136px,1fr));gap:10px}
-.book-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;position:relative}
-.book-cover{aspect-ratio:2/2.7;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:10px;background-size:cover;background-position:center}
-.book-cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#00000018 25%,#06040be8 100%)}
-.book-cover-title{position:relative;z-index:2;font-size:12.5px;font-weight:750;color:#fff;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.book-badge{position:absolute;top:6px;left:6px;z-index:2;font-size:9px;font-weight:700;padding:2px 5px;border-radius:5px;background:#07050ccc;border:1px solid #ffffff26;color:#fff;text-transform:uppercase}
-.book-fav{position:absolute;top:5px;right:5px;z-index:3;width:24px;height:24px;border-radius:50%;border:none;background:#07050caa;color:#fff;font-size:12px;cursor:pointer;display:grid;place-items:center}
-.book-info{padding:8px;display:flex;flex-direction:column;gap:4px;flex:1}
-.book-meta{font-size:10.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.book-prog{height:3px;background:var(--surface2);border-radius:3px;overflow:hidden}
-.book-prog > div{height:100%;background:linear-gradient(90deg,var(--primary),var(--pink))}
-.book-acts{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted)}
+/* Tam Ekran Okuyucu */
+#reader{position:fixed;inset:0;z-index:100;background:#080510;color:#ece6f7;display:none;flex-direction:column}
+#reader.open{display:flex}
+#reader.rt-amoled{background:#000000;color:#d8d4e6}
+#reader.rt-sepia{background:#f5ecd7;color:#2b2113}
+#reader.rt-light{background:#fafafa;color:#18181b}
+.r-top,.r-bot{display:flex;align-items:center;gap:5px;padding:7px 9px;background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid var(--border);transition:transform .2s ease,opacity .2s ease;z-index:110}
+.r-top{padding-top:calc(7px + env(safe-area-inset-top))}
+.r-bot{border-bottom:none;border-top:1px solid var(--border);padding-bottom:calc(7px + env(safe-area-inset-bottom));flex-direction:column;gap:5px}
+#reader.bars-hidden .r-top{transform:translateY(-110%);opacity:0;pointer-events:none;position:absolute;top:0;left:0;right:0}
+#reader.bars-hidden .r-bot{transform:translateY(110%);opacity:0;pointer-events:none;position:absolute;bottom:0;left:0;right:0}
+.r-prog-line{height:2.5px;background:var(--border);width:100%}
+.r-prog-line>div{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--pink))}
+.r-scroll{flex:1;overflow-y:auto;padding:18px 18px 80px;position:relative;-webkit-overflow-scrolling:touch}
+.r-body{max-width:760px;margin:0 auto;word-wrap:break-word;user-select:text}
+.r-body p{margin-bottom:1em}
+.r-body img{max-width:100%;height:auto;border-radius:8px;display:block;margin:8px auto}
+.r-title{font-size:1.25em;font-weight:750;color:var(--accent);margin-bottom:14px}
+.dlg-span{color:#e879f9;font-weight:500}
+#reader.rt-sepia .dlg-span,#reader.rt-light .dlg-span{color:#7c3aed}
+.hl-mark{background:#a855f744;border-bottom:2px solid var(--pink);border-radius:3px;padding:0 2px}
+.bionic-b{font-weight:800;color:inherit}
+.tts-active{background:color-mix(in srgb,var(--primary) 24%,transparent);border-left:3px solid var(--pink);padding:4px 8px;border-radius:6px;transition:background .2s}
+#rRuler{position:fixed;left:0;right:0;top:46%;height:42px;border-top:1.5px solid color-mix(in srgb,var(--primary) 55%,transparent);border-bottom:1.5px solid color-mix(in srgb,var(--primary) 55%,transparent);background:color-mix(in srgb,var(--primary) 7%,transparent);pointer-events:none;display:none;z-index:105}
+#rRuler.on{display:block}
+#rBrightHud{position:fixed;left:16px;top:50%;transform:translateY(-50%);background:#0e0918e6;border:1px solid var(--primary);color:#fff;padding:8px 12px;border-radius:12px;font-size:12px;font-weight:700;display:none;z-index:130;pointer-events:none}
+#rSearchBar{display:none;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);gap:5px;align-items:center}
+#rSearchBar.open{display:flex}
 
-.heatmap{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:8px}
-.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface2)}
-.hm-1{background:color-mix(in srgb,var(--primary) 30%,transparent)}
-.hm-2{background:color-mix(in srgb,var(--primary) 60%,transparent)}
-.hm-3{background:var(--primary)}
-.hm-4{background:var(--pink)}
+/* Yerel CBZ/PDF Manga Sayfa Çeviri Katmanı */
+.cbz-page-wrap{position:relative;margin:10px auto;max-width:100%;display:inline-block;width:100%}
+.cbz-page-wrap img{width:100%;display:block;border-radius:6px}
+.cbz-tr-btn{position:absolute;top:8px;right:8px;z-index:15;background:#8b5cf6e6;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.6);cursor:pointer}
+.lib-mb-layer{position:absolute;inset:0;pointer-events:none;z-index:12}
+.lib-mb{position:absolute;background:#ffffff;color:#090612;border:2px solid #8b5cf6;border-radius:12px;padding:5px 7px;font-weight:700;line-height:1.25;text-align:center;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.55);pointer-events:auto;word-break:break-word;user-select:none}
 
-.list-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;margin-bottom:6px}
-.list-item-body{flex:1;min-width:0}
-.list-item-title{font-size:13px;font-weight:650;word-break:break-word}
-.list-item-sub{font-size:11px;color:var(--muted);margin-top:2px;word-break:break-word}
-
-nav.bnav{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom));background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(18px);border-top:1px solid var(--border)}
-nav.bnav button{flex:1;background:none;border:none;color:var(--muted);font-size:9.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 1px;border-radius:10px;cursor:pointer}
-nav.bnav button svg{width:19px;height:19px}
-nav.bnav button.active{color:#fff;background:color-mix(in srgb,var(--primary) 16%,transparent)}
-nav.bnav button.active svg{color:var(--accent)}
-
-.reader{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;background:var(--r-bg,#06040b);color:var(--r-fg,#f0eafb)}
-.reader.open{display:flex}
-.reader.t-night{--r-bg:#06040b;--r-fg:#f0eafb;--r-bar:#0e0918f5;--r-bd:#261c3a;--r-mut:#9287aa}
-.reader.t-amoled{--r-bg:#000000;--r-fg:#e5e5e5;--r-bar:#08080cf5;--r-bd:#20202b;--r-mut:#888}
-.reader.t-sepia{--r-bg:#f4ecd8;--r-fg:#33281d;--r-bar:#ebe0c7f5;--r-bd:#d6c7a9;--r-mut:#7c6a53}
-.reader.t-day{--r-bg:#ffffff;--r-fg:#1a1a1f;--r-bar:#f5f5f7f5;--r-bd:#e2e2e8;--r-mut:#666}
-.r-top{display:flex;align-items:center;gap:5px;padding:7px 9px;padding-top:calc(7px + env(safe-area-inset-top));background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
-.r-title{flex:1;min-width:0;font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.r-btn{border:1px solid var(--r-bd);background:transparent;color:var(--r-fg);padding:4px 7px;border-radius:8px;font-size:11.5px;font-weight:600;cursor:pointer;flex:0 0 auto}
-.r-btn.on{background:var(--primary);border-color:var(--primary);color:#fff}
-.r-subbar{display:flex;align-items:center;gap:5px;padding:5px 8px;overflow-x:auto;background:var(--r-bar);border-bottom:1px solid var(--r-bd)}
-.r-subbar::-webkit-scrollbar{display:none}
-.r-prog{height:2.5px;background:var(--r-bd)}
-.r-prog > div{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--pink));transition:width .18s}
-.r-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 64px}
-.r-body{margin:0 auto;word-wrap:break-word}
-.r-body p{margin-bottom:1.1em}
-.r-body img{max-width:100%;height:auto;border-radius:10px;display:block;margin:12px auto;cursor:zoom-in}
-.r-body h1,.r-body h2,.r-body h3{margin:1.2em 0 .6em;line-height:1.3}
-.r-bi-orig{opacity:.62;font-size:.86em;margin-bottom:5px;line-height:1.5}
-.r-bi-tr{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--r-bd)}
-mark.hl-purple{background:#8b5cf655;color:inherit;padding:1px 3px;border-radius:4px}
-mark.hl-yellow{background:#fbbf2455;color:inherit;padding:1px 3px;border-radius:4px}
-mark.hl-green{background:#10b98148;color:inherit;padding:1px 3px;border-radius:4px}
-mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4px}
-.r-next-card{margin:30px auto 10px;padding:14px;border-radius:13px;border:1px solid var(--r-bd);text-align:center;cursor:pointer;max-width:400px;background:#8b5cf614}
-.r-bot{display:flex;align-items:center;gap:8px;padding:8px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom));background:var(--r-bar);border-top:1px solid var(--r-bd)}
-.r-info{flex:1;text-align:center;font-size:11.5px;color:var(--r-mut)}
-
-.sel-bar{position:fixed;left:50%;bottom:calc(68px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:130;display:none;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;background:#1a102ef5;border:1px solid var(--primary);padding:5px 9px;border-radius:16px;box-shadow:0 8px 26px #00000099;max-width:95vw}
+.sel-bar{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:125;background:var(--surface2);border:1px solid var(--primary);border-radius:999px;padding:5px 8px;display:none;gap:5px;box-shadow:0 10px 30px rgba(0,0,0,.7);max-width:95vw;overflow-x:auto}
 .sel-bar.show{display:flex}
 
-.modal{position:fixed;inset:0;z-index:150;background:#000000aa;backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center}
+/* Modallar & Lightbox */
+.modal{position:fixed;inset:0;z-index:140;background:#04020ad6;backdrop-filter:blur(7px);display:none;align-items:flex-end;justify-content:center;padding:10px}
 .modal.open{display:flex}
-.sheet{width:100%;max-width:680px;max-height:86vh;overflow-y:auto;background:linear-gradient(180deg,var(--surface),var(--bg));border:1px solid var(--border);border-radius:20px 20px 0 0;padding:15px 14px calc(20px + env(safe-area-inset-bottom));animation:slideUp .16s ease}
-@keyframes slideUp{from{transform:translateY(22px);opacity:0}to{transform:none;opacity:1}}
-.sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.sheet{width:100%;max-width:600px;max-height:88vh;overflow-y:auto;background:var(--surface);border:1px solid var(--border2);border-radius:18px;padding:14px}
+.sheet-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .sheet-head h3{flex:1;font-size:14.5px;color:var(--accent)}
 
-.lightbox{position:fixed;inset:0;z-index:200;background:#000e;display:none;align-items:center;justify-content:center;padding:16px}
-.lightbox.open{display:flex}
-.lightbox img{max-width:100%;max-height:92vh;border-radius:10px}
-.toast{position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(14px);opacity:0;background:#1c1133;border:1px solid var(--primary);color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;transition:.18s;pointer-events:none;z-index:300;max-width:90vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#lightbox{position:fixed;inset:0;z-index:200;background:#000e;display:none;align-items:center;justify-content:center;padding:14px}
+#lightbox.open{display:flex}
+#lightbox img{max-width:100%;max-height:92vh;border-radius:10px}
+
+/* Ambiyans Mikser & Heatmap */
+.mix-row{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:7px 10px}
+.mix-row span{width:95px;font-size:12px;font-weight:600}
+.mix-row input[type=range]{flex:1;padding:0;background:transparent;border:none}
+.heatmap{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:8px}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface3)}
+.hm-1{background:#4c1d95}.hm-2{background:#7c3aed}.hm-3{background:#a855f7}.hm-4{background:#e879f9}
+
+#toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);z-index:250;background:var(--surface2);color:var(--text);border:1px solid var(--primary);padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:600;opacity:0;pointer-events:none;transition:.18s;max-width:90vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body class="anim-fade">
@@ -239,392 +236,547 @@ mark.hl-pink{background:#f43f5e48;color:inherit;padding:1px 3px;border-radius:4p
 <header>
   <div class="logo">Ç</div>
   <div class="hdr-mid">
-    <h1>Çevirmen AI</h1>
-    <button class="hdr-model" id="hdrModelBtn"><span>⚡</span><span id="hdrModelName">Model seçilmedi</span><span>▾</span></button>
+    <h1>Çevirmen AI <span style="font-size:10px;color:var(--muted);font-weight:600">v8.0</span></h1>
+    <div class="hdr-pills">
+      <div class="hdr-model" id="hdrModelBtn">🤖 Model seç</div>
+      <div class="lr-badge" id="lrCostBadge" title="LiteRouter Canlı Maliyet Tarayıcı">💰 --</div>
+    </div>
   </div>
   <div class="hdr-actions">
-    <button class="icon-btn" id="openNotifBtn" title="Yeni Bölüm Bildirim Kutusu">🔔<span class="notif-badge" id="notifBadge">0</span></button>
-    <button class="icon-btn" id="openQuickSearch" title="Hızlı Arama">🔍</button>
+    <button class="icon-btn" id="hdrNotifBtn" title="Yeni Bölüm Bildirimleri">🔔<span class="notif-badge" id="notifBadge">0</span></button>
     <button class="icon-btn" id="hdrOverlayBtn" title="Yüzen Çeviri">🫧</button>
-    <button class="icon-btn" id="openQuotesBtn" title="Alıntılar">🖍️</button>
-    <button class="icon-btn" id="openHistBtn" title="Geçmiş">📜</button>
+    <button class="icon-btn" id="hdrDebugBtn" title="Hata Konsolu">🐞</button>
   </div>
 </header>
 
 <div class="clip-banner" id="clipBanner">
-  <span class="grow" id="clipPreview" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Panoda metin algılandı</span>
-  <button class="btn primary small" id="clipGoBtn">Çevir</button>
-  <button class="btn small" id="clipDismiss">✕</button>
+  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="clipBannerTxt"></span>
+  <button class="btn small primary" id="clipBannerGo">Çevir</button>
+  <button class="btn small" id="clipBannerClose">✕</button>
 </div>
 
 <main>
-
-  <!-- 1. METİN -->
-  <section id="view-text" class="view active">
+  <!-- 1. METİN ÇEVİRİSİ -->
+  <section class="view active" id="view-text">
     <div class="card">
       <div class="lang-bar">
         <select id="srcLang"></select>
         <button class="btn swap" id="swapLang">⇄</button>
         <select id="tgtLang"></select>
       </div>
-      <textarea id="srcInput" placeholder="Çevirmek istediğin metni buraya yaz veya yapıştır..."></textarea>
+      <textarea id="srcText" placeholder="Çevrilecek metni yaz, yapıştır, sesle dikte et veya fotoğraftan (OCR) çek..."></textarea>
       <div class="row" style="margin-top:8px">
-        <span class="meta grow" id="srcCount">0 karakter</span>
-        <button class="btn small" id="pasteSrc">Yapıştır</button>
-        <button class="btn small" id="clearSrc">Temizle</button>
-        <button class="btn primary" id="txtTranslateBtn"><span class="spin"></span>Çevir</button>
-        <button class="btn danger" id="txtStopBtn" style="display:none">Durdur</button>
+        <button class="btn small" id="pasteBtn">📋 Yapıştır</button>
+        <button class="btn small" id="ocrImgBtn">📷 Görsel OCR</button>
+        <input type="file" id="ocrImgInput" accept="image/*" hidden>
+        <button class="btn small" id="micBtn">�� Dikte</button>
+        <button class="btn small" id="clearTextBtn">🧹</button>
+        <button class="btn small" id="raceBtn">🏁 Yarış</button>
+        <button class="btn primary grow" id="transBtn"><span class="spin"></span>🌐 Çevir</button>
       </div>
-      <label class="switch"><span>📝 Deyim & Atasözü Çevirmen Notları</span><input type="checkbox" id="tnToggle"></label>
-      <div class="progress" id="txtProg"><div></div></div>
-      <div class="status" id="txtStatus"></div>
+      <div class="progress" id="transProg"><div></div></div>
+      <div class="status" id="transStatus"></div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <h2>Çeviri Sonucu</h2>
-        <button class="btn small" id="txtReadFs">📖 Oku</button>
-        <button class="btn small" id="txtTtsBtn">🎧</button>
-        <button class="btn small" id="txtCopyBtn">Kopyala</button>
-        <button class="btn small" id="txtShareBtn">Paylaş</button>
+        <h2>✨ Çeviri Sonucu</h2>
+        <button class="btn small" id="pinTransBtn" title="Favorilere Sabitle">⭐</button>
+        <button class="btn small" id="altTransBtn" title="3 Alternatif Üret">✨ 3 Alternatif</button>
+        <button class="btn small" id="copyOutBtn">📋</button>
+        <button class="btn small" id="shareOutBtn">📤</button>
       </div>
-      <div class="moodbar" id="txtMoodbar"></div>
-      <div class="out-box" id="txtOut"></div>
-      <div class="status" id="qaStatus"></div>
-      <div class="row" style="margin-top:9px">
-        <button class="btn small" id="txtQaBtn">🔍 Denetle</button>
-        <button class="btn small" id="txtRaceBtn">⚔️ Yarıştır</button>
-        <button class="btn small" id="txtRefineBtn">✨ Cilala</button>
-        <button class="btn small" id="txtSumBtn">📝 Özet</button>
-        <button class="btn small ok" id="txtSaveLibBtn">📚 Kaydet</button>
+      <div class="out-box" id="outText"></div>
+      <div class="chips" id="toneChips">
+        <span class="chip" data-tone="resmi">👔 Daha Resmi</span>
+        <span class="chip" data-tone="samimi">💬 Daha Samimi</span>
+        <span class="chip" data-tone="kisalt">✂️ Kısalt</span>
+        <span class="chip" data-tone="edebi">✒️ Edebi Yap</span>
+        <span class="chip" data-tone="sade">🌿 Sadeleştir</span>
       </div>
+      <div id="qualityBox" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>🕘 Son & Sabitlenen Çeviriler</h2>
+        <button class="btn small danger" id="clearHistBtn">Temizle</button>
+      </div>
+      <div class="list" id="histList"></div>
     </div>
   </section>
 
-  <!-- 2. TARAYICI + ADGUARD VPN KALKANI + FMHY -->
-  <section id="view-browser" class="view">
-    <div id="nativeBadge" class="native-banner" style="display:none">
-      <b>🚀 Pro Tarayıcı + AdGuard VPN!</b> Reklamları kökünden kesmek için aşağıdaki veya tarayıcı üstündeki <b>🛡️ AdGuard VPN</b> kalkanını aç!
-    </div>
-
-    <div class="card">
-      <div class="card-head" style="margin-bottom:7px">
-        <h2>📑 Sekmeler (<span id="tabCount">1</span>)</h2>
-        <button class="btn ok small" id="vpnToggleBtn">🛡️ AdGuard VPN</button>
-        <button class="btn primary small" id="newTabBtn">+ Sekme</button>
-      </div>
-      <div class="tabs-strip" id="tabsStrip"></div>
-      <div class="row" style="margin-top:5px">
-        <input id="bUrlInput" class="grow" placeholder="Google'da ara veya URL..." style="border-radius:999px">
-        <button class="btn pink pill" id="bGoBtn">Aç</button>
-      </div>
-      <div class="row" style="margin-top:7px">
-        <button class="btn small grow" id="bOpenGoogle">🔍 Google</button>
-        <button class="btn small" id="bPasteGo">📋 Yapıştır</button>
-        <button class="btn small" id="addBmManual">+ Yer İmi</button>
-      </div>
-    </div>
-
+  <!-- 2. PRO TARAYICI & FMHY -->
+  <section class="view" id="view-browser">
     <div class="card">
       <div class="card-head">
-        <h2>🧭 FMHY Okuma Merkezi</h2>
-        <button class="btn small ok" id="fmhyAddBtn">+ Ekle</button>
-        <button class="btn small" id="fmhyRefreshBtn">↻</button>
-        <button class="btn small" id="openFmhyDirect">fmhy ↗</button>
+        <h2>🌐 Pro Tarayıcı & AdGuard</h2>
+        <button class="btn small ok" id="vpnToggleBtn">🛡️ AdGuard VPN</button>
+        <span class="pill-tag" id="adCountPill">0 reklam</span>
       </div>
-      <div class="seg" id="fmhySeg">
-        <button class="active" data-fc="novels">📖 Roman</button>
-        <button data-fc="manga">💬 Manga</button>
-        <button data-fc="ebooks">📚 E-Kitap</button>
-      </div>
-      <div class="bm-grid" id="fmhyGrid"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h2>🫧 Yüzen Ekran Çevirisi</h2></div>
       <div class="row">
-        <button class="btn pink grow" id="startOverlayBtn">🫧 Yüzen Çeviriyi Başlat</button>
-        <button class="btn danger" id="stopOverlayBtn">Kapat</button>
+        <input class="grow" id="bUrlInput" placeholder="Web sitesi URL'si veya arama...">
+        <button class="btn primary" id="bGoBtn">Aç</button>
       </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small pink" id="openScraperBtn">⚡ Seri Bölüm İndirici</button>
+        <button class="btn small" id="addTabBtn">＋ Sekme</button>
+        <button class="btn small" id="addBmBtn">⭐ Yer İmi</button>
+        <button class="btn small ok" id="openFmhyBtn">🧭 FMHY Merkezi</button>
+      </div>
+      <div class="chips" id="tabBar" style="margin-top:8px"></div>
+      <div class="chips" id="bmBar" style="margin-top:6px"></div>
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>⭐ Yer İmlerim</h2></div>
-      <div class="bm-grid" id="bmGrid"></div>
-    </div>
-
-    <div class="card">
-      <label class="switch" style="margin-top:0"><span>Metin çevirisini otomatik Kütüphaneye kaydet</span><input type="checkbox" id="bAutoSave"></label>
-      <label class="switch"><span>Uygulamaya dönünce Panoyu yakala</span><input type="checkbox" id="clipWatchToggle"></label>
+      <div class="card-head"><h2>⚡ Hızlı Okuma Siteleri</h2></div>
+      <div class="chips" id="fmhyQuickChips"></div>
+      <label class="switch"><span>Tarayıcıdan çevrilen bölümleri otomatik Kütüphane'ye kaydet</span><input type="checkbox" id="bAutoSave"></label>
     </div>
   </section>
 
-  <!-- 3. AI SOHBET (GÖRSEL/DOSYA + KİTAPLA SOHBET + ÖZEL PROMPT) -->
-  <section id="view-chat" class="view">
-    <div class="card chat-wrap" style="padding:10px 11px;margin-bottom:0">
-      <div class="card-head" style="margin-bottom:6px">
-        <h2>🤖 AI Sohbet</h2>
-        <button class="btn small" id="chatPromptBtn" title="Özel Sohbet Promptu & Kişilik">⚙ Prompt</button>
-        <button class="btn small danger" id="chatClearBtn">Temizle</button>
+  <!-- 3. AI SOHBET -->
+  <section class="view" id="view-chat">
+    <div class="card" style="padding:9px 11px">
+      <div class="row">
+        <select id="chatSessionSel" class="grow" style="padding:6px 8px;font-size:12px"></select>
+        <button class="btn small primary" id="newChatBtn">＋ Yeni</button>
+        <button class="btn small danger" id="delChatBtn">🗑️</button>
       </div>
-      <div class="row" style="margin-bottom:7px">
-        <select id="chatBookSel" class="grow" style="padding:5px 9px;font-size:12px">
-          <option value="">📚 Kitap Bağlama: Yok (Genel Sohbet)</option>
+      <div class="row" style="margin-top:6px">
+        <select id="chatBookSel" class="grow" style="padding:6px 8px;font-size:12px"><option value="">📚 Kitap bağlama (Genel Sohbet)</option></select>
+        <button class="btn small" id="chatPersonaBtn">🎭 Kişilik</button>
+      </div>
+      <label class="switch" style="margin-top:6px"><span>🚫 Spoiler Koruması (Sadece okuduğum bölüme kadar bil)</span><input type="checkbox" id="chatSpoilerGuard" checked></label>
+    </div>
+
+    <div class="card chat-wrap">
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-att-preview" id="chatAttPreview"></div>
+      <div class="row" style="margin-top:6px">
+        <button class="btn small" id="chatFileBtn" title="Görsel / PDF / EPUB / Metin ekle">📎</button>
+        <input type="file" id="chatFileInput" accept="image/*,.txt,.md,.pdf,.epub,.json,.csv" multiple hidden>
+        <input class="grow" id="chatInput" placeholder="Sorunu yaz veya dosya ekle...">
+        <button class="btn primary" id="chatSendBtn">Gönder</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CANLI MANGA & YÜZEN ÇEVİRİ -->
+  <section class="view" id="view-manga">
+    <div class="card">
+      <div class="card-head"><h2>🫧 Yüzen Ekran Çevirisi (Akıllı Mod)</h2></div>
+      <p class="meta" style="margin-bottom:8px">Oyun, manga veya başka uygulamalarda ekran değişmediğinde 0 API harcar. Kilitli mod ve Oyun/Video Alt Yazı şeridi destekler.</p>
+      <div class="row">
+        <button class="btn primary grow" id="startOverlayBtn">🫧 Yüzen Çeviriyi Başlat</button>
+        <button class="btn danger" id="stopOverlayBtn">⏹ Durdur</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>💬 Manga Baloncuk Stili (Yüksek Kontrast)</h2></div>
+      <label>Okuma Yönü</label>
+      <select id="mDir"><option value="webtoon">Webtoon / Manhwa (Yukarıdan Aşağı)</option><option value="rtl">Manga (Sağdan Sola)</option><option value="ltr">Çizgi Roman (Soldan Sağa)</option></select>
+      <label>Baloncuk Fontu</label>
+      <select id="mFont">
+        <option value="system-ui, -apple-system, sans-serif">Modern Temiz (Önerilen — En Okunaklı)</option>
+        <option value="Comic Sans MS, Chalkboard SE, sans-serif">Çizgi Roman (Comic)</option>
+        <option value="Georgia, serif">Klasik Serif</option>
+      </select>
+      <label>Yazı Boyutu Çarpanı: <span id="mScaleVal">1.0</span>x</label>
+      <input type="range" id="mScale" min="0.8" max="1.45" step="0.05" value="1.0">
+      <label>Çerçeve Rengi</label>
+      <input type="color" id="mBorder" value="#8b5cf6" style="height:36px;padding:3px">
+      <div class="row" style="margin-top:8px">
+        <button class="btn pink grow" id="openMangaBrowserBtn">💬 Manga Tarayıcısını Aç</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. AKILLI KÜTÜPHANE -->
+  <section class="view" id="view-library">
+    <div class="card" style="padding:10px 12px">
+      <div class="row" style="justify-content:space-between">
+        <span class="meta">🎯 Günlük Hedef: <b id="dailyGoalTxt" style="color:var(--accent)">0 / 30 dk</b></span>
+        <button class="btn small" id="editGoalBtn">Hedef</button>
+      </div>
+      <div class="progress on" style="margin-top:6px"><div id="dailyGoalBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>📚 Akıllı Kütüphane</h2>
+        <button class="btn small primary" id="importBookBtn">＋ Kitap/Manga</button>
+        <input type="file" id="bookFileInput" accept=".epub,.pdf,.docx,.fb2,.mobi,.cbz,.txt,.html,.htm" multiple hidden>
+      </div>
+      <div class="row">
+        <input class="grow" id="libSearch" placeholder="Kitap, yazar veya etiket ara...">
+        <button class="btn small" id="mergeSeriesBtn" title="AI Seri Birleştir">🧩 Birleştir</button>
+        <button class="btn small" id="opdsBtn">📡 OPDS</button>
+        <button class="btn small danger" id="trashBtn">🗑️ Çöp</button>
+      </div>
+      <div class="chips" id="libTagBar" style="margin-top:8px"></div>
+    </div>
+
+    <div class="book-grid" id="bookGrid"></div>
+  </section>
+
+  <!-- 6. STÜDYO (SÖZLÜK, PROMPT, AMBİYANS MİKSERİ, WRAPPED) -->
+  <section class="view" id="view-studio">
+    <div class="card">
+      <div class="card-head">
+        <h2>📖 Akıllı Sözlük (Kitap Bazlı)</h2>
+        <button class="btn small ok" id="glossAiBtn">✨ AI Çıkar</button>
+        <button class="btn small" id="glossExportBtn">⬇ Dışa</button>
+        <button class="btn small" id="glossImportBtn">⬆ İçe</button>
+        <input type="file" id="glossFileInput" accept=".json,.csv" hidden>
+      </div>
+      <div class="row" style="margin-bottom:6px">
+        <select id="glossBookSel" class="grow"></select>
+        <label class="switch" style="margin:0"><input type="checkbox" id="glossEnabled"></label>
+      </div>
+      <div class="row">
+        <input class="grow" id="gSrc" placeholder="Orijinal terim">
+        <input class="grow" id="gTgt" placeholder="Türkçe karşılık">
+        <button class="btn primary" id="gAddBtn">Ekle</button>
+      </div>
+      <div class="list" id="glossList" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>🎭 Çeviri Prompt Şablonları</h2>
+        <button class="btn small primary" id="addPromptBtn">＋ Yeni</button>
+      </div>
+      <select id="promptSel"></select>
+      <textarea id="promptEdit" style="margin-top:6px;min-height:80px"></textarea>
+      <div class="row" style="margin-top:6px">
+        <button class="btn small ok" id="savePromptBtn">💾 Kaydet</button>
+        <button class="btn small danger" id="delPromptBtn">Sil</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>🎧 Ambiyans Ses Mikseri (Çevrimdışı)</h2>
+        <button class="btn small danger" id="stopAmbBtn">⏹ Tümünü Durdur</button>
+      </div>
+      <div class="list" id="ambMixer">
+        <div class="mix-row"><span>🌧️ Yağmur</span><input type="range" data-amb="rain" min="0" max="1" step="0.05" value="0"></div>
+        <div class="mix-row"><span>🔥 Şömine</span><input type="range" data-amb="fire" min="0" max="1" step="0.05" value="0"></div>
+        <div class="mix-row"><span>💨 Rüzgar</span><input type="range" data-amb="wind" min="0" max="1" step="0.05" value="0"></div>
+        <div class="mix-row"><span>☕ Kafe</span><input type="range" data-amb="cafe" min="0" max="1" step="0.05" value="0"></div>
+        <div class="mix-row"><span>🌙 Gece</span><input type="range" data-amb="night" min="0" max="1" step="0.05" value="0"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>📊 Okuma Wrapped & Aktivite Takvimi</h2></div>
+      <div class="row" id="wrappedStats" style="justify-content:space-between;margin-bottom:6px"></div>
+      <div class="heatmap" id="heatmapGrid"></div>
+    </div>
+  </section>
+
+  <!-- 7. LITEROUTER CANLI MALİYET & ÇARPAN TARAYICISI -->
+  <section class="view" id="view-costs">
+    <div class="card">
+      <div class="card-head">
+        <h2>💰 LiteRouter Canlı Maliyet & Çarpanlar</h2>
+        <button class="btn small primary" id="lrScanBtn"><span class="spin"></span>🔄 Canlı Tara</button>
+      </div>
+      <p class="meta">literouter.com sitesindeki ve API'deki güncel model çarpanlarını/maliyetlerini tarar. Aktif modelinin güncel çarpanı üst köşedeki altın rozette görünür.</p>
+      <div class="row" style="margin-top:8px">
+        <input class="grow" id="lrSearch" placeholder="Model ara (ör. gemini, claude, deepseek)...">
+        <select id="lrSort" style="width:130px">
+          <option value="cheap">En Ucuz</option>
+          <option value="exp">En Pahalı</option>
+          <option value="name">Ada Göre</option>
         </select>
       </div>
-      <div class="chat-chips" id="chatChips">
-        <button class="chat-chip" data-cq="Ücretsiz İngilizce web novel ve hafif roman okuyabileceğim en iyi güncel siteleri linkleriyle öner.">📖 Roman siteleri</button>
-        <button class="chat-chip" data-cq="Manhwa ve manga okuyabileceğim en kaliteli siteleri linkleriyle öner.">💬 Manga siteleri</button>
-        <button class="chat-chip" data-cq="Bağlı kitabın ana karakterlerini ve olay örgüsünü özetle.">📚 Kitabı özetle</button>
-      </div>
-      <div class="chat-msgs" id="chatMsgs"></div>
-      <div class="chat-attach-preview" id="chatAttachBox">
-        <img id="chatAttachImg" style="display:none" alt="">
-        <span class="grow" id="chatAttachName">Ekli dosya</span>
-        <button class="btn small danger" id="chatAttachClear">✕</button>
-      </div>
-      <div class="chat-bar">
-        <button class="icon-btn" id="chatAttachBtn" title="Görsel veya Dosya Ekle" style="flex:0 0 34px;height:36px">📎</button>
-        <input type="file" id="chatFileInput" accept="image/*,.txt,.md,.json,.html,.htm,.csv" style="display:none">
-        <textarea id="chatInput" rows="1" placeholder="Soru sor, dosya/görsel gönder veya kitapla sohbet et..."></textarea>
-        <button class="btn primary pill" id="chatSendBtn"><span class="spin"></span>Gönder</button>
-        <button class="btn danger pill" id="chatStopBtn" style="display:none">■</button>
-      </div>
+      <div class="status" id="lrStatus"></div>
     </div>
+    <div class="list" id="lrCostList"></div>
   </section>
 
-  <!-- 4. MANGA -->
-  <section id="view-manga" class="view">
+  <!-- 8. AYARLAR -->
+  <section class="view" id="view-settings">
     <div class="card">
-      <div class="card-head"><h2>💬 Canlı Manga & Manhwa</h2></div>
-      <div class="row" style="margin-bottom:8px">
-        <input id="mSiteInput" class="grow" placeholder="Manga/Manhwa ara veya URL..." style="border-radius:999px">
-        <button class="btn pink pill" id="mSiteGoBtn">Aç</button>
+      <div class="card-head">
+        <h2>🔌 API Profilleri & Bağlantı</h2>
+        <button class="btn small primary" id="saveProfileBtn">＋ Profil Kaydet</button>
       </div>
-      <div class="bm-grid" id="mangaSitesGrid"></div>
-    </div>
-    <div class="card">
-      <h2>🎨 Baloncuk Stili</h2>
-      <label>Okuma Yönü</label><select id="mDirSel"><option value="webtoon">📜 Webtoon / Manhwa</option><option value="manga">📖 Manga (Sağdan Sola)</option></select>
-      <label>Yazı Tipi</label><select id="mFontSel"><option value="Comic Sans MS, Chalkboard SE, cursive, sans-serif">💬 Çizgi Roman</option><option value="system-ui, sans-serif">Modern</option><option value="Georgia, serif">Serif</option><option value="Impact, Arial Black, sans-serif">Kalın</option></select>
-      <label>Boyut: <b id="mFsVal">1.0</b>x</label><input type="range" id="mFsRange" min="0.7" max="1.6" step="0.05">
-      <label>Opaklık: <b id="mOpVal">98</b>%</label><input type="range" id="mOpRange" min="0.85" max="1.0" step="0.01">
-      <label>Kenarlık</label><div class="row" id="mBorderRow"><button class="btn small grow" data-bc="#8b5cf6">Mor</button><button class="btn small grow" data-bc="#d946ef">Pembe</button><button class="btn small grow" data-bc="#111111">Siyah</button><button class="btn small grow" data-bc="#3b82f6">Mavi</button></div>
-    </div>
-  </section>
-
-  <!-- 5. KÜTÜPHANE -->
-  <section id="view-library" class="view">
-    <div class="stats-strip">
-      <div class="stat-box"><b id="stTotal">0</b><span>Kitap</span></div>
-      <div class="stat-box"><b id="stStreak">0</b><span>Gün 🔥</span></div>
-      <div class="stat-box"><b id="stMins">0</b><span>Dk ⏱</span></div>
-      <div class="stat-box"><b id="stWords">0</b><span>Kelime</span></div>
-    </div>
-    <div class="card">
-      <div class="row" style="margin-bottom:8px">
-        <input id="libSearch" class="grow" placeholder="🔍 Kitap, yazar, seri ara..." style="padding:7px 10px;font-size:13px">
-        <select id="libSort" style="width:auto;padding:7px 8px;font-size:12px"><option value="recent">Son Okunan</option><option value="rating">⭐ Puan</option><option value="title">A-Z</option><option value="prog">İlerleme</option></select>
+      <div class="row" style="margin-bottom:6px">
+        <select id="apiProfileSel" class="grow"></select>
+        <button class="btn small danger" id="delProfileBtn">Sil</button>
       </div>
-      <div class="row" style="margin-bottom:8px">
-        <button class="btn primary small grow" id="addBookBtn">+ Kitap</button>
-        <input type="file" id="bookFileInput" multiple accept=".epub,.pdf,.txt,.md,.html,.htm,.cbz,.docx,.fb2,.mobi" style="display:none">
-        <button class="btn small" id="aiOrganizeBtn">🤖 Düzenle</button>
-        <button class="btn small" id="openOpdsBtn">🌐 OPDS</button>
-        <button class="btn small" id="openWrappedBtn">📊</button>
-        <button class="btn small danger" id="openTrashBtn">🗑️</button>
-      </div>
-      <div class="shelf-bar" id="shelfBar">
-        <button class="shelf-pill active" data-shelf="all">Tümü</button>
-        <button class="shelf-pill" data-shelf="reading">📖 Okunuyor</button>
-        <button class="shelf-pill" data-shelf="fav">⭐ Favori</button>
-        <button class="shelf-pill" data-shelf="done">✓ Biten</button>
-        <button class="shelf-pill" data-shelf="want">📌 Okunacak</button>
+      <label>Base URL (OpenAI Uyumlu)</label>
+      <input id="setBaseUrl" placeholder="https://api.literouter.com/v1">
+      <label>API Anahtarı</label>
+      <input id="setApiKey" type="password" placeholder="sk-...">
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary grow" id="fetchModelsBtn">🔄 Modelleri Çek</button>
+        <button class="btn ok" id="openModelModalBtn">🤖 Model Seç</button>
       </div>
     </div>
-    <div class="book-grid" id="bookGrid"></div>
-    <div id="libEmpty" class="card" style="text-align:center;color:var(--muted);padding:28px 14px;display:none">Henüz kitap yok.</div>
-  </section>
 
-  <!-- 6. STÜDYO -->
-  <section id="view-studio" class="view">
-    <div class="seg" id="studioSeg"><button class="active" data-sub="prompts">✨ Prompt</button><button data-sub="market">🛒 Pazar</button><button data-sub="glossary">📖 Sözlük</button><button data-sub="ambient">🌧️ Ambiyans</button></div>
-    <div id="sub-prompts"><div class="card"><div class="card-head"><h2>Aktif Çeviri Profili</h2><button class="btn small" id="newPromptBtn">+ Yeni</button></div><select id="promptSelect"></select><label>Profil Adı</label><input id="promptName"><label>Sistem Talimatı</label><textarea id="promptText" style="min-height:160px"></textarea><div class="row" style="margin-top:9px"><button class="btn primary" id="savePromptBtn">Kaydet</button><button class="btn" id="resetPromptBtn">Sıfırla</button><button class="btn danger" id="delPromptBtn">Sil</button></div></div></div>
-    <div id="sub-market" style="display:none"><div class="card"><h2>🛒 Prompt Pazar Yeri</h2><div id="promptMarketList"></div></div></div>
-    <div id="sub-glossary" style="display:none"><div class="card"><div class="card-head"><h2>Terim Sözlüğü</h2><label class="switch" style="margin:0;gap:7px"><span>Aktif</span><input type="checkbox" id="glossEnabled"></label></div><div class="row"><input id="glossSrc" class="grow" placeholder="Orijinal"><input id="glossTgt" class="grow" placeholder="Çevirisi"><button class="btn primary small" id="addGlossBtn">Ekle</button></div></div><div id="glossList"></div></div>
-    <div id="sub-ambient" style="display:none"><div class="card"><div class="card-head"><h2>🌧️ Ambiyans Sesleri</h2><button class="btn small danger" id="stopAmbBtn">Durdur</button></div><div class="row" id="ambBtns"><button class="btn small grow" data-amb="rain">🌧️ Yağmur</button><button class="btn small grow" data-amb="fire">🔥 Şömine</button><button class="btn small grow" data-amb="wind">🌲 Rüzgar</button><button class="btn small grow" data-amb="cafe">☕ Kafe</button></div><label>Ses: <b id="ambVolVal">35</b>%</label><input type="range" id="ambVolRange" min="5" max="100" step="5" value="35"></div></div>
-  </section>
-
-  <!-- 7. AYARLAR -->
-  <section id="view-settings" class="view">
     <div class="card">
-      <h2>Yapay Zeka API Ayarları</h2>
-      <label>API Anahtarı</label><div class="pw"><input id="apiKey" type="password" placeholder="sk-..."><button class="btn small" id="toggleKey">Göster</button></div>
-      <label>Base URL</label><input id="baseUrl" placeholder="https://api.literouter.com/v1">
-      <label>Aktif Model</label><input id="modelInput" list="modelDatalist" placeholder="Örn: gemini-2.5-flash">
-      <datalist id="modelDatalist"></datalist>
-      <div class="row" style="margin-top:9px"><button class="btn small" id="fetchModelsBtn">Modelleri Getir</button><button class="btn primary small" id="testApiBtn">Test Et</button></div>
-      <div class="status" id="apiStatus"></div>
+      <div class="card-head"><h2>🎯 Görev Bazlı Model Atama</h2></div>
+      <label class="switch"><span>Tüm görevlerde tek aktif model kullan</span><input type="checkbox" id="setSingleModel"></label>
+      <div id="taskModelBox" style="margin-top:6px">
+        <label>📖 Metin & Roman Çevirisi Modeli</label>
+        <input id="setModelText" list="cachedModelDatalist" placeholder="Varsayılan aktif model">
+        <label>🖼️ Manga & Yüzen Ekran (Vision) Modeli</label>
+        <input id="setModelVision" list="cachedModelDatalist" placeholder="Görsel destekli model (ör. gemini-2.5-flash)">
+        <label>💬 AI Sohbet & Seri Wiki Modeli</label>
+        <input id="setModelChat" list="cachedModelDatalist" placeholder="Akıl yürütme modeli">
+        <datalist id="cachedModelDatalist"></datalist>
+      </div>
     </div>
-    <div class="card"><div class="card-head"><h2>🪙 Token & Hız</h2><button class="btn small danger" id="resetUsageBtn">Sıfırla</button></div><div class="stats-strip" style="margin-bottom:0"><div class="stat-box"><b id="uReqs">0</b><span>İstek</span></div><div class="stat-box"><b id="uIn">0</b><span>Giriş</span></div><div class="stat-box"><b id="uOut">0</b><span>Çıkış</span></div><div class="stat-box"><b id="uSpd">0s</b><span>Hız</span></div></div></div>
-    <div class="card">
-      <h2>🎨 Görünüm & Özelleştirme</h2>
-      <div class="row" id="appThemeRow" style="margin-bottom:6px"><button class="btn small grow" data-ath="default">Mor</button><button class="btn small grow" data-ath="pink">Pembe</button><button class="btn small grow" data-ath="blue">Mavi</button><button class="btn small grow" data-ath="emerald">Zümrüt</button><button class="btn small grow" data-ath="amoled">AMOLED</button></div>
-      <label>Geçiş Animasyonu</label><select id="animStyleSel"><option value="fade">Yumuşak (Fade)</option><option value="slide">Kayma (Slide)</option><option value="zoom">Yakınlaşma (Zoom)</option><option value="none">Yok</option></select>
-      <div class="row" style="margin-top:9px"><button class="btn small grow" id="openNavCustBtn">🧭 Alt Menü</button><button class="btn small grow" id="openStorageBtn">💾 Depolama</button><button class="btn small" id="openDebugBtn">🐞 Konsol</button></div>
-    </div>
-    <div class="card"><h2>Çeviri & Ekran</h2><label class="switch"><span>Canlı Akış (Streaming)</span><input type="checkbox" id="streamToggle"></label><label class="switch"><span>Okuyucuda Ekranı Açık Tut</span><input type="checkbox" id="keepScreenToggle"></label><label>Yaratıcılık: <b id="tempVal">0.3</b></label><input type="range" id="tempRange" min="0" max="1.5" step="0.05"><label>Parça Boyutu: <b id="chunkVal">6000</b></label><input type="range" id="chunkRange" min="1500" max="30000" step="500"></div>
-    <div class="card"><h2>Yedekleme (.JSON)</h2><div class="row"><button class="btn primary small grow" id="exportBackupBtn">⬇ Tam Yedek</button><button class="btn small grow" id="importBackupBtn">⬆ Geri Yükle</button><input type="file" id="backupFileInput" accept=".json" style="display:none"></div></div>
-  </section>
 
+    <div class="card">
+      <div class="card-head"><h2>⚙️ Çeviri & Maliyet Tahmini</h2></div>
+      <label>Sıcaklık (Temperature): <span id="tempVal">0.3</span></label>
+      <input type="range" id="setTemp" min="0" max="1" step="0.05" value="0.3">
+      <label>Parça Boyutu (Karakter)</label>
+      <input id="setChunk" type="number" min="1500" max="20000" step="500">
+      <div class="row" style="margin-top:6px">
+        <div class="grow"><label>1M Giriş Token ($)</label><input id="setPriceIn" type="number" step="0.01" placeholder="0.15"></div>
+        <div class="grow"><label>1M Çıkış Token ($)</label><input id="setPriceOut" type="number" step="0.01" placeholder="0.60"></div>
+      </div>
+      <div class="meta" id="usageSummary" style="margin-top:8px"></div>
+      <label class="switch"><span>Canlı Akış (Streaming)</span><input type="checkbox" id="setStream"></label>
+      <label class="switch"><span>Çevirmen Notu (TN) Ekle</span><input type="checkbox" id="setTn"></label>
+      <label class="switch"><span>Ekranı Açık Tut</span><input type="checkbox" id="setKeepScreen"></label>
+      <label class="switch"><span>Pano İzleyici (Kopyalananı algıla)</span><input type="checkbox" id="setClipWatch"></label>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>🎨 Tema, Animasyon & Alt Menü</h2></div>
+      <div class="row">
+        <div class="grow"><label>Tema</label>
+          <select id="setTheme"><option value="default">Mor-Siyah (Klasik)</option><option value="amoled">AMOLED Gerçek Siyah</option><option value="pink">Neon Pembe</option><option value="blue">Gece Mavisi</option><option value="emerald">Zümrüt</option></select>
+        </div>
+        <div class="grow"><label>Geçiş Animasyonu</label>
+          <select id="setAnim"><option value="fade">Yumuşak (Fade)</option><option value="slide">Kaydırma (Slide)</option><option value="zoom">Yakınlaşma</option><option value="none">Yok (Anında)</option></select>
+        </div>
+      </div>
+      <label>Alt Menü Sekmeleri (Ferah görünüm için 5 önerilir)</label>
+      <div class="chips" id="navCustChips"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>💾 Seçici Yedekleme & Geri Yükleme</h2></div>
+      <div class="row">
+        <button class="btn small ok" id="backupLiteBtn">⬇ Ayar & Sözlük Yedeği</button>
+        <button class="btn small primary" id="backupFullBtn">⬇ Tam Yedek (Kitaplar Dahil)</button>
+        <button class="btn small" id="restoreBtn">⬆ Yükle</button>
+        <input type="file" id="restoreInput" accept=".json" hidden>
+      </div>
+      <div class="meta" id="lastBackupTxt" style="margin-top:6px"></div>
+    </div>
+  </section>
 </main>
 
 <nav class="bnav" id="bottomNav"></nav>
 
-<!-- FULLSCREEN READER -->
-<div class="reader t-night" id="reader">
+<!-- TAM EKRAN OKUYUCU -->
+<div id="reader">
   <div class="r-top">
-    <button class="r-btn" id="rClose">←</button>
-    <div class="r-title" id="rTitle">Okuyucu</div>
-    <button class="r-btn" id="rTtsBtn">🎧</button>
-    <button class="r-btn" id="rWikiBtn">🧠</button>
-    <button class="r-btn" id="rBmBtn">🔖</button>
-    <button class="r-btn" id="rTocBtn">☰</button>
-    <button class="r-btn" id="rAaBtn">Aa</button>
+    <button class="btn small" id="rCloseBtn">←</button>
+    <div style="flex:1;min-width:0">
+      <div id="rBookTitle" style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+      <div id="rChapMeta" style="font-size:10.5px;color:var(--muted)"></div>
+    </div>
+    <button class="btn small" id="rSearchBtn" title="Bölümde Ara">🔍</button>
+    <button class="btn small" id="rAmbBtn" title="Ambiyans Ses Mikseri">🎧</button>
+    <button class="btn small primary" id="rTransBtn">🌐 Çevir</button>
+    <button class="btn small" id="rSetBtn">⚙️</button>
   </div>
-  <div class="r-subbar">
-    <button class="r-btn on" id="rTransChapBtn">🌐 Çevir</button>
-    <button class="r-btn" id="rViewModeBtn" style="display:none">Görünüm: Çeviri</button>
-    <button class="r-btn" id="rRecapBtn">🔄 Nerde Kalmıştım?</button>
-    <button class="r-btn" id="rAutoScrollBtn">📜 Oto-Kaydır</button>
-    <button class="r-btn" id="rSleepBtn">⏰ Uyku</button>
-    <button class="r-btn" id="rEtaBadge" style="border:none;opacity:.75">⏱ 0dk</button>
+  <div id="rSearchBar">
+    <input class="grow" id="rSearchInput" placeholder="Bu bölümde ara..." style="padding:5px 8px;font-size:12.5px">
+    <button class="btn small primary" id="rSearchGo">Bul</button>
+    <button class="btn small" id="rSearchClose">✕</button>
   </div>
-  <div class="r-prog"><div id="rProgBar"></div></div>
+  <div class="r-prog-line"><div id="rProgFill"></div></div>
+  <div id="rRuler"></div>
+  <div id="rBrightHud">☀️ %50</div>
+
   <div class="r-scroll" id="rScroll">
     <div class="r-body" id="rBody"></div>
-    <div class="r-next-card" id="rNextCard" style="display:none"><div style="font-size:11px;opacity:.7">Sonraki Bölüm</div><div id="rNextTitle" style="font-weight:700;margin-top:3px"></div></div>
   </div>
-  <div class="r-bot" id="rBot">
-    <button class="r-btn" id="rPrev">◀ Önceki</button>
-    <div class="r-info" id="rInfo">1 / 1</div>
-    <button class="r-btn" id="rNext">Sonraki ▶</button>
-  </div>
-</div>
 
-<div class="sel-bar" id="selBar">
-  <button class="btn primary small pill" id="selTransBtn">�� Çevir</button>
-  <button class="btn ok small pill" id="selDictBtn">📖 Sözlük</button>
-  <button class="btn warn small pill" id="selHlBtn">🖍️ Vurgula</button>
-  <button class="btn small pill" id="selCloseBtn">✕</button>
-</div>
+  <div class="sel-bar" id="selBar">
+    <button class="btn small primary" id="selTransBtn">🌐 Çevir</button>
+    <button class="btn small pink" id="selHlBtn">🖍️ Vurgula</button>
+    <button class="btn small ok" id="selQuoteBtn">🖼️ Kart</button>
+    <button class="btn small" id="selGlossBtn">📖 Sözlük</button>
+    <button class="btn small" id="selCopyBtn">📋</button>
+  </div>
 
-<!-- MODALS -->
-<!-- YENİ BÖLÜM BİLDİRİM GELEN KUTUSU & TAKİP LİSTESİ -->
-<div class="modal" id="notifModal"><div class="sheet">
-  <div class="sheet-head">
-    <h3>🔔 Yeni Bölüm Bildirim Kutusu</h3>
-    <button class="btn primary small" id="watchCheckNowBtn"><span class="spin"></span>Kontrol Et</button>
-    <button class="btn small" data-close="notifModal">✕</button>
-  </div>
-  <div class="seg" id="notifSeg">
-    <button class="active" data-nt="inbox">📬 Gelen Kutusu</button>
-    <button data-nt="watch">👁️ Takip Listem</button>
-  </div>
-  <div id="notifStatus" class="status" style="margin-top:0;margin-bottom:8px"></div>
-  <div id="notifInboxArea">
-    <div class="row" style="margin-bottom:8px"><button class="btn small ok grow" id="notifMarkAllBtn">Tümünü Okundu Yap</button><button class="btn small danger" id="notifClearBtn">Temizle</button></div>
-    <div id="notifInboxList"></div>
-  </div>
-  <div id="notifWatchArea" style="display:none">
-    <div class="row" style="margin-bottom:9px">
-      <input id="watchUrlInput" class="grow" placeholder="Roman/Manga seri linki yapıştır...">
-      <button class="btn ok small" id="watchAddBtn">+ Ekle</button>
+  <div class="r-bot">
+    <div class="row" style="width:100%">
+      <span class="meta" id="rPctTxt" style="width:36px">0%</span>
+      <input type="range" id="rJumpSlider" min="0" max="100" value="0" style="flex:1;padding:0;border:none;background:transparent">
+      <span class="pill-tag ok" id="rPrefetchBadge" style="display:none">⚡ Hazır</span>
     </div>
-    <div id="watchList"></div>
+    <div class="row" style="width:100%;justify-content:space-between">
+      <button class="btn small" id="rPrevBtn">◀ Önceki</button>
+      <button class="btn small" id="rChapsBtn">📑 Bölümler</button>
+      <button class="btn small" id="rTtsBtn">🔊 Oku</button>
+      <button class="btn small" id="rAutoScrollBtn">⬇ Kaydır</button>
+      <button class="btn small" id="rNextBtn">Sonraki ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODALLAR -->
+<div class="modal" id="modelModal"><div class="sheet">
+  <div class="sheet-head"><h3>🤖 Model Seç</h3><button class="btn small" data-close="modelModal">✕</button></div>
+  <input id="modelSearch" placeholder="Model ara..." style="margin-bottom:8px">
+  <div class="list" id="modelList"></div>
+</div></div>
+
+<div class="modal" id="chapModal"><div class="sheet">
+  <div class="sheet-head"><h3>📑 Bölümler</h3><button class="btn small ok" id="rRecapBtn">🧠 Nerde Kalmıştım</button><button class="btn small" data-close="chapModal">✕</button></div>
+  <div class="list" id="chapList"></div>
+</div></div>
+
+<div class="modal" id="rSetModal"><div class="sheet">
+  <div class="sheet-head"><h3>⚙️ Okuyucu Ayarları</h3><button class="btn small" data-close="rSetModal">✕</button></div>
+  <div class="row">
+    <div class="grow"><label>Tema</label><select id="rThemeSel"><option value="night">Gece Mor</option><option value="amoled">AMOLED Siyah</option><option value="sepia">Sepya</option><option value="light">Aydınlık</option></select></div>
+    <div class="grow"><label>Font</label><select id="rFontSel"><option value="Georgia,serif">Georgia</option><option value="Inter,system-ui,sans-serif">Modern Sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="ui-monospace,monospace">Monospace</option></select></div>
+  </div>
+  <label>Yazı Boyutu: <span id="rSizeVal">18</span>px</label>
+  <input type="range" id="rSizeRange" min="13" max="30" value="18">
+  <label>Satır Aralığı: <span id="rLhVal">1.8</span></label>
+  <input type="range" id="rLhRange" min="1.3" max="2.4" step="0.1" value="1.8">
+  <label class="switch"><span>💬 Diyalog Renklendirme (Anında)</span><input type="checkbox" id="rDlgColorToggle"></label>
+  <label class="switch"><span>⚡ Bionic Reading (Hızlı Odak Okuma)</span><input type="checkbox" id="rBionicToggle"></label>
+  <label class="switch"><span>📏 Yatay Okuma Cetveli</span><input type="checkbox" id="rRulerToggle"></label>
+  <label class="switch"><span>🚀 Sonraki Bölümü %60'ta Arka Planda Ön-Çevir</span><input type="checkbox" id="rPrefetchToggle"></label>
+  <label class="switch"><span>🎧 Sürekli Dinleme (TTS Bölüm Bitince Geç)</span><input type="checkbox" id="rTtsContToggle"></label>
+  <label>TTS Hızı: <span id="rTtsRateVal">1.0</span>x</label>
+  <input type="range" id="rTtsRate" min="0.6" max="2.0" step="0.1" value="1.0">
+  <label>Oto-Kaydırma Hızı: <span id="rScrollSpdVal">3</span></label>
+  <input type="range" id="rScrollSpd" min="1" max="10" value="3">
+  <div class="row" style="margin-top:10px">
+    <button class="btn small ok" id="rWikiBtn">🧬 Seri Wiki</button>
+    <button class="btn small" id="rHlListBtn">🖍️ Vurgular</button>
+    <button class="btn small" id="rSleepBtn">🌙 Uyku</button>
+    <button class="btn small" id="rExportEpubBtn">⬇ EPUB</button>
+    <button class="btn small warn" id="rFetchMoreBtn">🔄 Yeni Bölüm Çek</button>
   </div>
 </div></div>
-
-<!-- ÖZEL AI SOHBET PROMPTU & KİŞİLİKLER -->
-<div class="modal" id="chatPromptModal"><div class="sheet">
-  <div class="sheet-head"><h3>⚙ AI Sohbet Promptu & Kişilikler</h3><button class="btn small" data-close="chatPromptModal">✕</button></div>
-  <label>Hazır Kişilik Seç (Veya Aşağıya Kendin Yaz)</label>
-  <div class="row" id="chatPersonaBtns" style="margin-bottom:8px">
-    <button class="btn small" data-cp="default">🤖 Genel Asistan</button>
-    <button class="btn small" data-cp="recommender">📖 Roman/Manga Uzmanı</button>
-    <button class="btn small" data-cp="teacher">🎓 İngilizce Öğretmeni</button>
-    <button class="btn small" data-cp="editor">✍️ Edebiyat Editörü</button>
-    <button class="btn small" data-cp="rp">🎭 Rol Yapma (RP)</button>
-  </div>
-  <label>Özel Sohbet Sistem Promptun</label>
-  <textarea id="chatSysPromptInput" style="min-height:150px" placeholder="Yapay zekanın sohbet ederken nasıl davranmasını istediğini buraya yaz..."></textarea>
-  <button class="btn primary" id="saveChatPromptBtn" style="width:100%;margin-top:10px">Promptu Kaydet</button>
-</div></div>
-
-<div class="modal" id="modelModal"><div class="sheet"><div class="sheet-head"><h3>⚡ Model Değiştirici</h3><button class="btn small" id="mRefreshBtn">↻</button><button class="btn small" data-close="modelModal">✕</button></div><div class="row" style="margin-bottom:9px"><input id="mAddInput" class="grow" list="modelDatalist" placeholder="Model adı..."><button class="btn primary small" id="mAddFavBtn">⭐ Ekle</button></div><div id="mFavList"></div></div></div>
-
-<div class="modal" id="aaModal"><div class="sheet"><div class="sheet-head"><h3>Aa Görünüm & Sesli Kitap</h3><button class="btn small" data-close="aaModal">✕</button></div>
-  <div class="row" id="rThemeRow"><button class="btn small grow" data-theme="night">Gece</button><button class="btn small grow" data-theme="amoled">AMOLED</button><button class="btn small grow" data-theme="sepia">Sepya</button><button class="btn small grow" data-theme="day">Gündüz</button></div>
-  <label class="switch"><span>🎭 Diyalogları Renklendir ("...")</span><input type="checkbox" id="rDlgColorToggle"></label>
-  <label>Yazı Tipi</label><select id="rFontSel"><option value="system-ui,-apple-system,sans-serif">Modern</option><option value="Georgia,serif">Georgia</option><option value="Palatino Linotype,Book Antiqua,serif">Palatino</option><option value="Verdana,sans-serif">Verdana</option><option value="Trebuchet MS,sans-serif">Trebuchet</option><option value="ui-monospace,monospace">Mono</option></select>
-  <label>Boyut: <b id="rSizeVal">18</b>px</label><input type="range" id="rSizeRange" min="14" max="30" step="1">
-  <label>Satır Aralığı: <b id="rLhVal">1.8</b></label><input type="range" id="rLhRange" min="1.35" max="2.4" step="0.05">
-  <label>Genişlik</label><select id="rWidthSel"><option value="620px">Dar</option><option value="760px">Orta</option><option value="960px">Geniş</option><option value="100%">Tam</option></select>
-  <label>Hizalama</label><select id="rAlignSel"><option value="left">Sola</option><option value="justify">Yasla</option></select>
-  <label>Oto-Kaydırma: <b id="rScrollVal">3</b></label><input type="range" id="rScrollRange" min="1" max="10" step="1">
-  <label>🎧 Sesli Kitap</label><select id="rTtsModeSel"><option value="multi">🎭 Çoklu Karakter TTS</option><option value="device">Standart Cihaz Sesi</option><option value="ai">Yapay Zeka Sesi (OpenAI TTS)</option></select>
-  <label>Cihaz Sesi</label><select id="rVoiceSel"></select>
-  <label>Hız: <b id="rTtsVal">1.0</b>x</label><input type="range" id="rTtsRange" min="0.7" max="2.0" step="0.1">
-</div></div>
-
-<div class="modal" id="tocModal"><div class="sheet"><div class="sheet-head"><h3>☰ İçindekiler & Yer İmleri</h3><button class="btn small" data-close="tocModal">✕</button></div><div class="seg" id="tocSeg"><button class="active" data-t="chapters">Bölümler</button><button data-t="bms">🔖 Yer İmleri</button></div><div id="tocList"></div></div></div>
 
 <div class="modal" id="wikiModal"><div class="sheet">
-  <div class="sheet-head"><h3>🧠 Seri Bilgi Kitabı (Wiki)</h3><button class="btn small ok" id="wikiManualAddBtn">+ Ekle</button><button class="btn small" data-close="wikiModal">✕</button></div>
-  <div class="row" style="margin-bottom:8px"><button class="btn pink small grow" id="wikiScanChapBtn"><span class="spin"></span>✨ Bu Bölümü Tara & Güncelle</button></div>
-  <div class="status" id="wikiStatus"></div>
-  <div class="row" style="margin:7px 0"><input id="wikiSearch" class="grow" placeholder="🔍 Karakter, güç sistemi veya terim ara..." style="border-radius:999px"></div>
-  <div id="wikiStatsBar" class="meta" style="margin-bottom:7px;text-align:center"></div>
-  <div class="seg" id="wikiSeg"><button class="active" data-wt="chars">👤 Karakterler</button><button data-wt="lore">⚡ Güç & Terimler</button><button data-wt="graph">🕸️ İlişki Haritası</button></div>
-  <div id="wikiContent"></div>
-</div></div>
-
-<div class="modal" id="raceModal"><div class="sheet"><div class="sheet-head"><h3>⚔️ Model Yarışması</h3><button class="btn small" data-close="raceModal">✕</button></div><div class="row" style="margin-bottom:9px"><input id="raceM1" class="grow" list="modelDatalist" placeholder="1. Model"><input id="raceM2" class="grow" list="modelDatalist" placeholder="2. Model"><button class="btn pink small" id="raceStartBtn">Yarıştır</button></div><div id="raceResults"></div></div></div>
-<div class="modal" id="wrappedModal"><div class="sheet"><div class="sheet-head"><h3>📊 Takvim & Wrapped</h3><button class="btn small" data-close="wrappedModal">✕</button></div><div id="wrappedCard" class="card" style="background:linear-gradient(135deg,#2e1065,#4c1d95,#831843);border-color:var(--pink);text-align:center;padding:18px"></div><label>Son 70 Gün</label><div class="heatmap" id="activityHeatmap"></div></div></div>
-<div class="modal" id="trashModal"><div class="sheet"><div class="sheet-head"><h3>🗑️ Çöp Kutusu (7 Gün)</h3><button class="btn small danger" id="emptyTrashBtn">Boşalt</button><button class="btn small" data-close="trashModal">✕</button></div><div id="trashList"></div></div></div>
-<div class="modal" id="opdsModal"><div class="sheet"><div class="sheet-head"><h3>🌐 OPDS Katalog</h3><button class="btn small" data-close="opdsModal">✕</button></div><div class="row" style="margin-bottom:8px"><input id="opdsUrlInput" class="grow" value="https://standardebooks.org/feeds/opds"><button class="btn primary small" id="opdsLoadBtn">Getir</button></div><div class="status" id="opdsStatus"></div><div id="opdsList" style="margin-top:8px"></div></div></div>
-<div class="modal" id="quickSearchModal"><div class="sheet"><div class="sheet-head"><h3>🔍 Hızlı Arama</h3><button class="btn small" data-close="quickSearchModal">✕</button></div><input id="qsInput" placeholder="Kitap, alıntı, sözlük ara..." style="margin-bottom:9px"><div id="qsResults"></div></div></div>
-<div class="modal" id="storageModal"><div class="sheet"><div class="sheet-head"><h3>💾 Depolama</h3><button class="btn small" data-close="storageModal">✕</button></div><div id="storageInfo"></div></div></div>
-<div class="modal" id="navCustModal"><div class="sheet"><div class="sheet-head"><h3>🧭 Alt Menü Düzenleyici</h3><button class="btn small" data-close="navCustModal">✕</button></div><div id="navCustList"></div></div></div>
-<div class="modal" id="debugModal"><div class="sheet"><div class="sheet-head"><h3>🐞 Konsol</h3><button class="btn small danger" id="clearDebugBtn">Temizle</button><button class="btn small" data-close="debugModal">✕</button></div><div id="debugLogs" style="font-family:monospace;font-size:11px;max-height:55vh;overflow:auto;background:#000;padding:10px;border-radius:10px;white-space:pre-wrap"></div></div></div>
-<div class="modal" id="recapModal"><div class="sheet"><div class="sheet-head"><h3>🔄 Nerde Kalmıştım?</h3><button class="btn small" data-close="recapModal">✕</button></div><div class="out-box" id="recapBox" style="min-height:110px"></div><div class="status" id="recapStatus"></div></div></div>
-<div class="modal" id="selModal"><div class="sheet"><div class="sheet-head"><h3 id="selModalTitle">🌐 Seçim Çevirisi</h3><button class="btn small" id="selCopyBtn">Kopyala</button><button class="btn small" id="selCloseModal">✕</button></div><div id="selSrcBox" style="max-height:90px;overflow:auto;padding:9px;border-radius:9px;background:var(--surface2);font-size:12.5px;color:var(--muted);margin-bottom:9px;white-space:pre-wrap"></div><div class="out-box" id="selOutBox" style="min-height:85px"></div><div class="status" id="selStatus"></div></div></div>
-<div class="modal" id="hlModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Vurgula</h3><button class="btn small" data-close="hlModal">✕</button></div><div id="hlPreview" style="padding:9px;border-radius:9px;background:var(--surface2);font-size:12.5px;margin-bottom:9px"></div><div class="row" id="hlColors"><button class="btn small grow" data-c="purple" style="background:#8b5cf644">Mor</button><button class="btn small grow" data-c="yellow" style="background:#fbbf2444">Sarı</button><button class="btn small grow" data-c="green" style="background:#10b98144">Yeşil</button><button class="btn small grow" data-c="pink" style="background:#f43f5e44">Pembe</button></div><label>Not</label><input id="hlNoteInput" placeholder="Not..."><button class="btn primary" id="hlSaveBtn" style="width:100%;margin-top:10px">Kaydet</button></div></div>
-<div class="modal" id="quotesModal"><div class="sheet"><div class="sheet-head"><h3>🖍️ Alıntı Defterim</h3><button class="btn small" data-close="quotesModal">✕</button></div><input id="quoteSearch" placeholder="🔍 Ara..." style="margin-bottom:9px"><div id="quotesList"></div></div></div>
-<div class="modal" id="histModal"><div class="sheet"><div class="sheet-head"><h3>📜 Geçmiş</h3><button class="btn small danger" id="clearHistBtn">Temizle</button><button class="btn small" data-close="histModal">✕</button></div><input id="histSearch" placeholder="🔍 Ara..." style="margin-bottom:9px"><div id="histList"></div></div></div>
-
-<div class="modal" id="editBookModal"><div class="sheet">
-  <div class="sheet-head"><h3>⚙ Kitap Ayarları</h3><button class="btn small" data-close="editBookModal">✕</button></div>
-  <div class="row" style="margin-bottom:8px"><button class="btn small" id="ebCoverFileBtn">🖼 Kapak</button><input type="file" id="ebCoverInput" accept="image/*" style="display:none"><button class="btn small" id="ebCoverUrlBtn">🔗 URL</button><button class="btn small danger" id="ebCoverDelBtn">Kaldır</button></div>
-  <label>Kitap Adı</label><input id="ebTitle">
-  <label>Seri</label><input id="ebSeries" placeholder="Örn: Shadow Slave">
-  <label>Yazar</label><input id="ebAuthor">
-  <label>Puanım</label><div class="row" id="ebStarRow"><button class="btn small grow" data-st="1">⭐1</button><button class="btn small grow" data-st="2">⭐2</button><button class="btn small grow" data-st="3">⭐3</button><button class="btn small grow" data-st="4">⭐4</button><button class="btn small grow" data-st="5">⭐5</button></div>
-  <label>Yorumum</label><textarea id="ebReview" style="min-height:60px"></textarea>
-  <label>Raf</label><select id="ebShelf"><option value="auto">Otomatik</option><option value="reading">📖 Okunuyor</option><option value="want">📌 Okunacak</option><option value="done">✓ Bitirildi</option></select>
-  <label class="switch"><span>⭐ Favoriler</span><input type="checkbox" id="ebFav"></label>
-  <div class="row" style="margin-top:10px"><button class="btn primary grow" id="ebSaveBtn">Kaydet</button></div>
-  <div class="card" style="margin-top:10px;padding:10px">
-    <h2 style="font-size:13px;color:var(--accent);margin-bottom:6px">⚡ Toplu Bölüm Çevirici</h2>
-    <div class="row"><input type="number" id="ebBatchFrom" value="1" min="1" style="width:62px;padding:5px"><span class="meta">→</span><input type="number" id="ebBatchTo" value="5" min="1" style="width:62px;padding:5px"><button class="btn pink small grow" id="ebBatchBtn">Başlat</button><button class="btn danger small" id="ebBatchStop" style="display:none">Durdur</button></div>
-    <div class="progress" id="ebBatchProg"><div></div></div><div class="status" id="ebBatchStatus"></div>
+  <div class="sheet-head"><h3>🧬 Seri Wiki & İlişki Haritası</h3><button class="btn small" data-close="wikiModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px">
+    <button class="btn small primary" id="wikiScanCurBtn">✨ Bu Bölümü Tara</button>
+    <button class="btn small pink" id="wikiScanMultiBtn">📚 Çoklu Bölüm Tara</button>
+    <button class="btn small ok" id="wikiSyncGlossBtn">📖 Sözlüğe Aktar</button>
   </div>
-  <div class="row" style="margin-top:9px"><button class="btn ok small grow" id="ebExpEpub">⬇ .EPUB</button><button class="btn small grow" id="ebExpHtml">⬇ .HTML</button><button class="btn danger small" id="ebDelBtn">🗑️ Çöpe At</button></div>
-  <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--accent);font-size:13px">Bölümleri Yönet</summary><div id="ebChapList" style="margin-top:8px"></div></details>
+  <div id="wikiGraphWrap" style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;height:250px;margin-bottom:8px">
+    <div style="position:absolute;top:6px;right:6px;z-index:5;display:flex;gap:4px">
+      <button class="btn small" id="wikiZoomIn">＋</button>
+      <button class="btn small" id="wikiZoomOut">－</button>
+      <button class="btn small" id="wikiZoomReset">↺</button>
+    </div>
+    <svg id="wikiSvg" width="100%" height="100%" viewBox="0 0 500 260"></svg>
+  </div>
+  <div id="wikiNodeDetail" class="card" style="display:none;padding:9px;margin-bottom:8px"></div>
+  <div class="list" id="wikiList"></div>
 </div></div>
 
-<div class="lightbox" id="lightbox"><img id="lbImg" alt=""></div>
-<div class="toast" id="toast"></div>
+<div class="modal" id="notifModal"><div class="sheet">
+  <div class="sheet-head"><h3>🔔 Yeni Bölüm Takipçisi</h3><button class="btn small primary" id="checkWatchBtn">🔄 Kontrol Et</button><button class="btn small" data-close="notifModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px">
+    <input class="grow" id="watchTitle" placeholder="Seri Adı">
+    <input class="grow" id="watchUrl" placeholder="Seri veya bölüm URL">
+    <button class="btn small ok" id="addWatchBtn">＋ Ekle</button>
+  </div>
+  <div class="list" id="watchList" style="margin-bottom:10px"></div>
+  <h4 style="font-size:12.5px;color:var(--accent);margin-bottom:6px">📥 Bildirim Gelen Kutusu</h4>
+  <div class="list" id="notifList"></div>
+</div></div>
+
+<div class="modal" id="scraperModal"><div class="sheet">
+  <div class="sheet-head"><h3>⚡ Web Novel Seri Bölüm İndirici</h3><button class="btn small" data-close="scraperModal">✕</button></div>
+  <p class="meta" style="margin-bottom:8px">Sıralı olmayan URL'lerde bile sayfadaki gerçek "Sonraki Bölüm / Next" linkini DOM'dan akıllıca takip eder ve tek kitap olarak Kütüphane'ye kaydeder.</p>
+  <label>Kitap Adı</label>
+  <input id="scrTitle" placeholder="Örn: Shadow Slave">
+  <label>Başlangıç Bölüm URL'si</label>
+  <input id="scrUrl" placeholder="https://...">
+  <div class="row">
+    <div class="grow"><label>Çekilecek Bölüm Sayısı</label><input id="scrCount" type="number" min="1" max="100" value="10"></div>
+    <div class="grow"><label>Mevcut Kitaba Ekle (İsteğe Bağlı)</label><select id="scrBookSel"><option value="">Yeni kitap oluştur</option></select></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn primary grow" id="scrStartBtn">⚡ İndirmeyi Başlat</button>
+    <button class="btn danger" id="scrStopBtn" disabled>⏹ Durdur</button>
+  </div>
+  <div class="progress" id="scrProg"><div></div></div>
+  <div class="status" id="scrStatus"></div>
+</div></div>
+
+<div class="modal" id="fmhyModal"><div class="sheet">
+  <div class="sheet-head"><h3>🧭 FMHY Okuma Merkezi</h3><button class="btn small ok" id="fmhyTestAllBtn">📡 Test Et</button><button class="btn small" data-close="fmhyModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px">
+    <input class="grow" id="fmhySearch" placeholder="Site veya kategori ara...">
+    <button class="btn small primary" id="fmhyAddCatBtn">＋ Site Ekle</button>
+  </div>
+  <div id="fmhyAddBox" style="display:none;margin-bottom:8px" class="card">
+    <div class="row">
+      <input class="grow" id="fmhyNewCat" placeholder="Kategori (ör. Favori Noveller)">
+      <input class="grow" id="fmhyNewName" placeholder="Site Adı">
+    </div>
+    <div class="row" style="margin-top:6px">
+      <input class="grow" id="fmhyNewUrl" placeholder="https://...">
+      <button class="btn small ok" id="fmhySaveNewBtn">Kaydet</button>
+    </div>
+  </div>
+  <div id="fmhyBody"></div>
+</div></div>
+
+<div class="modal" id="raceModal"><div class="sheet">
+  <div class="sheet-head"><h3>🏁 Model Yarışı</h3><button class="btn small" data-close="raceModal">✕</button></div>
+  <div class="list" id="raceResults"></div>
+</div></div>
+
+<div class="modal" id="altModal"><div class="sheet">
+  <div class="sheet-head"><h3>✨ 3 Alternatif Çeviri</h3><button class="btn small" data-close="altModal">✕</button></div>
+  <div class="list" id="altResults"></div>
+</div></div>
+
+<div class="modal" id="quoteModal"><div class="sheet">
+  <div class="sheet-head"><h3>🖼️ Alıntı Kartı (PNG)</h3><button class="btn small" data-close="quoteModal">✕</button></div>
+  <canvas id="quoteCanvas" width="900" height="520" style="width:100%;border-radius:12px;border:1px solid var(--border2)"></canvas>
+  <div class="row" style="margin-top:8px">
+    <button class="btn primary grow" id="quoteDlBtn">⬇ PNG Olarak İndir</button>
+  </div>
+</div></div>
+
+<div class="modal" id="opdsModal"><div class="sheet">
+  <div class="sheet-head"><h3>📡 OPDS Katalog</h3><button class="btn small" data-close="opdsModal">✕</button></div>
+  <div class="row" style="margin-bottom:8px">
+    <input class="grow" id="opdsUrl" value="https://standardebooks.org/feeds/opds">
+    <button class="btn primary" id="opdsLoadBtn">Yükle</button>
+  </div>
+  <div class="list" id="opdsList"></div>
+</div></div>
+
+<div class="modal" id="trashModal"><div class="sheet">
+  <div class="sheet-head"><h3>🗑️ Çöp Kutusu (7 Günlük)</h3><button class="btn small" data-close="trashModal">✕</button></div>
+  <div class="list" id="trashList"></div>
+</div></div>
+
+<div class="modal" id="debugModal"><div class="sheet">
+  <div class="sheet-head"><h3>🐞 Hata & Sistem Konsolu</h3><button class="btn small" id="copyDebugBtn">📋</button><button class="btn small" data-close="debugModal">✕</button></div>
+  <pre id="debugLogs" style="font-size:11px;white-space:pre-wrap;color:#c4b5fd;background:var(--bg);padding:9px;border-radius:10px;max-height:55vh;overflow:auto"></pre>
+</div></div>
+
+<div id="lightbox"><img id="lbImg" src="" alt=""></div>
+<div id="toast"></div>
 
 <script src="core.js"></script>
 <script src="extras.js"></script>
