@@ -28,6 +28,7 @@ jobs:
           mkdir -p android_app/app/src/main/java/com/cevirmen/ai
           mkdir -p android_app/app/src/main/assets
           mkdir -p android_app/app/src/main/res/drawable
+          mkdir -p android_app/app/src/main/res/values
           mkdir -p android_app/app/src/main/res/xml
           cp index.html android_app/app/src/main/assets/index.html
           [ -f core.js ] && cp core.js android_app/app/src/main/assets/core.js || true
@@ -61,7 +62,7 @@ jobs:
                   applicationId "com.cevirmen.ai"
                   minSdk 24
                   targetSdk 34
-                  versionCode 9
+                  versionCode 10
                   versionName "7.0"
               }
               buildTypes { release { minifyEnabled false } }
@@ -70,6 +71,21 @@ jobs:
                   targetCompatibility JavaVersion.VERSION_17
               }
           }
+          EOF
+
+          cat << 'EOF' > android_app/app/src/main/res/values/strings.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">Çevirmen AI</string>
+              <string name="sc_resume_short">Son Kitap</string>
+              <string name="sc_resume_long">Son Kitaba Devam Et</string>
+              <string name="sc_overlay_short">Yüzen Çeviri</string>
+              <string name="sc_overlay_long">Yüzen Çeviriyi Başlat</string>
+              <string name="sc_chat_short">AI Sohbet</string>
+              <string name="sc_chat_long">AI Sohbeti Aç</string>
+              <string name="sc_browser_short">Tarayıcı</string>
+              <string name="sc_browser_long">Tarayıcıyı Aç</string>
+          </resources>
           EOF
 
           cat << 'EOF' > android_app/app/src/main/res/drawable/ic_launcher.xml
@@ -99,13 +115,13 @@ jobs:
           </vector>
           EOF
 
-          # UYGULAMA İKONU HIZLI KISAYOLLARI (APP SHORTCUTS)
           cat << 'EOF' > android_app/app/src/main/res/xml/shortcuts.xml
+          <?xml version="1.0" encoding="utf-8"?>
           <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
               <shortcut android:shortcutId="sc_resume" android:enabled="true"
                   android:icon="@drawable/ic_launcher"
-                  android:shortcutShortLabel="Son Kitap"
-                  android:shortcutLongLabel="Son Kitaba Devam Et">
+                  android:shortcutShortLabel="@string/sc_resume_short"
+                  android:shortcutLongLabel="@string/sc_resume_long">
                   <intent android:action="android.intent.action.VIEW"
                       android:targetPackage="com.cevirmen.ai"
                       android:targetClass="com.cevirmen.ai.MainActivity">
@@ -114,8 +130,8 @@ jobs:
               </shortcut>
               <shortcut android:shortcutId="sc_overlay" android:enabled="true"
                   android:icon="@drawable/ic_launcher"
-                  android:shortcutShortLabel="Yüzen Çeviri"
-                  android:shortcutLongLabel="Yüzen Çeviriyi Başlat">
+                  android:shortcutShortLabel="@string/sc_overlay_short"
+                  android:shortcutLongLabel="@string/sc_overlay_long">
                   <intent android:action="android.intent.action.VIEW"
                       android:targetPackage="com.cevirmen.ai"
                       android:targetClass="com.cevirmen.ai.MainActivity">
@@ -124,8 +140,8 @@ jobs:
               </shortcut>
               <shortcut android:shortcutId="sc_chat" android:enabled="true"
                   android:icon="@drawable/ic_launcher"
-                  android:shortcutShortLabel="AI Sohbet"
-                  android:shortcutLongLabel="AI Sohbeti Aç">
+                  android:shortcutShortLabel="@string/sc_chat_short"
+                  android:shortcutLongLabel="@string/sc_chat_long">
                   <intent android:action="android.intent.action.VIEW"
                       android:targetPackage="com.cevirmen.ai"
                       android:targetClass="com.cevirmen.ai.MainActivity">
@@ -134,8 +150,8 @@ jobs:
               </shortcut>
               <shortcut android:shortcutId="sc_browser" android:enabled="true"
                   android:icon="@drawable/ic_launcher"
-                  android:shortcutShortLabel="Tarayıcı"
-                  android:shortcutLongLabel="Tarayıcıyı Aç">
+                  android:shortcutShortLabel="@string/sc_browser_short"
+                  android:shortcutLongLabel="@string/sc_browser_long">
                   <intent android:action="android.intent.action.VIEW"
                       android:targetPackage="com.cevirmen.ai"
                       android:targetClass="com.cevirmen.ai.MainActivity">
@@ -155,7 +171,7 @@ jobs:
               <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
               <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
               <application
-                  android:label="Çevirmen AI"
+                  android:label="@string/app_name"
                   android:icon="@drawable/ic_launcher"
                   android:usesCleartextTraffic="true"
                   android:hardwareAccelerated="true"
@@ -191,7 +207,6 @@ jobs:
           </manifest>
           EOF
 
-          # GERÇEK YEREL VPN + ADGUARD DNS REKLAM ENGELLEYİCİ (1.1.1.1 / AdGuard MANTIĞI)
           cat << 'EOF' > android_app/app/src/main/java/com/cevirmen/ai/AdBlockVpnService.java
           package com.cevirmen.ai;
 
@@ -204,13 +219,8 @@ jobs:
               public static volatile boolean isRunning = false;
               private ParcelFileDescriptor vpnInterface = null;
 
-              @Override
-              public int onStartCommand(Intent intent, int flags, int startId) {
-                  if (intent != null && "STOP".equals(intent.getAction())) {
-                      stopVpn();
-                      stopSelf();
-                      return START_NOT_STICKY;
-                  }
+              @Override public int onStartCommand(Intent intent, int flags, int startId) {
+                  if (intent != null && "STOP".equals(intent.getAction())) { stopVpn(); stopSelf(); return START_NOT_STICKY; }
                   startVpn();
                   return START_STICKY;
               }
@@ -222,7 +232,6 @@ jobs:
                       b.setSession("Çevirmen AI — AdGuard DNS");
                       b.addAddress("10.111.222.1", 32);
                       b.addRoute("10.111.222.2", 32);
-                      // AdGuard Ücretsiz Reklam Engelleyici DNS Sunucuları
                       b.addDnsServer("94.140.14.14");
                       b.addDnsServer("94.140.15.15");
                       vpnInterface = b.establish();
@@ -238,12 +247,8 @@ jobs:
 
               private void stopVpn() {
                   isRunning = false;
-                  if (vpnInterface != null) {
-                      try { vpnInterface.close(); } catch (Exception ignored) {}
-                      vpnInterface = null;
-                  }
+                  if (vpnInterface != null) { try { vpnInterface.close(); } catch (Exception ignored) {} vpnInterface = null; }
               }
-
               @Override public void onDestroy() { stopVpn(); super.onDestroy(); }
               @Override public void onRevoke() { stopVpn(); stopSelf(); super.onRevoke(); }
           }
@@ -334,11 +339,7 @@ jobs:
               private boolean busy = false;
 
               private final Runnable liveRunnable = new Runnable() {
-                  @Override public void run() {
-                      if (!liveMode) return;
-                      if (!busy) captureAndAction(pinnedRect, "translate", null);
-                      handler.postDelayed(this, 4500);
-                  }
+                  @Override public void run() { if (!liveMode) return; if (!busy) captureAndAction(pinnedRect, "translate", null); handler.postDelayed(this, 4500); }
               };
 
               private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
@@ -734,8 +735,7 @@ jobs:
                       applyCosmeticAdBlock(false); updateAdBtnVisual();
                       Toast.makeText(this, "🛡️ AdGuard VPN Kalkanı Kapatıldı", Toast.LENGTH_SHORT).show();
                   } else {
-                      optAdBlock = true;
-                      applyCosmeticAdBlock(true);
+                      optAdBlock = true; applyCosmeticAdBlock(true);
                       Intent prep = VpnService.prepare(this);
                       if (prep != null) startActivityForResult(prep, VPN_REQ);
                       else startService(new Intent(this, AdBlockVpnService.class));
@@ -743,8 +743,7 @@ jobs:
                   }
               }
 
-              @Override
-              protected void onCreate(Bundle savedInstanceState) {
+              @Override protected void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   getWindow().setStatusBarColor(Color.parseColor("#06040b"));
                   getWindow().setNavigationBarColor(Color.parseColor("#06040b"));
@@ -874,15 +873,11 @@ jobs:
               @Override protected void onNewIntent(Intent intent) {
                   super.onNewIntent(intent);
                   String sc = intent != null ? intent.getStringExtra("shortcut") : null;
-                  if (sc != null && appWebView != null) {
-                      browserRoot.setVisibility(View.GONE);
-                      appWebView.evaluateJavascript("window.__onAppShortcut && window.__onAppShortcut('" + sc + "');", null);
-                  }
+                  if (sc != null && appWebView != null) { browserRoot.setVisibility(View.GONE); appWebView.evaluateJavascript("window.__onAppShortcut && window.__onAppShortcut('" + sc + "');", null); }
               }
 
               @Override protected void onResume() {
-                  super.onResume();
-                  updateAdBtnVisual();
+                  super.onResume(); updateAdBtnVisual();
                   if (appWebView != null) new Handler(Looper.getMainLooper()).postDelayed(() -> appWebView.evaluateJavascript("window.__onAppResume && window.__onAppResume();", null), 350);
               }
 
@@ -912,13 +907,9 @@ jobs:
                       switch (w) {
                           case 0: browserRoot.setVisibility(View.GONE); appWebView.evaluateJavascript("window.__onNativeOpenInLibrary && window.__onNativeOpenInLibrary();", null); break;
                           case 1:
-                              String cu = browserWebView.getUrl() != null ? browserWebView.getUrl() : "";
-                              String ct = browserWebView.getTitle() != null ? browserWebView.getTitle() : cu;
-                              String u64 = Base64.encodeToString(cu.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                              String t64 = Base64.encodeToString(ct.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
-                              appWebView.evaluateJavascript("window.__onAddWatchFromBrowser && window.__onAddWatchFromBrowser('" + t64 + "','" + u64 + "');", null);
-                              Toast.makeText(this, "🔔 Yeni bölüm takibine eklendi!", Toast.LENGTH_SHORT).show();
-                              break;
+                              String cu = browserWebView.getUrl() != null ? browserWebView.getUrl() : "", ct = browserWebView.getTitle() != null ? browserWebView.getTitle() : cu;
+                              appWebView.evaluateJavascript("window.__onAddWatchFromBrowser && window.__onAddWatchFromBrowser('" + Base64.encodeToString(ct.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP) + "','" + Base64.encodeToString(cu.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP) + "');", null);
+                              Toast.makeText(this, "🔔 Yeni bölüm takibine eklendi!", Toast.LENGTH_SHORT).show(); break;
                           case 2: openBrowserRegionSelector(false); break;
                           case 3: openBrowserRegionSelector(true); break;
                           case 4: applyCleanReaderMode(); break;
@@ -1110,7 +1101,6 @@ jobs:
                   @JavascriptInterface public boolean isVpnRunning() { return AdBlockVpnService.isRunning; }
                   @JavascriptInterface public void toggleAdVpn() { runOnUiThread(() -> toggleAdGuardVpn()); }
 
-                  // YENİ BÖLÜM TAKİPÇİSİ İÇİN ÇEREZLİ YEREL HTML ÇEKİCİ (CORS ENGELİNE TAKILMAZ)
                   @JavascriptInterface public void fetchUrlText(final String reqId, final String targetUrl) {
                       new Thread(() -> {
                           String result = "";
@@ -1130,9 +1120,7 @@ jobs:
                       }).start();
                   }
 
-                  @JavascriptInterface public void openBrowser(final String urlOrQuery) {
-                      runOnUiThread(() -> { browserRoot.setVisibility(View.VISIBLE); statusBar.setVisibility(View.GONE); curTransMode = "tr"; modeBtn.setText("Çeviri"); updateAdBtnVisual(); loadInBrowser(urlOrQuery); });
-                  }
+                  @JavascriptInterface public void openBrowser(final String urlOrQuery) { runOnUiThread(() -> { browserRoot.setVisibility(View.VISIBLE); statusBar.setVisibility(View.GONE); curTransMode = "tr"; modeBtn.setText("Çeviri"); updateAdBtnVisual(); loadInBrowser(urlOrQuery); }); }
                   @JavascriptInterface public void setBrowserStatus(final String msg) { runOnUiThread(() -> { if (msg == null || msg.isEmpty()) statusBar.setVisibility(View.GONE); else { statusBar.setText(msg); statusBar.setVisibility(View.VISIBLE); } }); }
                   @JavascriptInterface public void setKeepScreenOn(final boolean on) { runOnUiThread(() -> { if (on) getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); }); }
                   @JavascriptInterface public String getClipboardText() { try { ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE); if (cm != null && cm.hasPrimaryClip()) { CharSequence cs = cm.getPrimaryClip().getItemAt(0).coerceToText(MainActivity.this); return cs == null ? "" : cs.toString(); } } catch (Exception ignored) {} return ""; }
