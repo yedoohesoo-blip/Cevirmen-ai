@@ -10,7 +10,7 @@
   --bg:#06040b; --surface:#0e0918; --surface2:#161024; --surface3:#211836;
   --border:#281e3e; --border2:#3e2e61; --text:#f3eefc; --muted:#9589ae;
   --primary:#8b5cf6; --primary2:#a855f7; --accent:#c4b5fd; --pink:#e879f9;
-  --danger:#f43f5e; --ok:#10b981; --warn:#f59e0b; --radius:15px;
+  --danger:#f43f5e; --ok:#10b981; --warn:#f59e0b; --cyan:#22d3ee; --radius:15px;
 }
 body.th-pink{--primary:#ec4899;--primary2:#d946ef;--accent:#f9a8d4;--pink:#fb7185;--border:#381c30;--border2:#542646}
 body.th-blue{--primary:#3b82f6;--primary2:#6366f1;--accent:#93c5fd;--pink:#818cf8;--bg:#040712;--surface:#0a1020;--surface2:#111a33;--surface3:#192547;--border:#1d2b4d;--border2:#2c4070}
@@ -33,6 +33,11 @@ body::before{
     radial-gradient(560px 400px at -10% 106%,color-mix(in srgb,var(--pink) 14%,transparent),transparent 65%);
 }
 body.th-amoled::before{background:none}
+/* PiP (Resim İçinde Resim) Kompakt Görünüm */
+body.pip-mode header, body.pip-mode nav.bnav, body.pip-mode .r-top, body.pip-mode .r-bot, body.pip-mode #rSearchBar{display:none!important}
+body.pip-mode .r-scroll{padding:8px 10px!important}
+body.pip-mode .r-body{font-size:13px!important;line-height:1.5!important}
+
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer}
 a{color:var(--accent)}
@@ -138,6 +143,7 @@ textarea{resize:vertical;min-height:112px;line-height:1.58}
 .book-cov img{width:100%;height:100%;object-fit:cover}
 .book-cov .ph{font-size:32px;opacity:.7}
 .book-badge{position:absolute;top:6px;left:6px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:6px;background:#06040bd8;color:var(--accent);border:1px solid var(--border2)}
+.book-status-dot{position:absolute;top:6px;right:6px;font-size:11px;padding:2px 5px;border-radius:6px;background:#06040bd8;border:1px solid var(--border2)}
 .book-info{padding:8px 9px;flex:1;display:flex;flex-direction:column;gap:4px}
 .book-title{font-size:12.5px;font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .book-meta{font-size:10.5px;color:var(--muted)}
@@ -192,6 +198,18 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 .r-body{max-width:760px;margin:0 auto;word-wrap:break-word;user-select:text}
 .r-body p{margin-bottom:1em;position:relative}
 .r-body .biling-orig{display:block;font-size:.82em;opacity:.62;margin-bottom:4px;font-style:italic;border-left:2px solid var(--border2);padding-left:8px}
+/* F3: LitRPG Sistem Kutusu HUD Tasarımı */
+.litrpg-box{
+  margin:1.1em 0;padding:12px 14px;border-radius:12px;
+  background:linear-gradient(135deg,#130a26,#0b1329);
+  border:1.5px solid var(--primary);
+  box-shadow:0 0 18px color-mix(in srgb,var(--primary) 28%,transparent), inset 0 0 12px rgba(34,211,238,.08);
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;line-height:1.55;color:#e0f2fe;
+}
+.litrpg-box::before{content:"⚡ SİSTEM BİLDİRİMİ";display:block;font-size:10px;letter-spacing:1.2px;font-weight:800;color:var(--cyan);margin-bottom:6px;border-bottom:1px solid #22d3ee33;padding-bottom:4px}
+#reader.rt-sepia .litrpg-box,#reader.rt-light .litrpg-box{background:#18102b;color:#f3eefc}
+.chap-theory-card{margin-top:26px;padding:13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border2);text-align:center}
+
 .r-body img{max-width:100%;height:auto;border-radius:8px;display:block;margin:8px auto}
 .r-title{font-size:1.25em;font-weight:750;color:var(--accent);margin-bottom:14px}
 .dlg-span{color:#e879f9;font-weight:500}
@@ -205,17 +223,42 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 #rSearchBar{display:none;padding:6px 10px;background:var(--surface2);border-bottom:1px solid var(--border);gap:5px;align-items:center}
 #rSearchBar.open{display:flex}
 
-/* Yerel CBZ/PDF Manga Sayfa Çeviri Katmanı */
+/* I5: Gece Mavi Işık / Kehribar & Ekstra Karartma Katmanı */
+#nightFilterOverlay{position:fixed;inset:0;z-index:220;pointer-events:none;display:none;transition:background .15s}
+
+/* H1 & H2: YÜKSEK KONTRASTLI, SIFIR SIZINTILI MANGA BALONCUK KATMANI (Çevrilmiş vs Orijinal Net Ayrım!) */
+.cbz-dual-wrap{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
 .cbz-page-wrap{position:relative;margin:10px auto;max-width:100%;display:block;width:100%}
 .cbz-page-wrap img{width:100%;display:block;border-radius:6px}
-.cbz-tr-btn{position:absolute;top:8px;right:8px;z-index:15;background:#8b5cf6e6;color:#fff;border:none;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.6);cursor:pointer}
+.cbz-tr-btn{position:absolute;top:8px;right:8px;z-index:15;background:#8b5cf6f0;color:#fff;border:1px solid #e879f9;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.65);cursor:pointer}
 .cbz-nav-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
 .lib-mb-layer{position:absolute;inset:0;pointer-events:none;z-index:12;overflow:hidden}
-.lib-mb{position:absolute;background:#ffffff;color:#090612;border:2px solid #8b5cf6;border-radius:12px;padding:5px 7px;font-weight:700;line-height:1.25;text-align:center;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,.55);pointer-events:auto;word-break:break-word;user-select:none;touch-action:none}
+.lib-mb-layer.hide-bubbles .lib-mb{opacity:0!important;pointer-events:none!important}
+.lib-mb{
+  position:absolute;background:#ffffff;color:#090612;
+  border:2px solid #8b5cf6;border-radius:16px;
+  padding:7px 9px;font-weight:750;line-height:1.26;text-align:center;
+  display:flex;align-items:center;justify-content:center;
+  /* H2: Çevrilmemiş arka plan yazısının kenardan sızmasını önleyen yumuşak dış maske + gölge */
+  box-shadow:0 0 9px 5px rgba(255,255,255,0.96), 0 4px 16px rgba(0,0,0,0.62);
+  pointer-events:auto;overflow-wrap:anywhere;hyphens:auto;user-select:none;touch-action:none;
+  transition:opacity .15s;
+}
+.lib-mb.mb-dark{background:#120a21;color:#ffffff;border-color:#c084fc;box-shadow:0 0 9px 5px rgba(18,10,33,0.96), 0 4px 16px rgba(0,0,0,0.72)}
+.lib-mb.mb-sfx{background:#86198f;color:#ffffff;border:2px solid #ffffff;border-radius:9px;box-shadow:0 0 8px 3px rgba(134,25,143,0.9), 0 3px 12px rgba(0,0,0,0.65)}
+.lib-mb.mb-thought{border-style:dashed;border-radius:22px}
+.lib-mb.mb-untranslated{background:#fffbeb;color:#92400e;border:2px dashed #f59e0b;box-shadow:0 0 8px 4px rgba(255,251,235,0.94)}
+.lib-mb-tag{position:absolute;bottom:-8px;left:6px;font-size:8.5px;font-weight:800;letter-spacing:.4px;padding:1px 5px;border-radius:999px;background:#8b5cf6;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5);pointer-events:none}
+.lib-mb.mb-untranslated .lib-mb-tag{background:#f59e0b;color:#111}
 .lib-mb-x{position:absolute;top:-8px;right:-8px;width:19px;height:19px;border-radius:50%;border:none;background:#f43f5e;color:#fff;font-size:10px;line-height:19px;padding:0;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.5)}
 
 .sel-bar{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:125;background:var(--surface2);border:1px solid var(--primary);border-radius:999px;padding:5px 8px;display:none;gap:5px;box-shadow:0 10px 30px rgba(0,0,0,.7);max-width:95vw;overflow-x:auto}
 .sel-bar.show{display:flex}
+
+/* Flashcard Flip Kartı (K1) */
+.fc-card{background:linear-gradient(135deg,#180e2e,#0d0819);border:1.5px solid var(--primary);border-radius:16px;padding:24px 18px;text-align:center;min-height:175px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 8px 26px rgba(0,0,0,.45)}
+.fc-word{font-size:22px;font-weight:800;color:var(--accent)}
+.fc-meaning{font-size:15px;color:#fff;line-height:1.55}
 
 /* Modallar & Lightbox */
 .modal{position:fixed;inset:0;z-index:140;background:#04020ad6;backdrop-filter:blur(7px);display:none;align-items:flex-end;justify-content:center;padding:10px}
@@ -245,7 +288,7 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 <header>
   <div class="logo">Ç</div>
   <div class="hdr-mid">
-    <h1>Çevirmen AI <span style="font-size:10px;color:var(--muted);font-weight:600">v8.1</span></h1>
+    <h1>Çevirmen AI <span style="font-size:10px;color:var(--muted);font-weight:600">v9.0</span></h1>
     <div class="hdr-pills">
       <div class="hdr-model" id="hdrModelBtn">🤖 Model seç</div>
       <div class="lr-badge" id="lrCostBadge" title="LiteRouter Canlı Maliyet Tarayıcı">💰 --</div>
@@ -326,7 +369,7 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
     </div>
   </section>
 
-  <!-- 2. PRO TARAYICI & FMHY & GEÇMİŞ -->
+  <!-- 2. PRO TARAYICI & FMHY & GEÇMİŞ & USERSCRIPT -->
   <section class="view" id="view-browser">
     <div class="card">
       <div class="card-head">
@@ -350,6 +393,14 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
     </div>
 
     <div class="card">
+      <div class="card-head"><h2>🧩 Tarayıcı Otomasyon & Site Betikleri</h2></div>
+      <label class="switch"><span>♾️ Sonsuz Bölüm Kaydırma (Sonraki bölümü otomatik ekle & çevir)</span><input type="checkbox" id="twInfinite"></label>
+      <label class="switch"><span>🔓 Kopyalama / Sağ-Tık Kilidi Kırıcı</span><input type="checkbox" id="twUnlockCopy"></label>
+      <label class="switch"><span>🧹 Agresif Popup / Bulanıklık Temizleyici</span><input type="checkbox" id="twAntiPopup"></label>
+      <label class="switch"><span>Tarayıcıdan çevrilen bölümleri otomatik Kütüphane'ye kaydet</span><input type="checkbox" id="bAutoSave"></label>
+    </div>
+
+    <div class="card">
       <div class="card-head">
         <h2>🕘 Tarayıcı Geçmişi</h2>
         <button class="btn small" id="openBrowserHistBtn2">Tümünü Gör</button>
@@ -361,7 +412,6 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
     <div class="card">
       <div class="card-head"><h2>⚡ Hızlı Okuma Siteleri</h2></div>
       <div class="chips" id="fmhyQuickChips"></div>
-      <label class="switch"><span>Tarayıcıdan çevrilen bölümleri otomatik Kütüphane'ye kaydet</span><input type="checkbox" id="bAutoSave"></label>
     </div>
   </section>
 
@@ -398,8 +448,8 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   <!-- 4. CANLI MANGA & YÜZEN ÇEVİRİ -->
   <section class="view" id="view-manga">
     <div class="card">
-      <div class="card-head"><h2>🫧 Yüzen Ekran Çevirisi (Akıllı Mod)</h2></div>
-      <p class="meta" style="margin-bottom:8px">Oyun, manga veya başka uygulamalarda ekran değişmediğinde 0 API harcar. Pil dostu yakalama, kilitli mod ve Oyun/Video Alt Yazı şeridi destekler.</p>
+      <div class="card-head"><h2>🫧 Yüzen Ekran Çevirisi (Akıllı Mod + Oto Pano)</h2></div>
+      <p class="meta" style="margin-bottom:8px">Oyun, manga veya başka uygulamalarda ekran değişmediğinde 0 API harcar. Pil dostu yakalama, kilitli mod, Oto Pano Çeviri baloncuğu ve Android Hızlı Ayarlar Karesi destekler.</p>
       <div class="row">
         <button class="btn primary grow" id="startOverlayBtn">🫧 Yüzen Çeviriyi Başlat</button>
         <button class="btn danger" id="stopOverlayBtn">⏹ Durdur</button>
@@ -407,9 +457,11 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
     </div>
 
     <div class="card">
-      <div class="card-head"><h2>💬 Manga Baloncuk Stili (Yüksek Kontrast)</h2></div>
+      <div class="card-head"><h2>💬 Manga Baloncuk Stili (Sıfır Sızıntı & Net Ayrım)</h2></div>
+      <p class="meta" style="margin-bottom:6px">Çevrilen baloncuklar arka plandaki orijinal yazıyı tamamen maskeler ve köşede <b>TR</b> rozetiyle orijinalden kesin olarak ayrılır. Çevrilmemiş/hatalı alanlar kehribar kesikli kutuda gösterilir.</p>
       <label>Okuma Yönü</label>
       <select id="mDir"><option value="webtoon">Webtoon / Manhwa (Yukarıdan Aşağı)</option><option value="rtl">Manga (Sağdan Sola — Sayfa Sayfa)</option><option value="ltr">Çizgi Roman (Soldan Sağa — Sayfa Sayfa)</option></select>
+      <label class="switch"><span>📖 Yatay (Landscape) Çift Sayfa Manga Modu</span><input type="checkbox" id="mDualPage"></label>
       <label>Baloncuk Fontu</label>
       <select id="mFont">
         <option value="system-ui, -apple-system, sans-serif">Modern Temiz (Önerilen — En Okunaklı)</option>
@@ -417,10 +469,10 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
         <option value="Georgia, serif">Klasik Serif</option>
       </select>
       <label>Yazı Boyutu Çarpanı: <span id="mScaleVal">1.0</span>x</label>
-      <input type="range" id="mScale" min="0.8" max="1.45" step="0.05" value="1.0">
-      <label>Baloncuk Saydamlığı (Opaklık): <span id="mAlphaVal">98</span>%</label>
-      <input type="range" id="mAlpha" min="0.55" max="1.0" step="0.05" value="0.98">
-      <label>Çerçeve Rengi</label>
+      <input type="range" id="mScale" min="0.85" max="1.45" step="0.05" value="1.0">
+      <label>Baloncuk Maskeleme Opaklığı: <span id="mAlphaVal">100</span>%</label>
+      <input type="range" id="mAlpha" min="0.80" max="1.0" step="0.02" value="1.0">
+      <label>Çevrilmiş Baloncuk Çerçeve Rengi</label>
       <input type="color" id="mBorder" value="#8b5cf6" style="height:36px;padding:3px">
       <div class="row" style="margin-top:8px">
         <button class="btn pink grow" id="openMangaBrowserBtn">💬 Manga Tarayıcısını Aç</button>
@@ -445,7 +497,7 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
         <input type="file" id="bookFileInput" accept=".epub,.pdf,.docx,.fb2,.mobi,.cbz,.txt,.html,.htm" multiple hidden>
       </div>
       <div class="row">
-        <input class="grow" id="libSearch" placeholder="Kitap, yazar veya etiket ara...">
+        <input class="grow" id="libSearch" placeholder="Kitap, yazar, raf veya etiket ara...">
         <select id="libSort" style="width:120px;padding:7px 8px;font-size:12px">
           <option value="recent">Son Okunan</option>
           <option value="title">Ada Göre</option>
@@ -454,18 +506,38 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
         </select>
       </div>
       <div class="row" style="margin-top:7px">
+        <button class="btn small ok" id="createCbzBtn" title="Görsellerden CBZ Manga Oluştur">🖼️→📦 CBZ Yap</button>
+        <input type="file" id="cbzImgsInput" accept="image/*" multiple hidden>
         <button class="btn small" id="mergeSeriesBtn" title="AI Seri Birleştir">🧩 Birleştir</button>
         <button class="btn small" id="opdsBtn">📡 OPDS</button>
         <button class="btn small danger" id="trashBtn">🗑️ Çöp</button>
       </div>
-      <div class="chips" id="libTagBar" style="margin-top:8px"></div>
+      <!-- I2: Raflar & Durum Filtresi -->
+      <div class="chips" id="libStatusBar" style="margin-top:8px">
+        <span class="chip active" data-st="all">📚 Tümü</span>
+        <span class="chip" data-st="reading">📖 Okunuyor</span>
+        <span class="chip" data-st="plan">⏳ Okunacak</span>
+        <span class="chip" data-st="done">✅ Tamamlandı</span>
+        <span class="chip" data-st="hold">⏸️ Beklemede</span>
+      </div>
+      <div class="chips" id="libTagBar" style="margin-top:5px"></div>
     </div>
 
     <div class="book-grid" id="bookGrid"></div>
   </section>
 
-  <!-- 6. STÜDYO (SÖZLÜK, PROMPT, AMBİYANS MİKSERİ, WRAPPED) -->
+  <!-- 6. STÜDYO (SÖZLÜK, FLASHCARDS, PROMPT, AMBİYANS, WRAPPED) -->
   <section class="view" id="view-studio">
+    <div class="card">
+      <div class="card-head">
+        <h2>🃏 Kelime Kartları (Flashcards — Anki)</h2>
+        <span class="pill-tag ok" id="fcDueBadge">0 bekliyor</span>
+        <button class="btn small primary" id="openFcStudyBtn">▶ Çalış</button>
+        <button class="btn small" id="addFcManualBtn">＋ Ekle</button>
+      </div>
+      <p class="meta">Okuyucuda bilmediğin kelimeleri "📘 Kelime Analizi" ile ekleyip aralıklı tekrarla (SM-2) kalıcı öğren.</p>
+    </div>
+
     <div class="card">
       <div class="card-head">
         <h2>📖 Akıllı Sözlük (Kitap Bazlı)</h2>
@@ -488,9 +560,16 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 
     <div class="card">
       <div class="card-head">
-        <h2>🎭 Çeviri Prompt Şablonları</h2>
+        <h2>🎭 Çeviri Prompt Şablonları & Onorifik Modu</h2>
         <button class="btn small primary" id="addPromptBtn">＋ Yeni</button>
       </div>
+      <label>🌸 Kültür & Saygı Eki (Onorifik) Adaptasyonu</label>
+      <select id="setHonorificMode">
+        <option value="keep">Orijinal Bırak (-san, Senpai, Hyung, Shixiong)</option>
+        <option value="localize">Türkçeleştir (Üstat, Ağabey, Bey/Hanım)</option>
+        <option value="footnote">Orijinal + İlk Geçişte [ÇN] Dipnotu</option>
+      </select>
+      <label>Aktif Prompt Şablonu</label>
       <select id="promptSel"></select>
       <textarea id="promptEdit" style="margin-top:6px;min-height:80px"></textarea>
       <div class="row" style="margin-top:6px">
@@ -578,8 +657,21 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
       </div>
     </div>
 
+    <!-- K2: Bütçe & Ekonomi Koruyucu -->
     <div class="card">
-      <div class="card-head"><h2>⚙️ Çeviri, Sistem & Maliyet Tahmini</h2></div>
+      <div class="card-head"><h2>💸 Günlük Bütçe Limiti & Ekonomi Modu</h2></div>
+      <div class="row">
+        <div class="grow"><label>Günlük Max ($)</label><input id="setBudgetUsd" type="number" step="0.05" placeholder="0.50"></div>
+        <div class="grow"><label>Günlük Max Token</label><input id="setBudgetTok" type="number" step="10000" placeholder="250000"></div>
+      </div>
+      <label>Limit Dolunca Geçilecek Ucuz Model</label>
+      <input id="setCheapModel" list="cachedModelDatalist" placeholder="Boşsa LiteRouter en ucuz modele geçer">
+      <label class="switch"><span>Limit %100'e ulaşınca otomatik ucuz modele düşür</span><input type="checkbox" id="setAutoCheap"></label>
+      <div class="meta" id="budgetStatusTxt" style="margin-top:6px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>⚙️ Çeviri Motoru 2.0 & Sistem</h2></div>
       <label>Sıcaklık (Temperature): <span id="tempVal">0.3</span></label>
       <input type="range" id="setTemp" min="0" max="1" step="0.05" value="0.3">
       <label>Parça Boyutu (Karakter)</label>
@@ -589,6 +681,9 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
         <div class="grow"><label>1M Çıkış Token ($)</label><input id="setPriceOut" type="number" step="0.01" placeholder="0.60"></div>
       </div>
       <div class="meta" id="usageSummary" style="margin-top:8px"></div>
+      <label class="switch"><span>🧠 Kayan Bağlam Hafızası (Bölüm/Parça arası tutarlılık)</span><input type="checkbox" id="setSlidingCtx"></label>
+      <label class="switch"><span>⚡ Çeviri Önbelleği — TM Cache (Tekrar cümlede 0 token)</span><input type="checkbox" id="setTmCache"></label>
+      <div class="row" style="margin-top:4px"><span class="meta grow" id="tmStatTxt">TM Önbellek: 0 kayıt</span><button class="btn small danger" id="clearTmBtn">TM Temizle</button></div>
       <label class="switch"><span>Canlı Akış (Streaming)</span><input type="checkbox" id="setStream"></label>
       <label class="switch"><span>Çevirmen Notu (TN) Ekle</span><input type="checkbox" id="setTn"></label>
       <label class="switch"><span>Ekranı Açık Tut</span><input type="checkbox" id="setKeepScreen"></label>
@@ -611,8 +706,9 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
       <div class="chips" id="navCustChips"></div>
     </div>
 
+    <!-- K3: Yerel Yedek & GitHub Gist Bulut Senkronizasyonu -->
     <div class="card">
-      <div class="card-head"><h2>💾 Seçici Yedekleme & Geri Yükleme</h2></div>
+      <div class="card-head"><h2>💾 Yedekleme & ☁️ GitHub Gist Bulut Senkron</h2></div>
       <div class="row">
         <button class="btn small ok" id="backupLiteBtn">⬇ Ayar & Sözlük Yedeği</button>
         <button class="btn small primary" id="backupFullBtn">⬇ Tam Yedek (Kitaplar Dahil)</button>
@@ -620,6 +716,16 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
         <input type="file" id="restoreInput" accept=".json" hidden>
       </div>
       <div class="meta" id="lastBackupTxt" style="margin-top:6px"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+      <label>GitHub Gist Personal Access Token (gist yetkili)</label>
+      <input id="setGistToken" type="password" placeholder="ghp_...">
+      <label>Gist ID (Boş bırakırsan ilk yedekte otomatik oluşur)</label>
+      <input id="setGistId" placeholder="Otomatik oluşturulur...">
+      <div class="row" style="margin-top:8px">
+        <button class="btn small primary grow" id="gistPushBtn">☁️ Buluta Yedekle</button>
+        <button class="btn small ok grow" id="gistPullBtn">⬇️ Buluttan Geri Yükle</button>
+      </div>
+      <div class="status" id="gistStatus"></div>
     </div>
   </section>
 </main>
@@ -634,15 +740,17 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
       <div id="rBookTitle" style="font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
       <div id="rChapMeta" style="font-size:10.5px;color:var(--muted)"></div>
     </div>
+    <button class="btn small" id="rPipBtn" title="Küçük Pencere (PiP)">📺</button>
     <button class="btn small" id="rViewModeBtn" title="Görünüm: Çeviri / İki Dilli / Orijinal">🌐</button>
-    <button class="btn small" id="rSearchBtn" title="Bölümde Ara">🔍</button>
+    <button class="btn small" id="rSearchBtn" title="Ara (Bölüm & Tüm Kitap)">🔍</button>
     <button class="btn small" id="rAmbBtn" title="Ambiyans Ses Mikseri">🎧</button>
     <button class="btn small primary" id="rTransBtn">🌐 Çevir</button>
     <button class="btn small" id="rSetBtn">⚙️</button>
   </div>
   <div id="rSearchBar">
-    <input class="grow" id="rSearchInput" placeholder="Bu bölümde ara..." style="padding:5px 8px;font-size:12.5px">
-    <button class="btn small primary" id="rSearchGo">Bul</button>
+    <input class="grow" id="rSearchInput" placeholder="Bölümde veya tüm kitapta ara..." style="padding:5px 8px;font-size:12.5px">
+    <button class="btn small primary" id="rSearchGo">Bölümde</button>
+    <button class="btn small pink" id="rSearchBookBtn">📚 Tüm Kitap</button>
     <button class="btn small" id="rSearchClose">✕</button>
   </div>
   <div class="r-prog-line"><div id="rProgFill"></div></div>
@@ -655,7 +763,8 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 
   <div class="sel-bar" id="selBar">
     <button class="btn small primary" id="selTransBtn">🌐 Çevir</button>
-    <button class="btn small ok" id="selWhoBtn">🧬 Bu Kim?</button>
+    <button class="btn small ok" id="selDictBtn">📘 Analiz</button>
+    <button class="btn small" id="selWhoBtn">🧬 Bu Kim?</button>
     <button class="btn small pink" id="selHlBtn">🖍️ Vurgula</button>
     <button class="btn small" id="selQuoteBtn">🖼️ Kart</button>
     <button class="btn small" id="selGlossBtn">📖 Sözlük</button>
@@ -679,6 +788,8 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   </div>
 </div>
 
+<div id="nightFilterOverlay"></div>
+
 <!-- MODALLAR -->
 <div class="modal" id="modelModal"><div class="sheet">
   <div class="sheet-head"><h3>🤖 Model Seç</h3><button class="btn small" data-close="modelModal">✕</button></div>
@@ -689,6 +800,17 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 <div class="modal" id="chapModal"><div class="sheet">
   <div class="sheet-head"><h3>📑 Bölümler</h3><button class="btn small ok" id="rRecapBtn">🧠 Nerde Kalmıştım</button><button class="btn small" data-close="chapModal">✕</button></div>
   <div class="list" id="chapList"></div>
+</div></div>
+
+<div class="modal" id="bookSearchModal"><div class="sheet">
+  <div class="sheet-head"><h3>📚 Tüm Kitapta Arama Sonuçları</h3><button class="btn small" data-close="bookSearchModal">✕</button></div>
+  <div class="list" id="bookSearchList"></div>
+</div></div>
+
+<div class="modal" id="driftModal"><div class="sheet">
+  <div class="sheet-head"><h3>🔍 Terim Tutarlılık Kalkanı</h3><button class="btn small" data-close="driftModal">✕</button></div>
+  <p class="meta" style="margin-bottom:8px">Çevrilen bölümler arasında farklı çevrilmiş aynı özel isim/terimleri tespit eder ve tek tıkla tüm kitapta standartlaştırır.</p>
+  <div class="list" id="driftList"></div>
 </div></div>
 
 <div class="modal" id="rSetModal"><div class="sheet">
@@ -705,6 +827,12 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   <input type="range" id="rSizeRange" min="13" max="30" value="18">
   <label>Satır Aralığı: <span id="rLhVal">1.8</span></label>
   <input type="range" id="rLhRange" min="1.3" max="2.4" step="0.1" value="1.8">
+  <!-- I5: Gece Mavi Işık / Karartma Sürgüleri -->
+  <div class="row">
+    <div class="grow"><label>🌙 Ekstra Karartma: <span id="rDimVal">0</span>%</label><input type="range" id="rDimRange" min="0" max="75" step="5" value="0"></div>
+    <div class="grow"><label>🟠 Mavi Işık (Amber): <span id="rAmberVal">0</span>%</label><input type="range" id="rAmberRange" min="0" max="60" step="5" value="0"></div>
+  </div>
+  <label class="switch"><span>🎮 LitRPG Sistem Kutularını HUD Kartı Yap</span><input type="checkbox" id="rLitrpgToggle"></label>
   <label class="switch"><span>💬 Diyalog Renklendirme (Anında)</span><input type="checkbox" id="rDlgColorToggle"></label>
   <label class="switch"><span>⚡ Bionic Reading (Hızlı Odak Okuma)</span><input type="checkbox" id="rBionicToggle"></label>
   <label class="switch"><span>📏 Yatay Okuma Cetveli</span><input type="checkbox" id="rRulerToggle"></label>
@@ -716,10 +844,11 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   </div>
   <label>TTS Hızı: <span id="rTtsRateVal">1.0</span>x</label>
   <input type="range" id="rTtsRate" min="0.6" max="2.0" step="0.1" value="1.0">
-  <label>Oto-Kaydırma Hızı: <span id="rScrollSpdVal">3</span></label>
-  <input type="range" id="rScrollSpd" min="1" max="10" value="3">
+  <label>120Hz Oto-Kaydırma Hızı: <span id="rScrollSpdVal">3</span></label>
+  <input type="range" id="rScrollSpd" min="1" max="12" value="3">
   <div class="row" style="margin-top:10px">
     <button class="btn small primary" id="rBatchTransBtn">📦 Toplu Çevir</button>
+    <button class="btn small pink" id="rDriftBtn">🔍 Terim Kalkanı</button>
     <button class="btn small ok" id="rWikiBtn">🧬 Seri Wiki</button>
     <button class="btn small" id="rHlListBtn">🖍️ Vurgular</button>
     <button class="btn small" id="rSleepBtn">🌙 Uyku</button>
@@ -734,9 +863,18 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   <input type="hidden" id="beId">
   <label>Kitap Adı</label>
   <input id="beTitle">
-  <label>Yazar / Kaynak</label>
-  <input id="beAuthor">
-  <label>Etiketler (virgülle ayır)</label>
+  <div class="row">
+    <div class="grow"><label>Yazar / Kaynak</label><input id="beAuthor"></div>
+    <div class="grow"><label>Okuma Durumu (Raf)</label>
+      <select id="beStatus">
+        <option value="reading">📖 Okunuyor</option>
+        <option value="plan">⏳ Okunacak</option>
+        <option value="done">✅ Tamamlandı</option>
+        <option value="hold">⏸️ Beklemede</option>
+      </select>
+    </div>
+  </div>
+  <label>Etiketler / Koleksiyon (virgülle ayır)</label>
   <input id="beTags" placeholder="LitRPG, Xianxia, Favori">
   <label>Kapak Görseli (URL veya Dosya Seç)</label>
   <div class="row">
@@ -747,6 +885,16 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   <div class="row" style="margin-top:12px">
     <button class="btn primary grow" id="beSaveBtn">💾 Değişiklikleri Kaydet</button>
   </div>
+</div></div>
+
+<div class="modal" id="flashcardModal"><div class="sheet">
+  <div class="sheet-head"><h3>🃏 Kelime Kartları (SM-2)</h3><span class="meta" id="fcProgressTxt">0/0</span><button class="btn small" data-close="flashcardModal">✕</button></div>
+  <div id="fcStage"></div>
+  <div class="row" id="fcActions" style="margin-top:12px;display:none">
+    <button class="btn danger grow" id="fcAgainBtn">❌ Tekrar Et (10dk)</button>
+    <button class="btn ok grow" id="fcGoodBtn">✅ Bildim (İlerlet)</button>
+  </div>
+  <div class="list" id="fcAllList" style="margin-top:12px"></div>
 </div></div>
 
 <div class="modal" id="browserHistModal"><div class="sheet">
@@ -861,10 +1009,11 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
   <pre id="debugLogs" style="font-size:11px;white-space:pre-wrap;color:#c4b5fd;background:var(--bg);padding:9px;border-radius:10px;max-height:55vh;overflow:auto"></pre>
 </div></div>
 
-<!-- MODERN BİLGİ & GİRİŞ MODALLARI (alert/prompt yerine) -->
+<!-- MODERN BİLGİ & GİRİŞ MODALLARI -->
 <div class="modal" id="infoSheetModal"><div class="sheet">
   <div class="sheet-head">
     <h3 id="infoSheetTitle">Bilgi</h3>
+    <button class="btn small ok" id="infoSheetExtraBtn" style="display:none"></button>
     <button class="btn small" id="infoSheetCopyBtn" style="display:none">📋 Kopyala</button>
     <button class="btn small" data-close="infoSheetModal">✕</button>
   </div>
@@ -890,4 +1039,4 @@ nav.bnav button.active{color:var(--accent);background:color-mix(in srgb,var(--pr
 <script src="core.js"></script>
 <script src="extras.js"></script>
 </body>
-</html>
+          </html>
