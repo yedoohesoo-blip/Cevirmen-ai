@@ -2,17 +2,16 @@
 "use strict";
 const C = window.CAI;
 if(!C) return;
-const {$, $$, esc, uid, toast, haptic, copyText, downloadBlob, openModal, closeModal, showInfoSheet, showPromptSheet, debugLog, getS, saveState, callAI, splitChunks, dbAll, dbGet, dbPut, dbDel, mediaPut, mediaGet, extractPdfText, extractEpubText, openRealBrowser, renderLibrary, openBookReader, renderCurrentChapter, renderGlossary, switchView, importBookFile, applyThemeAndAnim, R} = C;
+const {$, $$, esc, uid, toast, haptic, copyText, downloadBlob, openModal, closeModal, showInfoSheet, showPromptSheet, debugLog, getS, setS, saveState, callAI, splitChunks, dbAll, dbGet, dbPut, dbDel, mediaPut, mediaGet, extractPdfText, extractEpubText, openRealBrowser, renderLibrary, openBookReader, renderCurrentChapter, renderGlossary, renderSettingsUI, switchView, importBookFile, applyThemeAndAnim, R} = C;
 const isNative = () => !!(window.AndroidBridge && window.AndroidBridge.isNative && window.AndroidBridge.isNative());
 const b64Dec = b64 => { const bin=atob(b64), bytes=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i); return new TextDecoder().decode(bytes); };
 
-/* ===================== NATIVE FETCH KÖPRÜSÜ (HTTP DURUM + CLOUDFLARE TESPİTİ) ===================== */
-const fetchInfoCbs = new Map();
+/* ===================== NATIVE FETCH KÖPRÜSÜ ===================== */
+const fetchInfoCbs = new Map(), fetchTextCbs = new Map();
 window.__onNativeFetchInfoDone = (reqId, b64) => {
   const cb = fetchInfoCbs.get(reqId);
   if(cb){ fetchInfoCbs.delete(reqId); try{ cb(JSON.parse(b64Dec(b64))); }catch{ cb({status:0,html:"",protected:false}); } }
 };
-const fetchTextCbs = new Map();
 window.__onNativeFetchDone = (reqId, b64) => {
   const cb = fetchTextCbs.get(reqId);
   if(cb){ fetchTextCbs.delete(reqId); cb(b64Dec(b64)); }
@@ -35,33 +34,29 @@ function fetchUrlInfo(url){
   });
 }
 
-/* ===================== 1. ADGUARD VPN KALKANI (B4 ANLIK SENKRON) + APP SHORTCUTS ===================== */
-function updateVpnBtn(forceState=null){
+/* ===================== 1. ADGUARD VPN & APP SHORTCUTS ===================== */
+function updateVpnBtn(forcedState=null){
   const btn = $("#vpnToggleBtn"); if(!btn) return;
-  const on = forceState !== null ? !!forceState : (isNative() && window.AndroidBridge.isVpnRunning && window.AndroidBridge.isVpnRunning());
+  const on = forcedState !== null ? !!forcedState : (isNative() && window.AndroidBridge.isVpnRunning && window.AndroidBridge.isVpnRunning());
   btn.textContent = on ? "🛡️ VPN Açık" : "🛡️ AdGuard VPN";
-  btn.classList.toggle("primary", on);
+  btn.classList.toggle("primary", !!on);
   btn.classList.toggle("ok", !on);
 }
-window.CAI_updateVpnBtn = updateVpnBtn;
-window.__onVpnStateChanged = on => updateVpnBtn(!!on);
+window.CAI_updateVpnBtn = () => updateVpnBtn(null);
+window.__onVpnStateChanged = running => updateVpnBtn(!!running);
 
 $("#vpnToggleBtn")?.addEventListener("click", () => {
   if(!isNative() || !window.AndroidBridge.toggleAdVpn) return toast("AdGuard VPN sadece Android APK içinde çalışır!");
   window.AndroidBridge.toggleAdVpn();
-  setTimeout(() => updateVpnBtn(), 500);
+  setTimeout(() => updateVpnBtn(null), 500);
 });
 
 window.__onAppShortcut = async sc => {
-  if(sc === "overlay"){
-    if(isNative() && window.AndroidBridge.startFloatingOverlay) window.AndroidBridge.startFloatingOverlay();
-  } else if(sc === "chat"){
-    switchView("chat");
-  } else if(sc === "browser"){
-    switchView("browser");
-  } else if(sc === "notifs"){
-    openNotifModal();
-  } else if(sc === "resume_book"){
+  if(sc === "overlay"){ if(isNative() && window.AndroidBridge.startFloatingOverlay) window.AndroidBridge.startFloatingOverlay(); }
+  else if(sc === "chat"){ switchView("chat"); }
+  else if(sc === "browser"){ switchView("browser"); }
+  else if(sc === "notifs"){ openNotifModal(); }
+  else if(sc === "resume_book"){
     const books = (await dbAll()).filter(b=>!b.deletedAt).sort((a,b)=>(b.lastRead||0)-(a.lastRead||0));
     if(books.length){ switchView("library"); openBookReader(books[0].id); }
     else { switchView("library"); toast("Henüz okunmuş kitap yok"); }
@@ -73,11 +68,9 @@ function colorizeDialoguesInBody(){
   const S = getS(), body = $("#rBody"); if(!body) return;
   if(!S.reader.dlgColor){
     body.querySelectorAll(".dlg-span").forEach(sp => sp.replaceWith(document.createTextNode(sp.textContent)));
-    body.normalize();
-    return;
+    body.normalize(); return;
   }
-  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null);
-  const nodes = [];
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, null), nodes = [];
   let n; while((n = walker.nextNode())) {
     if(n.parentElement && (n.parentElement.classList.contains("dlg-span") || /SCRIPT|STYLE|BUTTON/.test(n.parentElement.tagName))) continue;
     if(/[“"][^”"]{2,}[”"]/.test(n.nodeValue)) nodes.push(n);
@@ -97,49 +90,34 @@ if(rBodyEl){
     try{ colorizeDialoguesInBody(); }finally{ setTimeout(() => dlgLock = false, 25); }
   }).observe(rBodyEl, {childList:true});
 }
-$("#rDlgColorToggle")?.addEventListener("change", e => {
-  const S = getS(); S.reader.dlgColor = e.target.checked; saveState();
-  colorizeDialoguesInBody();
-});
+$("#rDlgColorToggle")?.addEventListener("change", e => { const S = getS(); S.reader.dlgColor = e.target.checked; saveState(); colorizeDialoguesInBody(); });
 
-/* ===================== 3. LITEROUTER.COM CANLI MALİYET & ÇARPAN TARAYICISI ===================== */
+/* ===================== 3. LITEROUTER CANLI MALİYET TARAYICISI ===================== */
 function updateLrBadge(){
   const S = getS(), badge = $("#lrCostBadge"); if(!badge) return;
   const active = (S.model || "").toLowerCase();
   const match = (S.lrCosts || []).find(x => x.id.toLowerCase() === active || active.includes(x.id.toLowerCase()) || x.id.toLowerCase().includes(active.split("/").pop()||"___"));
-  if(match){
-    badge.textContent = `💰 ${match.mult || match.price || "?"}`;
-    badge.title = `${match.id}: ${match.mult || ""} ${match.price || ""}`;
-  } else {
-    badge.textContent = S.lrCosts?.length ? `💰 ${S.lrCosts.length} model` : "💰 Tara";
-  }
+  if(match){ badge.textContent = `💰 ${match.mult || match.price || "?"}`; badge.title = `${match.id}: ${match.mult||""} ${match.price||""}`; }
+  else badge.textContent = S.lrCosts?.length ? `💰 ${S.lrCosts.length} model` : "💰 Tara";
 }
 window.CAI_updateLrBadge = updateLrBadge;
 $("#lrCostBadge")?.addEventListener("click", () => { haptic("light"); switchView("costs"); renderLrCosts(); });
 
 function renderLrCosts(){
   const S = getS(), listEl = $("#lrCostList"), st = $("#lrStatus"); if(!listEl) return;
-  const q = ($("#lrSearch")?.value || "").toLowerCase().trim();
-  const sort = $("#lrSort")?.value || "cheap";
+  const q = ($("#lrSearch")?.value || "").toLowerCase().trim(), sort = $("#lrSort")?.value || "cheap";
   let arr = [...(S.lrCosts || [])];
   if(q) arr = arr.filter(x => (x.id+" "+(x.mult||"")+" "+(x.price||"")).toLowerCase().includes(q));
   if(sort === "cheap") arr.sort((a,b) => (a.numCost ?? 999) - (b.numCost ?? 999));
   else if(sort === "exp") arr.sort((a,b) => (b.numCost ?? -1) - (a.numCost ?? -1));
   else arr.sort((a,b) => a.id.localeCompare(b.id));
-
   if(S.lrLastScan && st && !st.textContent.includes("Taranıyor")) st.textContent = `Son tarama: ${new Date(S.lrLastScan).toLocaleTimeString("tr")} (${S.lrCosts.length} model)`;
-  if(!arr.length){
-    listEl.innerHTML = `<div class="card"><div class="meta">Henüz LiteRouter maliyet verisi yok. Yukarıdaki <b>🔄 Canlı Tara</b> butonuna bas!</div></div>`;
-    return;
-  }
+  if(!arr.length){ listEl.innerHTML = `<div class="card"><div class="meta">Henüz LiteRouter maliyet verisi yok. Yukarıdaki <b>🔄 Canlı Tara</b> butonuna bas!</div></div>`; return; }
   listEl.innerHTML = arr.map(m => {
     const isCur = S.model === m.id;
     const tagCls = (m.numCost !== null && m.numCost <= 0.3) ? "ok" : (m.numCost >= 1.5 ? "danger" : "warn");
     return `<div class="item" style="${isCur?"border-color:var(--primary)":""}">
-      <div class="item-body">
-        <div class="item-title">${isCur?"✅ ":""}${esc(m.id)}</div>
-        <div class="item-sub">${m.note ? esc(m.note) : "LiteRouter güncel optimizasyon maliyeti"}</div>
-      </div>
+      <div class="item-body"><div class="item-title">${isCur?"✅ ":""}${esc(m.id)}</div><div class="item-sub">${m.note ? esc(m.note) : "LiteRouter güncel maliyeti"}</div></div>
       <span class="pill-tag ${tagCls}">${esc(m.mult || m.price || "?")}</span>
       <button class="btn small primary" data-lrpick="${esc(m.id)}">Seç</button>
     </div>`;
@@ -173,7 +151,6 @@ async function scanLiteRouterCosts(){
         }
       }catch{}
     }
-
     let rawSiteText = "";
     for(const u of ["https://literouter.com/models", "https://literouter.com/pricing", "https://literouter.com"]){
       const info = await fetchUrlInfo(u);
@@ -184,34 +161,23 @@ async function scanLiteRouterCosts(){
         if(/multiplier|cost|price|x\b|gemini|claude|gpt|deepseek/i.test(txt)){ rawSiteText += `\n[${u}]\n` + txt.slice(0,12000); break; }
       }
     }
-
     if(rawSiteText.length > 100 && S.apiKey && S.model){
-      st.textContent = "🤖 AI sitedeki güncel maliyet çarpanlarını ayrıştırıyor…";
-      const aiRaw = await callAI({
-        task:"chat", stream:false, temperature:0.1,
-        messages:[
-          {role:"system", content:`Verilen literouter.com sayfa içeriğinden TÜM AI modellerinin adlarını ve güncel maliyet çarpanlarını (ör. 0.2x, 0.5x, 1x, 2x veya $ fiyat) çıkar. SADECE JSON dizisi dön: [{"id":"model-adi","mult":"0.5x","numCost":0.5,"note":"kısa not"}]. Bulamazsan [].`},
-          {role:"user", content:rawSiteText.slice(0,14000)}
-        ]
-      });
+      st.textContent = "🤖 AI güncel maliyet çarpanlarını ayrıştırıyor…";
+      const aiRaw = await callAI({task:"chat", stream:false, temperature:0.1, messages:[
+        {role:"system", content:`Verilen literouter.com sayfa içeriğinden TÜM AI modellerinin adlarını ve güncel maliyet çarpanlarını çıkar. SADECE JSON dizisi dön: [{"id":"model-adi","mult":"0.5x","numCost":0.5,"note":"kısa not"}].`},
+        {role:"user", content:rawSiteText.slice(0,14000)}
+      ]});
       try{
         const s = aiRaw.indexOf("["), e = aiRaw.lastIndexOf("]");
-        if(s>=0 && e>s){
-          JSON.parse(aiRaw.slice(s,e+1)).forEach(x => {
-            if(x.id) found.set(x.id, {id:x.id, mult:x.mult||"?", numCost:Number(x.numCost)||parseFloat(String(x.mult||"99"))||99, note:x.note||"literouter.com"});
-          });
-        }
+        if(s>=0 && e>s) JSON.parse(aiRaw.slice(s,e+1)).forEach(x => { if(x.id) found.set(x.id, {id:x.id, mult:x.mult||"?", numCost:Number(x.numCost)||parseFloat(String(x.mult||"99"))||99, note:x.note||"literouter.com"}); });
       }catch{}
     }
-
     if(found.size){
-      S.lrCosts = [...found.values()];
-      S.lrLastScan = Date.now();
+      S.lrCosts = [...found.values()]; S.lrLastScan = Date.now();
       saveState(); updateLrBadge(); renderLrCosts();
-      st.className = "status ok"; st.textContent = `✅ ${S.lrCosts.length} modelin güncel maliyeti tarandı!`;
-      haptic("success");
+      st.className = "status ok"; st.textContent = `✅ ${S.lrCosts.length} modelin güncel maliyeti tarandı!`; haptic("success");
     } else {
-      st.className = "status warn"; st.textContent = "⚠️ Site dinamik (JS) korumalı veya veri dönmedi. Pro Tarayıcıda literouter.com'u açıp çerez aldıktan sonra tekrar dene.";
+      st.className = "status warn"; st.textContent = "⚠️ Site dinamik (JS) korumalı veya veri dönmedi. Pro Tarayıcıda literouter.com'u açıp tekrar dene.";
     }
   }catch(e){ st.className = "status error"; st.textContent = "❌ " + e.message; }
   finally{ btn.classList.remove("busy"); }
@@ -235,18 +201,15 @@ $("#rFetchMoreBtn")?.addEventListener("click", () => {
   if(!R.book) return;
   const lastUrl = [...R.book.chapters].reverse().find(c=>c.url)?.url || R.book.sourceUrl || "";
   if(!lastUrl) return toast("Bu kitap web kaynaklı değil (URL yok)");
-  closeModal("rSetModal");
-  openScraperModal(R.book.title, lastUrl, R.book.id);
+  closeModal("rSetModal"); openScraperModal(R.book.title, lastUrl, R.book.id);
 });
 
 function findNextChapterUrl(doc, baseUrl){
   const candidates = [];
-  const anchors = [...doc.querySelectorAll("a[href]")];
-  for(const a of anchors){
+  for(const a of [...doc.querySelectorAll("a[href]")]){
     const rawHref = a.getAttribute("href") || "";
     if(!rawHref || rawHref.startsWith("#") || rawHref.startsWith("javascript:")) continue;
-    let abs = "";
-    try{ abs = new URL(rawHref, baseUrl).href; }catch{ continue; }
+    let abs = ""; try{ abs = new URL(rawHref, baseUrl).href; }catch{ continue; }
     if(abs === baseUrl) continue;
     const txt = (a.textContent || "").replace(/\s+/g," ").trim().toLowerCase();
     const cls = ((a.className||"") + " " + (a.id||"") + " " + (a.getAttribute("rel")||"") + " " + (a.getAttribute("title")||"")).toLowerCase();
@@ -279,56 +242,34 @@ $("#scrStartBtn")?.addEventListener("click", async () => {
   const titleIn = $("#scrTitle").value.trim() || "Web Romanı";
   const targetBookId = $("#scrBookSel").value;
   if(!curUrl) return toast("Başlangıç URL'si gir");
-
-  scraperStopFlag = false;
-  $("#scrStartBtn").disabled = true; $("#scrStopBtn").disabled = false;
-  const prog = $("#scrProg"), st = $("#scrStatus");
-  prog.classList.add("on"); st.className = "status";
-
+  scraperStopFlag = false; $("#scrStartBtn").disabled = true; $("#scrStopBtn").disabled = false;
+  const prog = $("#scrProg"), st = $("#scrStatus"); prog.classList.add("on"); st.className = "status";
   let book = targetBookId ? await dbGet(targetBookId) : null;
   if(!book){
-    const host = curUrl.replace(/^https?:\/\//,"").split("/")[0];
-    book = {id:uid(), title:titleIn, author:host, format:"WEB", sourceHost:host, sourceUrl:curUrl, tags:["Web Novel"], curChap:0, lastRead:Date.now(), scrollMap:{}, chapters:[]};
+    const host = curUrl.replace(/^https?:\/\//,"").split("/")[0].replace(/^www\./,"");
+    book = {id:uid(), title:titleIn, author:host, format:"WEB", status:"reading", sourceHost:host, sourceUrl:curUrl, tags:["Web Novel"], curChap:0, lastRead:Date.now(), scrollMap:{}, chapters:[]};
   }
   const visited = new Set(book.chapters.map(c=>c.url).filter(Boolean));
   let added = 0;
-
   for(let i=0; i<maxCount; i++){
     if(scraperStopFlag || !curUrl) break;
     prog.firstElementChild.style.width = Math.round(((i)/maxCount)*100) + "%";
     st.textContent = `⚡ Bölüm ${i+1}/${maxCount} çekiliyor…`;
     const info = await fetchUrlInfo(curUrl);
-    if(info.protected){
-      st.className = "status error";
-      st.textContent = `⚠️ Cloudflare/Bot koruması tespit edildi (${i} bölüm kaydedildi). Önce Pro Tarayıcıda bu siteyi açıp doğrulamayı geç, sonra tekrar dene!`;
-      break;
-    }
-    if(!info.html || info.html.length < 200){ st.textContent = `⚠️ Sayfa boş döndü, durduruldu (${added} eklendi).`; break; }
+    if(info.protected){ st.className = "status error"; st.textContent = `⚠️ Cloudflare koruması tespit edildi (${i} bölüm kaydedildi). Pro Tarayıcıda siteyi açıp doğrulamayı geç, çerez otomatik eşitlenecek!`; break; }
+    if(!info.html || info.html.length < 200){ st.textContent = `⚠️ Sayfa boş döndü (${added} eklendi).`; break; }
     const {title, text, nextUrl} = extractChapterFromHtml(info.html, info.finalUrl || curUrl);
-    if(!visited.has(curUrl) && text.length > 80){
-      book.chapters.push({title, text, url:curUrl});
-      visited.add(curUrl);
-      added++;
-      await dbPut(book);
-    }
-    if(!nextUrl || visited.has(nextUrl)){
-      st.className = "status ok";
-      st.textContent = `✅ Bitti! Sonraki bölüm linki kalmadı (${added} yeni bölüm eklendi).`;
-      break;
-    }
+    if(!visited.has(curUrl) && text.length > 80){ book.chapters.push({title, text, url:curUrl}); visited.add(curUrl); added++; await dbPut(book); }
+    if(!nextUrl || visited.has(nextUrl)){ st.className = "status ok"; st.textContent = `✅ Bitti! (${added} yeni bölüm eklendi).`; break; }
     curUrl = nextUrl;
     await new Promise(r=>setTimeout(r, 700));
   }
-  prog.firstElementChild.style.width = "100%";
-  $("#scrStartBtn").disabled = false; $("#scrStopBtn").disabled = true;
-  if(added > 0){
-    book.lastRead = Date.now(); await dbPut(book); renderLibrary(); haptic("success");
-    if(!st.textContent.includes("⚠️")) { st.className="status ok"; st.textContent=`✅ ${added} bölüm "${book.title}" kitabına kaydedildi!`; }
-  }
+  prog.firstElementChild.style.width = "100%"; $("#scrStartBtn").disabled = false; $("#scrStopBtn").disabled = true;
+  if(added > 0){ book.lastRead = Date.now(); await dbPut(book); renderLibrary(); haptic("success"); if(!st.textContent.includes("⚠️")) { st.className="status ok"; st.textContent=`✅ ${added} bölüm "${book.title}" kitabına kaydedildi!`; } }
 });
 $("#scrStopBtn")?.addEventListener("click", () => { scraperStopFlag = true; toast("İndirme durduruluyor…"); });
 
-/* ===================== 5. YENİ BÖLÜM TAKİPÇİSİ & OTOMATİK ARKA PLAN KONTROLÜ (C7) ===================== */
+/* ===================== 5. YENİ BÖLÜM TAKİPÇİSİ ===================== */
 function ensureWatchData(){ const S=getS(); if(!Array.isArray(S.watchlist)) S.watchlist=[]; if(!Array.isArray(S.notifInbox)) S.notifInbox=[]; return S; }
 function updateNotifBadge(){
   const S=ensureWatchData(), unread=S.notifInbox.filter(x=>!x.read).length, b=$("#notifBadge");
@@ -338,33 +279,23 @@ function renderWatchAndNotifs(){
   const S=ensureWatchData();
   $("#watchList").innerHTML = S.watchlist.length ? S.watchlist.map(w=>`
     <div class="item">
-      <div class="item-body">
-        <div class="item-title">${esc(w.title)} ${w.statusTag?`<span class="pill-tag ${w.protected?"warn":"ok"}">${esc(w.statusTag)}</span>`:""}</div>
-        <div class="item-sub">${esc(w.url.slice(0,55))}</div>
-      </div>
+      <div class="item-body"><div class="item-title">${esc(w.title)} ${w.statusTag?`<span class="pill-tag ${w.protected?"warn":"ok"}">${esc(w.statusTag)}</span>`:""}</div><div class="item-sub">${esc(w.url.slice(0,55))}</div></div>
       <button class="btn small" data-wopen="${esc(w.url)}">🌐</button>
-      <button class="btn small ok" data-wscr="${w.id}" title="Yeni bölümleri çek">⚡</button>
+      <button class="btn small ok" data-wscr="${w.id}">⚡</button>
       <button class="btn small danger" data-wdel="${w.id}">✕</button>
     </div>`).join("") : `<div class="meta">Takip edilen seri yok.</div>`;
   $$("[data-wopen]").forEach(b=>b.onclick=()=>openRealBrowser(b.dataset.wopen));
   $$("[data-wscr]").forEach(b=>b.onclick=()=>{ const w=S.watchlist.find(x=>x.id===b.dataset.wscr); if(w){closeModal("notifModal"); openScraperModal(w.title, w.lastUrl||w.url);} });
   $$("[data-wdel]").forEach(b=>b.onclick=()=>{ S.watchlist=S.watchlist.filter(x=>x.id!==b.dataset.wdel); saveState(); renderWatchAndNotifs(); });
-
   $("#notifList").innerHTML = S.notifInbox.length ? S.notifInbox.slice(0,30).map(n=>`
     <div class="item" style="${!n.read?"border-color:var(--primary)":""}">
-      <div class="item-body">
-        <div class="item-title">${esc(n.title)}</div>
-        <div class="item-sub">${esc(n.body)} • ${new Date(n.ts).toLocaleTimeString("tr")}</div>
-      </div>
+      <div class="item-body"><div class="item-title">${esc(n.title)}</div><div class="item-sub">${esc(n.body)} • ${new Date(n.ts).toLocaleTimeString("tr")}</div></div>
       <button class="btn small primary" data-nopen="${esc(n.url)}">Aç</button>
     </div>`).join("") : `<div class="meta">Henüz bildirim yok.</div>`;
   $$("[data-nopen]").forEach(b=>b.onclick=()=>openRealBrowser(b.dataset.nopen));
   updateNotifBadge();
 }
-function openNotifModal(){
-  const S=ensureWatchData(); S.notifInbox.forEach(x=>x.read=true); saveState();
-  renderWatchAndNotifs(); openModal("notifModal");
-}
+function openNotifModal(){ const S=ensureWatchData(); S.notifInbox.forEach(x=>x.read=true); saveState(); renderWatchAndNotifs(); openModal("notifModal"); }
 $("#hdrNotifBtn")?.addEventListener("click", openNotifModal);
 $("#addWatchBtn")?.addEventListener("click", () => {
   const S=ensureWatchData(), t=$("#watchTitle").value.trim(), u=$("#watchUrl").value.trim();
@@ -376,7 +307,6 @@ window.__onAddWatchFromBrowser = (t64, u64) => {
   const S=ensureWatchData(), t=b64Dec(t64), u=b64Dec(u64);
   if(!S.watchlist.some(x=>x.url===u)){ S.watchlist.unshift({id:uid(), title:t, url:u, lastSig:"", lastUrl:u}); saveState(); }
 };
-
 async function runWatchlistCheck(silent=false){
   const S=ensureWatchData(); if(!S.watchlist.length){ if(!silent) toast("Takip listesi boş"); return; }
   if(!silent) toast("🔄 Seriler kontrol ediliyor…");
@@ -388,20 +318,15 @@ async function runWatchlistCheck(silent=false){
     const links = [...new DOMParser().parseFromString(info.html,"text/html").querySelectorAll("a[href]")].filter(a=>/chap|bölüm|episode|ch[-_ ]?\d/i.test(a.textContent+a.getAttribute("href")));
     const sig = links.length + "|" + (links[0]?.textContent?.trim().slice(0,40) || info.html.length);
     if(w.lastSig && w.lastSig !== sig){
-      foundNew++;
-      w.statusTag = "🆕 Yeni Bölüm!";
+      foundNew++; w.statusTag = "🆕 Yeni Bölüm!";
       const msg = `${w.title} için yeni bölüm tespit edildi!`;
       S.notifInbox.unshift({id:uid(), title:"🆕 " + w.title, body:msg, url:w.url, ts:Date.now(), read:false});
       if(isNative() && window.AndroidBridge.showNotification) window.AndroidBridge.showNotification("Çevirmen AI — Yeni Bölüm!", msg, "notifs");
-    } else {
-      w.statusTag = "Güncel";
-    }
+    } else w.statusTag = "Güncel";
     w.lastSig = sig;
   }
-  S.lastAutoWatch = Date.now();
-  saveState(); renderWatchAndNotifs();
-  if(!silent) toast(foundNew ? `🔔 ${foundNew} seride yeni bölüm bulundu!` : "Kontrol tamamlandı, yeni bölüm yok.");
-  else if(foundNew) toast(`🔔 ${foundNew} takip edilen seride yeni bölüm var!`);
+  S.lastAutoWatch = Date.now(); saveState(); renderWatchAndNotifs();
+  if(!silent || foundNew) toast(foundNew ? `🔔 ${foundNew} seride yeni bölüm bulundu!` : "Kontrol tamamlandı, yeni bölüm yok.");
 }
 $("#checkWatchBtn")?.addEventListener("click", () => runWatchlistCheck(false));
 
@@ -431,14 +356,8 @@ function renderFmhyModal(){
   $("#fmhyBody").innerHTML = cats.map(c=>`
     <h4 style="font-size:12px;color:var(--accent);margin:8px 0 5px">${esc(c)}</h4>
     <div class="list">${filtered.filter(x=>x.cat===c).map(s=>`
-      <div class="item">
-        <div class="item-body">
-          <div class="item-title">${s.ping==="ok"?"🟢 ":s.ping==="cf"?"🟡 ":s.ping==="err"?"🔴 ":""}${esc(s.name)}</div>
-          <div class="item-sub">${esc(s.url)}</div>
-        </div>
-        <button class="btn small primary" data-fgo="${esc(s.url)}">Aç</button>
-        <button class="btn small danger" data-fdel="${esc(s.url)}">✕</button>
-      </div>`).join("")}</div>`).join("") || `<div class="meta">Sonuç yok.</div>`;
+      <div class="item"><div class="item-body"><div class="item-title">${s.ping==="ok"?"🟢 ":s.ping==="cf"?"🟡 ":s.ping==="err"?"🔴 ":""}${esc(s.name)}</div><div class="item-sub">${esc(s.url)}</div></div>
+      <button class="btn small primary" data-fgo="${esc(s.url)}">Aç</button><button class="btn small danger" data-fdel="${esc(s.url)}">✕</button></div>`).join("")}</div>`).join("") || `<div class="meta">Sonuç yok.</div>`;
   $$("[data-fgo]").forEach(b=>b.onclick=()=>{ closeModal("fmhyModal"); openRealBrowser(b.dataset.fgo); });
   $$("[data-fdel]").forEach(b=>b.onclick=()=>{ const S=getS(); S.fmhySites=getFmhyList().filter(x=>x.url!==b.dataset.fdel); saveState(); renderFmhyModal(); renderFmhyQuick(); });
 }
@@ -453,15 +372,11 @@ $("#fmhySaveNewBtn")?.addEventListener("click", () => {
 });
 $("#fmhyTestAllBtn")?.addEventListener("click", async () => {
   const list = getFmhyList(); toast("📡 Siteler test ediliyor…");
-  for(const s of list){
-    const info = await fetchUrlInfo(s.url);
-    s.ping = info.protected ? "cf" : (info.status>=200 && info.status<400 ? "ok" : "err");
-    renderFmhyModal();
-  }
+  for(const s of list){ const info = await fetchUrlInfo(s.url); s.ping = info.protected ? "cf" : (info.status>=200 && info.status<400 ? "ok" : "err"); renderFmhyModal(); }
   toast("📡 Site erişim testi tamamlandı!");
 });
 
-/* ===================== 7. AI SOHBET (A4 IDB MEDYA + A5 PDF/EPUB + A7 MARKDOWN TABLO + D4 STOP/EXPORT) ===================== */
+/* ===================== 7. AI SOHBET ===================== */
 function ensureChatState(){
   const S = getS();
   if(!Array.isArray(S.chatSessions) || !S.chatSessions.length){
@@ -473,138 +388,89 @@ function ensureChatState(){
 }
 function getActiveChat(){ const S=ensureChatState(); return S.chatSessions.find(x=>x.id===S.activeChatId) || S.chatSessions[0]; }
 
-// A7: Hatasız Markdown Renderer (Kod blokları, tablolar, listeler, başlıklar)
 function renderMarkdown(md){
   const codeBlocks = [];
   let s = String(md || "").replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     const idx = codeBlocks.length;
-    codeBlocks.push(`<div class="md-pre"><div class="md-pre-hd"><span>${esc(lang||"kod")}</span><button class="btn small" onclick="window.CAI.copyText(this.parentElement.nextElementSibling.textContent)">📋 Kopyala</button></div><code>${esc(code.replace(/\n$/,""))}</code></div>`);
-    return `@@CODEBLOCK_${idx}@@`;
+    codeBlocks.push(`<div class="md-pre"><div class="md-pre-hd"><span>${esc(lang||"kod")}</span><button class="btn small" onclick="window.CAI.copyText(this.parentElement.nextElementSibling.textContent)">📋 Kopyala</button></div><code>${esc(code)}</code></div>`);
+    return `@@CB${idx}@@`;
   });
-
-  // Satır bazlı tablo & liste ayrıştırma
-  const lines = esc(s).split("\n");
-  const out = [];
-  let inUl = false, inTable = false, tableRows = [];
-
-  const flushUl = () => { if(inUl){ out.push("</ul>"); inUl = false; } };
-  const flushTable = () => {
-    if(!inTable) return;
-    if(tableRows.length >= 2){
-      const hdr = tableRows[0].map(c=>`<th>${c}</th>`).join("");
-      const body = tableRows.slice(2).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("");
-      out.push(`<table><thead><tr>${hdr}</tr></thead><tbody>${body}</tbody></table>`);
-    }
-    inTable = false; tableRows = [];
-  };
-
-  const inlineFmt = t => t
-    .replace(/`([^`\n]+)`/g, '<span class="md-ic">$1</span>')
-    .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
-    .replace(/\*([^*\n]+)\*/g, '<i>$1</i>');
-
+  const lines = s.split("\n"), outLines = [];
   for(let i=0; i<lines.length; i++){
-    const ln = lines[i];
-    if(/^@@CODEBLOCK_\d+@@$/.test(ln.trim())){
-      flushUl(); flushTable();
-      out.push(ln.trim());
-      continue;
-    }
-    if(/^\s*\|.+\|\s*$/.test(ln)){
-      flushUl();
-      inTable = true;
-      const cells = ln.trim().replace(/^\||\|$/g,"").split("|").map(c=>inlineFmt(c.trim()));
-      tableRows.push(cells);
-      continue;
-    } else flushTable();
-
-    const liM = ln.match(/^\s*[-*•]\s+(.+)$/);
-    if(liM){
-      if(!inUl){ out.push("<ul>"); inUl = true; }
-      out.push(`<li>${inlineFmt(liM[1])}</li>`);
-      continue;
-    } else flushUl();
-
-    if(/^###\s+(.+)$/.test(ln)) out.push(`<h4>${inlineFmt(ln.replace(/^###\s+/,""))}</h4>`);
-    else if(/^##\s+(.+)$/.test(ln)) out.push(`<h3>${inlineFmt(ln.replace(/^##\s+/,""))}</h3>`);
-    else if(/^#\s+(.+)$/.test(ln)) out.push(`<h3>${inlineFmt(ln.replace(/^#\s+/,""))}</h3>`);
-    else if(ln.trim() === "") out.push("<br>");
-    else out.push(inlineFmt(ln) + "<br>");
+    if(lines[i].includes("|") && i+1 < lines.length && /^\s*\|?[\s:-]+\|[\s|:-]*$/.test(lines[i+1])){
+      const parseRow = r => r.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim());
+      const headers = parseRow(lines[i]);
+      let tbl = `<table><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>`;
+      i += 2;
+      while(i < lines.length && lines[i].includes("|") && lines[i].trim()){ tbl += `<tr>${parseRow(lines[i]).map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`; i++; }
+      i--; tbl += "</tbody></table>"; outLines.push(tbl);
+    } else outLines.push(lines[i]);
   }
-  flushUl(); flushTable();
-
-  let html = out.join("");
-  codeBlocks.forEach((blk, idx) => { html = html.replace(`@@CODEBLOCK_${idx}@@`, blk); });
-  return html;
+  let html = "", inUl = false;
+  for(const rawLn of outLines){
+    if(rawLn.startsWith("<table>") || /^@@CB\d+@@$/.test(rawLn.trim())){ if(inUl){ html += "</ul>"; inUl = false; } html += rawLn; continue; }
+    const fmt = str => esc(str).replace(/`([^`\n]+)`/g, '<span class="md-ic">$1</span>').replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/\*([^*\n]+)\*/g, '<i>$1</i>');
+    if(/^\s*[-*]\s+(.+)/.test(rawLn)){ if(!inUl){ html += "<ul>"; inUl = true; } html += `<li>${fmt(rawLn.replace(/^\s*[-*]\s+/, ""))}</li>`; }
+    else {
+      if(inUl){ html += "</ul>"; inUl = false; }
+      if(/^###\s+(.+)/.test(rawLn)) html += `<h4>${fmt(rawLn.replace(/^###\s+/,""))}</h4>`;
+      else if(/^##\s+(.+)/.test(rawLn)) html += `<h3>${fmt(rawLn.replace(/^##\s+/,""))}</h3>`;
+      else html += fmt(rawLn) + "<br>";
+    }
+  }
+  if(inUl) html += "</ul>";
+  return html.replace(/@@CB(\d+)@@/g, (_, idx) => codeBlocks[Number(idx)] || "");
 }
 
-// A4: Görsel sıkıştırıcı (localStorage yerine IndexedDB'ye hafif JPEG kaydeder)
-function compressImageFile(file, maxW=1024, quality=0.8){
+function compressImageFile(file, maxW=1024, quality=0.78){
   return new Promise((resolve, reject) => {
-    const fr = new FileReader();
+    const fr = new FileReader(); fr.onerror = reject;
     fr.onload = () => {
-      const img = new Image();
+      const img = new Image(); img.onerror = () => resolve(fr.result);
       img.onload = () => {
-        const scale = img.width > maxW ? (maxW / img.width) : 1;
-        const cv = document.createElement("canvas");
-        cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
-        cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
-        resolve(cv.toDataURL("image/jpeg", quality));
+        let w = img.width, h = img.height; if(w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+        const cv = document.createElement("canvas"); cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h); resolve(cv.toDataURL("image/jpeg", quality));
       };
-      img.onerror = () => resolve(fr.result);
       img.src = fr.result;
     };
-    fr.onerror = reject;
     fr.readAsDataURL(file);
   });
 }
-
-async function resolveChatImgSrc(ref){
-  if(!ref) return "";
-  if(ref.startsWith("data:")) return ref;
-  if(ref.startsWith("idb:")) return await mediaGet(ref.slice(4));
-  return ref;
-}
+async function resolveMediaSrc(ref){ return !ref ? "" : (ref.startsWith("idb:") ? await mediaGet(ref.slice(4)) : ref); }
 
 async function populateChatBooks(){
   const sel = $("#chatBookSel"); if(!sel) return;
-  const books = (await dbAll()).filter(b=>!b.deletedAt);
-  const cur = sel.value;
+  const books = (await dbAll()).filter(b=>!b.deletedAt), cur = sel.value;
   sel.innerHTML = `<option value="">📚 Kitap bağlama (Genel Sohbet)</option>` + books.map(b=>`<option value="${b.id}">📖 ${esc(b.title)} (Bölüm ${(b.curChap||0)+1}/${b.chapters.length})</option>`).join("");
   if(cur) sel.value = cur;
 }
-
 function renderChatSessions(){
   const S = ensureChatState(), sel = $("#chatSessionSel"); if(!sel) return;
   sel.innerHTML = S.chatSessions.map(c=>`<option value="${c.id}">💬 ${esc(c.title)} (${c.msgs.length})</option>`).join("");
   sel.value = S.activeChatId;
 }
-
-async function renderChatFull(){
+function renderChatFull(){
   renderChatSessions();
   const chat = getActiveChat(), box = $("#chatMsgs"); if(!box) return;
-  if(!chat.msgs.length){
-    box.innerHTML = `<div class="meta" style="text-align:center;margin:auto">👋 Yeni sohbet hazır. Görsel, PDF, EPUB veya kitap bağlayarak soru sorabilirsin!</div>`;
-    return;
-  }
+  if(!chat.msgs.length){ box.innerHTML = `<div class="meta" style="text-align:center;margin:auto">👋 Yeni sohbet hazır. Görsel, PDF, EPUB veya kitap bağlayarak soru sorabilirsin!</div>`; return; }
   box.innerHTML = chat.msgs.map((m, idx) => `
     <div class="cmsg ${m.role==="user"?"user":"ai"}" data-cidx="${idx}">
-      ${(m.images||[]).map((ref,ii)=>`<img data-imgref="${esc(ref)}" src="${ref.startsWith("data:")?ref:""}" alt="Görsel ${ii+1}" onclick="if(this.src){document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('open')}">`).join("")}
+      ${(m.images||[]).map(src => src.startsWith("idb:")
+        ? `<img data-idbimg="${esc(src)}" src="" style="min-height:40px;background:#1a1229" onclick="document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('open')">`
+        : `<img src="${src}" onclick="document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('open')">`).join("")}
       <div class="cmsg-body">${m.role==="user" ? esc(m.text) : renderMarkdown(m.text)}</div>
       <div class="cmsg-acts">
         <button data-ccopy="${idx}">📋</button>
         ${m.role==="assistant" ? `<button data-cregen="${idx}">🔄</button><button data-ctts="${idx}">🔊</button><button data-ctotext="${idx}">🌐 Metne</button>` : `<button data-cedit="${idx}">✏️</button>`}
-        <button data-cdel="${idx}" title="Mesajı Sil">🗑️</button>
+        <button data-cdel="${idx}">🗑️</button>
       </div>
     </div>`).join("");
-  // IndexedDB'deki görselleri asenkron yükle
-  box.querySelectorAll("img[data-imgref^='idb:']").forEach(async img => {
-    const dataUrl = await resolveChatImgSrc(img.dataset.imgref);
-    if(dataUrl) img.src = dataUrl;
-  });
+  box.querySelectorAll("img[data-idbimg]").forEach(async img => { const u = await resolveMediaSrc(img.dataset.idbimg); if(u) img.src = u; });
   box.scrollTop = box.scrollHeight;
   bindChatMsgActions();
 }
+window.CAI_onChatViewOpen = () => { populateChatBooks(); renderChatFull(); };
 
 function bindChatMsgActions(){
   const chat = getActiveChat();
@@ -613,212 +479,125 @@ function bindChatMsgActions(){
   $$("[data-ctotext]").forEach(b=>b.onclick=()=>{ const t=chat.msgs[b.dataset.ctotext]?.text; if(t){ $("#srcText").value=t; switchView("text"); toast("Metin sekmesine aktarıldı"); } });
   $$("[data-cedit]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cedit); $("#chatInput").value=chat.msgs[i].text; chat.msgs=chat.msgs.slice(0,i); saveState(); renderChatFull(); });
   $$("[data-cregen]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cregen); if(i>0){ chat.msgs=chat.msgs.slice(0,i); saveState(); renderChatFull(); sendChatMessage(true); } });
-  $$("[data-cdel]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cdel); chat.msgs.splice(i,1); saveState(); renderChatFull(); });
+  $$("[data-cdel]").forEach(b=>b.onclick=()=>{ const i=Number(b.dataset.cdel); chat.msgs.splice(i, 1); saveState(); renderChatFull(); });
 }
 
-// A9: Sohbet sekmesi açıldığında kitap listesini otomatik güncelle
-window.CAI_onChatViewOpen = () => { populateChatBooks(); renderChatFull(); };
-
-let chatAttachments = []; // {type:'img'|'text', name, data, idbRef?}
+let chatAttachments = [], chatAbort = null;
 $("#chatFileBtn")?.addEventListener("click", () => $("#chatFileInput").click());
 $("#chatFileInput")?.addEventListener("change", async e => {
   for(const f of [...(e.target.files||[])]){
-    const ext = (f.name.split(".").pop()||"").toLowerCase();
-    if(f.type.startsWith("image/")){
-      const url = await compressImageFile(f);
-      const mid = "img_" + uid();
-      await mediaPut(mid, url);
-      chatAttachments.push({type:"img", name:f.name, data:url, idbRef:"idb:"+mid});
-    } else if(ext === "pdf"){
-      toast("📄 PDF metni çıkarılıyor…");
-      try{
-        const txt = await extractPdfText(await f.arrayBuffer(), 16000);
-        chatAttachments.push({type:"text", name:f.name, data:txt || "(PDF metin katmanı bulunamadı)"});
-      }catch(err){ toast("PDF okunamadı: "+err.message); }
-    } else if(ext === "epub"){
-      toast("📖 EPUB metni çıkarılıyor…");
-      try{
-        const txt = await extractEpubText(await f.arrayBuffer(), 16000);
-        chatAttachments.push({type:"text", name:f.name, data:txt || "(EPUB metni bulunamadı)"});
-      }catch(err){ toast("EPUB okunamadı: "+err.message); }
-    } else {
-      const txt = (await f.text()).slice(0, 14000);
-      chatAttachments.push({type:"text", name:f.name, data:txt});
-    }
+    const ext = (f.name.split(".").pop() || "").toLowerCase();
+    try{
+      if(f.type.startsWith("image/")){
+        const compressed = await compressImageFile(f), mid = "cimg_" + uid();
+        await mediaPut(mid, compressed);
+        chatAttachments.push({type:"img", name:f.name, data:compressed, ref:"idb:"+mid});
+      } else if(ext === "pdf"){ toast("📄 PDF metni çıkarılıyor…"); chatAttachments.push({type:"text", name:f.name, data:await extractPdfText(await f.arrayBuffer(), 18000) || "(Metin yok)"}); }
+      else if(ext === "epub"){ toast("📚 EPUB metni çıkarılıyor…"); chatAttachments.push({type:"text", name:f.name, data:await extractEpubText(await f.arrayBuffer(), 18000) || "(Metin yok)"}); }
+      else chatAttachments.push({type:"text", name:f.name, data:(await f.text()).slice(0, 15000)});
+    }catch(err){ toast("Dosya hatası: " + err.message); }
   }
-  e.target.value = "";
-  renderChatAtts();
+  e.target.value = ""; renderChatAtts();
 });
 function renderChatAtts(){
   $("#chatAttPreview").innerHTML = chatAttachments.map((a,i)=>`<span class="chat-att-chip">${a.type==="img"?"🖼️":"📄"} ${esc(a.name.slice(0,18))} <b data-rmatt="${i}" style="cursor:pointer">×</b></span>`).join("");
   $$("[data-rmatt]").forEach(b=>b.onclick=()=>{ chatAttachments.splice(Number(b.dataset.rmatt),1); renderChatAtts(); });
 }
 
-let chatAbort = null;
-$("#chatStopBtn")?.addEventListener("click", () => { if(chatAbort){ chatAbort.abort(); chatAbort = null; toast("Yanıt durduruldu"); } });
-
 async function sendChatMessage(isRegen=false){
+  if(chatAbort) return;
   const chat = getActiveChat(), inp = $("#chatInput");
   if(!isRegen){
-    const txt = inp.value.trim();
-    if(!txt && !chatAttachments.length) return;
-    const imgRefs = chatAttachments.filter(a=>a.type==="img").map(a=>a.idbRef || a.data);
+    const txt = inp.value.trim(); if(!txt && !chatAttachments.length) return;
+    const imgRefs = chatAttachments.filter(a=>a.type==="img").map(a=>a.ref || a.data);
     const filesTxt = chatAttachments.filter(a=>a.type==="text").map(a=>`\n[Dosya: ${a.name}]\n${a.data}`).join("\n");
-    if(!chat.msgs.length && txt) chat.title = txt.slice(0,28);
+    if(!chat.msgs.length && txt) chat.title = txt.slice(0,26);
     chat.msgs.push({role:"user", text:(txt + filesTxt).trim(), images:imgRefs});
-    inp.value = ""; chatAttachments = []; renderChatAtts(); saveState(); await renderChatFull();
+    inp.value = ""; chatAttachments = []; renderChatAtts(); saveState(); renderChatFull();
   }
-
   let sys = chat.persona || "Sen akıllı bir Türkçe asistansın.";
   const bookId = $("#chatBookSel")?.value;
   if(bookId){
     const bk = await dbGet(bookId);
     if(bk){
-      const guard = $("#chatSpoilerGuard")?.checked;
-      const curIdx = bk.curChap || 0;
+      const guard = $("#chatSpoilerGuard")?.checked, curIdx = bk.curChap || 0;
       const maxIdx = guard ? curIdx : Math.min(bk.chapters.length-1, curIdx + 1);
       const ctx = bk.chapters.slice(Math.max(0, curIdx-2), maxIdx+1).map(c=>`[${c.title}]\n${(c.trText||c.text||"").slice(0,2200)}`).join("\n\n");
-      sys += `\nBAĞLI KİTAP: "${bk.title}" (Okuyucu şu an ${curIdx+1}. bölümde).` +
-             (guard ? "\nKESİN KURAL: SPOİLER KORUMASI AÇIK! Okuyucunun henüz okumadığı ileriki bölümlerden ASLA bahsetme." : "") +
-             `\nBÖLÜM İÇERİĞİ:\n${ctx}`;
+      sys += `\nBAĞLI KİTAP: "${bk.title}" (Okuyucu ${curIdx+1}. bölümde).` + (guard ? "\nKESİN KURAL: SPOİLER KORUMASI AÇIK! İleriki bölümlerden ASLA bahsetme." : "") + `\nBÖLÜM İÇERİĞİ:\n${ctx}`;
     }
   }
-
   const apiMsgs = [{role:"system", content:sys}];
-  let hasImg = false;
   for(const m of chat.msgs.slice(-10)){
     if(m.role==="user" && m.images?.length){
-      hasImg = true;
       const arr = [{type:"text", text:m.text||"Görseli incele"}];
-      for(const ref of m.images){
-        const u = await resolveChatImgSrc(ref);
-        if(u) arr.push({type:"image_url", image_url:{url:u}});
-      }
+      for(const ref of m.images){ const url = await resolveMediaSrc(ref); if(url) arr.push({type:"image_url", image_url:{url}}); }
       apiMsgs.push({role:"user", content:arr});
     } else apiMsgs.push({role:m.role==="user"?"user":"assistant", content:m.text});
   }
-
-  const aiMsg = {role:"assistant", text:""};
-  chat.msgs.push(aiMsg);
-  const box = $("#chatMsgs");
-  const div = document.createElement("div");
-  div.className = "cmsg ai";
-  div.innerHTML = `<div class="cmsg-body">⏳ Düşünüyor…</div>`;
-  box.appendChild(div);
-  const bodyEl = div.querySelector(".cmsg-body");
-  box.scrollTop = box.scrollHeight;
-
-  chatAbort = new AbortController();
-  $("#chatStopBtn").style.display = "inline-flex";
-  $("#chatSendBtn").disabled = true;
-
+  const aiMsg = {role:"assistant", text:""}; chat.msgs.push(aiMsg);
+  const box = $("#chatMsgs"), div = document.createElement("div"); div.className = "cmsg ai";
+  div.innerHTML = `<div class="cmsg-body">⏳ Düşünüyor…</div>`; box.appendChild(div);
+  const bodyEl = div.querySelector(".cmsg-body"); box.scrollTop = box.scrollHeight;
+  chatAbort = new AbortController(); $("#chatStopBtn").style.display = "inline-flex"; $("#chatSendBtn").style.display = "none";
   try{
-    await callAI({
-      task: hasImg ? "vision" : "chat",
-      messages: apiMsgs,
-      signal: chatAbort.signal,
-      onDelta: (_, full) => {
-        aiMsg.text = full;
-        bodyEl.textContent = full;
-        if(box.scrollHeight - box.scrollTop - box.clientHeight < 120) box.scrollTop = box.scrollHeight;
-      }
-    });
-    saveState();
-    await renderChatFull();
-    haptic("light");
+    const hasImg = chat.msgs.slice(-10).some(m=>m.images?.length);
+    await callAI({task: hasImg ? "vision" : "chat", signal: chatAbort.signal, messages: apiMsgs, onDelta: (_, full) => {
+      aiMsg.text = full; bodyEl.textContent = full;
+      if(box.scrollHeight - box.scrollTop - box.clientHeight < 120) box.scrollTop = box.scrollHeight;
+    }});
+    saveState(); renderChatFull(); haptic("light");
   }catch(e){
-    if(e.name === "AbortError"){
-      if(!aiMsg.text) aiMsg.text = "(Durduruldu)";
-      saveState(); await renderChatFull();
-    } else {
-      aiMsg.text = "❌ Hata: " + e.message;
-      bodyEl.textContent = aiMsg.text;
-    }
-  }finally{
-    chatAbort = null;
-    $("#chatStopBtn").style.display = "none";
-    $("#chatSendBtn").disabled = false;
-  }
+    if(e.name === "AbortError"){ if(!aiMsg.text) aiMsg.text = "(Durduruldu)"; saveState(); renderChatFull(); }
+    else { aiMsg.text = "❌ Hata: " + e.message; bodyEl.textContent = aiMsg.text; }
+  }finally{ chatAbort = null; $("#chatStopBtn").style.display = "none"; $("#chatSendBtn").style.display = "inline-flex"; }
 }
 $("#chatSendBtn")?.addEventListener("click", () => sendChatMessage(false));
+$("#chatStopBtn")?.addEventListener("click", () => { if(chatAbort) chatAbort.abort(); });
 $("#chatInput")?.addEventListener("keydown", e => { if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); sendChatMessage(false); } });
 $("#chatSessionSel")?.addEventListener("change", e => { const S=ensureChatState(); S.activeChatId=e.target.value; saveState(); renderChatFull(); });
 $("#newChatBtn")?.addEventListener("click", () => { const S=ensureChatState(); const id=uid(); S.chatSessions.unshift({id,title:"Yeni Sohbet",persona:"Sen akıllı bir Türkçe asistansın.",msgs:[]}); S.activeChatId=id; saveState(); renderChatFull(); });
 $("#delChatBtn")?.addEventListener("click", () => { const S=ensureChatState(); if(S.chatSessions.length<=1){ S.chatSessions[0].msgs=[]; saveState(); renderChatFull(); return; } S.chatSessions=S.chatSessions.filter(x=>x.id!==S.activeChatId); S.activeChatId=S.chatSessions[0].id; saveState(); renderChatFull(); });
-$("#renameChatBtn")?.addEventListener("click", async () => {
-  const c = getActiveChat();
-  const n = await showPromptSheet("✏️ Sohbeti Adlandır", "Yeni sohbet başlığı:", c.title);
-  if(n && n.trim()){ c.title = n.trim(); saveState(); renderChatSessions(); toast("Başlık güncellendi"); }
-});
-$("#exportChatBtn")?.addEventListener("click", () => {
-  const c = getActiveChat();
-  if(!c.msgs.length) return toast("Dışa aktarılacak mesaj yok");
-  const md = `# ${c.title}\n\n` + c.msgs.map(m => `### ${m.role==="user"?"Kullanıcı":"Çevirmen AI"}\n${m.text}\n`).join("\n---\n\n");
-  downloadBlob(new Blob([md],{type:"text/markdown"}), `sohbet-${c.title.replace(/[^\w]+/g,"_").slice(0,30)}.md`);
-  toast("⬇ Sohbet Markdown olarak indirildi!");
-});
-$("#chatPersonaBtn")?.addEventListener("click", async () => {
-  const c = getActiveChat();
-  const p = await showPromptSheet("🎭 AI Sohbet Kişiliği", "Sistem promptu:", c.persona);
-  if(p !== null){ c.persona = p; saveState(); toast("Kişilik güncellendi"); }
-});
+$("#renameChatBtn")?.addEventListener("click", async () => { const c = getActiveChat(); const n = await showPromptSheet("✏️ Sohbeti Yeniden Adlandır", "Yeni başlık:", c.title); if(n && n.trim()){ c.title = n.trim(); saveState(); renderChatSessions(); toast("Başlık güncellendi"); } });
+$("#exportChatBtn")?.addEventListener("click", () => { const c = getActiveChat(); const md = `# ${c.title}\n\n` + c.msgs.map(m => `### ${m.role==="user"?"Kullanıcı":"AI"}\n${m.text}\n`).join("\n---\n\n"); downloadBlob(new Blob([md],{type:"text/markdown"}), `${c.title.replace(/[^\wÇĞİÖŞÜçğıöşü]+/g,"_").slice(0,40)}.md`); toast("⬇️ Sohbet indirildi"); });
+$("#chatPersonaBtn")?.addEventListener("click", async () => { const c = getActiveChat(); const p = await showPromptSheet("🎭 AI Sohbet Kişiliği", "Sistem promptu:", c.persona); if(p !== null){ c.persona = p; saveState(); toast("Kişilik güncellendi"); } });
 
-/* ===================== 8. SERİ WİKİ & ETKİLEŞİMLİ ZOOM / PAN / PINCH İLİŞKİ HARİTASI (A1) ===================== */
+/* ===================== 8. SERİ WİKİ & ZOOM/PAN İLİŞKİ HARİTASI ===================== */
 let wikiZoom = 1, wikiPanX = 0, wikiPanY = 0;
-function updateWikiViewBox(){
-  const svg = $("#wikiSvg"); if(!svg) return;
-  const w = 500 / wikiZoom, h = 260 / wikiZoom;
-  svg.setAttribute("viewBox", `${wikiPanX} ${wikiPanY} ${w} ${h}`);
-}
+function updateWikiViewBox(){ const svg = $("#wikiSvg"); if(!svg) return; svg.setAttribute("viewBox", `${wikiPanX.toFixed(1)} ${wikiPanY.toFixed(1)} ${(500/wikiZoom).toFixed(1)} ${(260/wikiZoom).toFixed(1)}`); }
 $("#wikiZoomIn")?.addEventListener("click", () => { wikiZoom = Math.min(3.5, wikiZoom + 0.3); updateWikiViewBox(); });
 $("#wikiZoomOut")?.addEventListener("click", () => { wikiZoom = Math.max(0.5, wikiZoom - 0.3); updateWikiViewBox(); });
 $("#wikiZoomReset")?.addEventListener("click", () => { wikiZoom = 1; wikiPanX = 0; wikiPanY = 0; updateWikiViewBox(); });
 
-// A1: Parmağınla sürükle (Pan) + Çift parmak yakınlaştır (Pinch-Zoom)
 const wikiWrap = $("#wikiGraphWrap");
 if(wikiWrap){
-  let pDrag = false, pLastX = 0, pLastY = 0, pinchDist = 0;
-  const dist = (a,b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+  let wDrag=false, wLastX=0, wLastY=0, wPinchDist=0;
   wikiWrap.addEventListener("touchstart", e => {
     if(e.target.closest("button")) return;
-    if(e.touches.length === 1){ pDrag = true; pLastX = e.touches[0].clientX; pLastY = e.touches[0].clientY; }
-    else if(e.touches.length === 2){ pDrag = false; pinchDist = dist(e.touches[0], e.touches[1]); }
+    if(e.touches.length === 1){ wDrag = true; wLastX = e.touches[0].clientX; wLastY = e.touches[0].clientY; }
+    else if(e.touches.length === 2){ wDrag = false; wPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); }
   }, {passive:true});
   wikiWrap.addEventListener("touchmove", e => {
-    if(e.touches.length === 1 && pDrag){
-      const dx = e.touches[0].clientX - pLastX, dy = e.touches[0].clientY - pLastY;
-      pLastX = e.touches[0].clientX; pLastY = e.touches[0].clientY;
-      const scaleX = (500 / wikiZoom) / Math.max(1, wikiWrap.clientWidth);
-      const scaleY = (260 / wikiZoom) / Math.max(1, wikiWrap.clientHeight);
-      wikiPanX -= dx * scaleX; wikiPanY -= dy * scaleY;
-      updateWikiViewBox();
-    } else if(e.touches.length === 2 && pinchDist > 0){
-      const nd = dist(e.touches[0], e.touches[1]);
-      wikiZoom = Math.max(0.5, Math.min(3.5, wikiZoom * (nd / pinchDist)));
-      pinchDist = nd;
-      updateWikiViewBox();
+    if(e.touches.length === 1 && wDrag){
+      const dx = (e.touches[0].clientX - wLastX) / wikiZoom, dy = (e.touches[0].clientY - wLastY) / wikiZoom;
+      wLastX = e.touches[0].clientX; wLastY = e.touches[0].clientY; wikiPanX -= dx * 1.3; wikiPanY -= dy * 1.3; updateWikiViewBox();
+    } else if(e.touches.length === 2 && wPinchDist > 0){
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      wikiZoom = Math.max(0.5, Math.min(3.5, wikiZoom * (d / wPinchDist))); wPinchDist = d; updateWikiViewBox();
     }
   }, {passive:true});
-  wikiWrap.addEventListener("touchend", () => { pDrag = false; pinchDist = 0; }, {passive:true});
+  wikiWrap.addEventListener("touchend", () => { wDrag = false; wPinchDist = 0; }, {passive:true});
 }
 
 function renderWikiModal(){
   const bk = R.book; if(!bk) return;
-  const wiki = bk.wiki || {chars:[], rels:[]};
-  const svg = $("#wikiSvg"), list = $("#wikiList"), det = $("#wikiNodeDetail");
+  const wiki = bk.wiki || {chars:[], rels:[]}, svg = $("#wikiSvg"), list = $("#wikiList"), det = $("#wikiNodeDetail");
   det.style.display = "none";
-  if(!wiki.chars.length){
-    svg.innerHTML = `<text x="250" y="130" text-anchor="middle" fill="#9287aa" font-size="13">Henüz karakter taranmadı. Yukarıdan tara!</text>`;
-    list.innerHTML = "";
-    return;
-  }
+  if(!wiki.chars.length){ svg.innerHTML = `<text x="250" y="130" text-anchor="middle" fill="#9287aa" font-size="13">Henüz karakter taranmadı. Yukarıdan tara!</text>`; list.innerHTML = ""; return; }
   const n = wiki.chars.length, cx = 250, cy = 130;
   const pos = wiki.chars.map((c, i) => {
-    const ring = i < 10 ? 0 : 1;
-    const countInRing = ring === 0 ? Math.min(10, n) : (n - 10);
-    const idxInRing = ring === 0 ? i : (i - 10);
+    const ring = i < 10 ? 0 : 1, countInRing = ring === 0 ? Math.min(10, n) : (n - 10), idxInRing = ring === 0 ? i : (i - 10);
     const rx = ring === 0 ? 155 : 215, ry = ring === 0 ? 85 : 112;
-    const ang = (idxInRing / Math.max(1, countInRing)) * Math.PI * 2 - Math.PI/2; // A1: Math.PI düzeltildi!
+    const ang = (idxInRing / Math.max(1, countInRing)) * Math.PI * 2 - Math.PI / 2;
     return {x: cx + Math.cos(ang)*rx, y: cy + Math.sin(ang)*ry, c};
   });
   let html = "";
@@ -826,11 +605,8 @@ function renderWikiModal(){
     const a = pos.find(p=>p.c.name===r.from), b = pos.find(p=>p.c.name===r.to);
     if(a && b) html += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#a855f788" stroke-width="1.8"/><text x="${((a.x+b.x)/2).toFixed(1)}" y="${((a.y+b.y)/2).toFixed(1)}" fill="#c4b5fd" font-size="8.5" text-anchor="middle">${esc(r.label||"")}</text>`;
   });
-  pos.forEach((p, idx) => {
-    html += `<g class="wnode" data-wi="${idx}" style="cursor:pointer"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="19" fill="#1b1130" stroke="#e879f9" stroke-width="2"/><text x="${p.x.toFixed(1)}" y="${(p.y+3).toFixed(1)}" fill="#fff" font-size="9.5" font-weight="700" text-anchor="middle">${esc(p.c.name.slice(0,11))}</text></g>`;
-  });
-  svg.innerHTML = html;
-  updateWikiViewBox();
+  pos.forEach((p, idx) => { html += `<g class="wnode" data-wi="${idx}" style="cursor:pointer"><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="19" fill="#1b1130" stroke="#e879f9" stroke-width="2"/><text x="${p.x.toFixed(1)}" y="${(p.y+3).toFixed(1)}" fill="#fff" font-size="9.5" font-weight="700" text-anchor="middle">${esc(p.c.name.slice(0,11))}</text></g>`; });
+  svg.innerHTML = html; updateWikiViewBox();
   svg.querySelectorAll(".wnode").forEach(g => g.onclick = () => {
     const c = wiki.chars[Number(g.dataset.wi)];
     const rels = (wiki.rels||[]).filter(r=>r.from===c.name||r.to===c.name).map(r=>`${r.from} ↔ ${r.to} (${r.label})`).join(" • ");
@@ -841,8 +617,7 @@ function renderWikiModal(){
 }
 
 async function scanWikiRange(startIdx, endIdx){
-  if(!R.book) return;
-  toast("🧬 Wiki taranıyor…");
+  if(!R.book) return; toast("🧬 Wiki taranıyor…");
   const sample = R.book.chapters.slice(startIdx, endIdx+1).map(c=>(c.trText||c.text||"").slice(0,2200)).join("\n---\n").slice(0,14000);
   try{
     const raw = await callAI({task:"chat", stream:false, messages:[
@@ -856,128 +631,110 @@ async function scanWikiRange(startIdx, endIdx){
     R.book.wiki = cur; await dbPut(R.book); renderWikiModal(); haptic("success"); toast(`🧬 Wiki güncellendi (${cur.chars.length} karakter)!`);
   }catch(e){ toast("Wiki hatası: "+e.message); }
 }
-
 $("#rWikiBtn")?.addEventListener("click", () => { closeModal("rSetModal"); renderWikiModal(); openModal("wikiModal"); });
 $("#wikiScanCurBtn")?.addEventListener("click", () => scanWikiRange(R.chapIdx, R.chapIdx));
 $("#wikiScanMultiBtn")?.addEventListener("click", async () => {
   const maxC = R.book?.chapters?.length || 1;
-  const rng = await showPromptSheet("📚 Çoklu Bölüm Wiki Tara", `Bölüm aralığı (1-${maxC}):`, `${Math.max(1,R.chapIdx+1)}-${Math.min(maxC, R.chapIdx+5)}`);
+  const rng = await showPromptSheet("📚 Çoklu Bölüm Wiki Tarama", `Bölüm aralığı (1-${maxC}):`, `${Math.max(1,R.chapIdx+1)}-${Math.min(maxC, R.chapIdx+5)}`);
   if(!rng) return;
   const [a,b] = rng.split("-").map(x=>Math.max(1, Number(x)||1));
   scanWikiRange(a-1, Math.min(maxC-1, (b||a)-1));
 });
 $("#wikiSyncGlossBtn")?.addEventListener("click", () => {
-  const S = getS(), chars = R.book?.wiki?.chars || [];
-  let added = 0;
-  chars.forEach(c => {
-    if(c.orig && c.name && c.orig !== c.name && !S.glossary.some(g=>g.src===c.orig && g.bookId===R.book.id)){
-      S.glossary.unshift({id:uid(), src:c.orig, tgt:c.name, bookId:R.book.id}); added++;
-    }
-  });
-  saveState(); renderGlossary(); toast(added ? `📖 ${added} karakter kitap sözlüğüne aktarıldı!` : "Aktarılacak yeni karakter bulunamadı");
+  const S = getS(), chars = R.book?.wiki?.chars || []; let added = 0;
+  chars.forEach(c => { if(c.orig && c.name && c.orig !== c.name && !S.glossary.some(g=>g.src===c.orig && g.bookId===R.book.id)){ S.glossary.unshift({id:uid(), src:c.orig, tgt:c.name, bookId:R.book.id}); added++; } });
+  saveState(); renderGlossary(); toast(added ? `📖 ${added} karakter sözlüğe aktarıldı!` : "Aktarılacak yeni karakter yok");
 });
 
-/* ===================== 9. GERÇEK ÇOKLU KARAKTER TTS & SES SEÇİCİ (A8 & C6) ===================== */
-let ttsQueue = [], ttsPos = 0, ttsRunToken = 0;
-
-function populateTtsVoices(){
+/* ===================== 9. ÇOKLU KARAKTER TTS + J2 ARKA PLAN MEDYA BİLDİRİMİ ===================== */
+let ttsQueue = [], ttsPos = 0, ttsSegs = [], ttsSegPos = 0;
+function populateVoices(){
   const sel = $("#rVoiceSel"); if(!sel || !window.speechSynthesis) return;
   const voices = speechSynthesis.getVoices() || [];
-  const cur = getS().reader.voiceName || "";
-  const sorted = [...voices].sort((a,b) => (b.lang.startsWith("tr")?1:0) - (a.lang.startsWith("tr")?1:0));
-  sel.innerHTML = `<option value="">Varsayılan (tr-TR)</option>` + sorted.slice(0,40).map(v=>`<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("");
-  if(cur) sel.value = cur;
+  const sorted = [...voices].sort((a,b) => (a.lang.startsWith("tr")?-1:1) - (b.lang.startsWith("tr")?-1:1));
+  sel.innerHTML = `<option value="">Varsayılan (tr-TR)</option>` + sorted.map(v => `<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`).join("");
+  sel.value = getS().reader.voiceName || "";
 }
-if(window.speechSynthesis){
-  populateTtsVoices();
-  speechSynthesis.onvoiceschanged = populateTtsVoices;
-}
+if(window.speechSynthesis){ populateVoices(); speechSynthesis.onvoiceschanged = populateVoices; }
 $("#rVoiceSel")?.addEventListener("change", e => { const S=getS(); S.reader.voiceName = e.target.value; saveState(); });
 
+function syncNativeMediaNotif(active){
+  if(!isNative() || !window.AndroidBridge.updateMediaNotif) return;
+  const title = R.book ? R.book.title : "Çevirmen AI Sesli Kitap";
+  const sub = R.book?.chapters?.[R.chapIdx]?.title || "Sesli Okuma";
+  window.AndroidBridge.updateMediaNotif(!!active, title, sub);
+}
+
 function stopTts(){
-  ttsRunToken++;
   if(window.speechSynthesis) speechSynthesis.cancel();
   R.ttsSpeaking = false;
   $$("#rBody p.tts-active").forEach(p=>p.classList.remove("tts-active"));
   const b = $("#rTtsBtn"); if(b) b.textContent = "🔊 Oku";
+  syncNativeMediaNotif(false);
 }
 window.CAI_stopTts = stopTts;
 
-function pickSelectedVoice(){
-  const name = getS().reader.voiceName;
-  if(!name || !window.speechSynthesis) return null;
-  return (speechSynthesis.getVoices()||[]).find(v => v.name === name) || null;
-}
-
-// Çoklu karakter modu: paragrafı anlatıcı ve tırnak içi diyalog segmentlerine ayırır
-function splitTtsSegments(text){
-  if((getS().reader.ttsMode || "multi") !== "multi") return [{text, isDlg:false}];
-  const segs = [];
-  const re = /([“"][^”"]+[”"])/g;
-  let last = 0, m;
+function splitDialogueSegments(text){
+  if(getS().reader.ttsMode !== "multi") return [{text, isDlg:false}];
+  const segs = [], re = /([“"][^”"]+[”"])/g; let last = 0, m;
   while((m = re.exec(text)) !== null){
-    if(m.index > last){ const a = text.slice(last, m.index).trim(); if(a) segs.push({text:a, isDlg:false}); }
-    segs.push({text:m[1], isDlg:true});
-    last = re.lastIndex;
+    if(m.index > last){ const n = text.slice(last, m.index).trim(); if(n) segs.push({text:n, isDlg:false}); }
+    segs.push({text:m[1], isDlg:true}); last = re.lastIndex;
   }
-  const tail = text.slice(last).trim();
-  if(tail) segs.push({text:tail, isDlg:false});
+  if(last < text.length){ const n = text.slice(last).trim(); if(n) segs.push({text:n, isDlg:false}); }
   return segs.length ? segs : [{text, isDlg:false}];
 }
 
-function speakNextPara(token){
-  if(!R.ttsSpeaking || token !== ttsRunToken) return;
+function speakNextSeg(){
+  if(!R.ttsSpeaking) return;
+  if(ttsSegPos >= ttsSegs.length){ ttsPos++; speakNextPara(); return; }
+  const seg = ttsSegs[ttsSegPos], u = new SpeechSynthesisUtterance(seg.text), S = getS();
+  const voices = speechSynthesis.getVoices() || [];
+  const picked = S.reader.voiceName ? voices.find(v => v.name === S.reader.voiceName) : voices.find(v => v.lang.toLowerCase().startsWith("tr"));
+  if(picked) u.voice = picked;
+  u.lang = picked?.lang || "tr-TR";
+  const baseRate = S.reader.ttsRate || 1.0;
+  u.rate = seg.isDlg ? Math.min(2.0, baseRate * 1.06) : baseRate;
+  u.pitch = seg.isDlg ? 1.18 : 0.96;
+  u.onend = () => { if(!R.ttsSpeaking) return; ttsSegPos++; speakNextSeg(); };
+  u.onerror = () => stopTts();
+  speechSynthesis.speak(u);
+}
+
+function speakNextPara(){
+  if(!R.ttsSpeaking) return;
   $$("#rBody p.tts-active").forEach(p=>p.classList.remove("tts-active"));
   if(ttsPos >= ttsQueue.length){
-    if(getS().reader.ttsCont && R.book && R.chapIdx < R.book.chapters.length - 1){
-      R.chapIdx++; renderCurrentChapter();
-      setTimeout(startTtsFromChapter, 500);
-    } else stopTts();
+    if(getS().reader.ttsCont && R.book && R.chapIdx < R.book.chapters.length - 1){ R.chapIdx++; renderCurrentChapter(); setTimeout(startTtsFromChapter, 500); }
+    else stopTts();
     return;
   }
-  const el = ttsQueue[ttsPos];
-  el.classList.add("tts-active");
-  el.scrollIntoView({behavior:"smooth", block:"center"});
-  const segs = splitTtsSegments(el.textContent || "");
-  const voice = pickSelectedVoice();
-  const baseRate = getS().reader.ttsRate || 1.0;
-
-  let si = 0;
-  const speakSeg = () => {
-    if(!R.ttsSpeaking || token !== ttsRunToken) return;
-    if(si >= segs.length){ ttsPos++; speakNextPara(token); return; }
-    const seg = segs[si++];
-    const u = new SpeechSynthesisUtterance(seg.text);
-    u.lang = voice?.lang || "tr-TR";
-    if(voice) u.voice = voice;
-    u.rate = seg.isDlg ? Math.min(2.0, baseRate * 1.04) : baseRate;
-    u.pitch = seg.isDlg ? 1.14 : 0.96; // Diyaloglarda daha canlı karakter tonu!
-    u.onend = () => speakSeg();
-    u.onerror = () => stopTts();
-    speechSynthesis.speak(u);
-  };
-  speakSeg();
+  const el = ttsQueue[ttsPos]; el.classList.add("tts-active"); el.scrollIntoView({behavior:"smooth", block:"center"});
+  ttsSegs = splitDialogueSegments(el.textContent); ttsSegPos = 0; speakNextSeg();
 }
 
 function startTtsFromChapter(){
   if(!window.speechSynthesis) return toast("TTS desteklenmiyor");
   ttsQueue = $$("#rBody p").filter(p=>p.textContent.trim().length > 1);
   if(!ttsQueue.length) return toast("Okunacak metin yok");
-  ttsRunToken++;
-  ttsPos = 0; R.ttsSpeaking = true;
-  $("#rTtsBtn").textContent = "⏹ Durdur";
-  speakNextPara(ttsRunToken);
+  ttsPos = 0; R.ttsSpeaking = true; $("#rTtsBtn").textContent = "⏹ Durdur";
+  syncNativeMediaNotif(true);
+  speakNextPara();
 }
 $("#rTtsBtn")?.addEventListener("click", () => { if(R.ttsSpeaking) stopTts(); else startTtsFromChapter(); });
 
-/* ===================== 10. AMBİYANS SES MİKSERİ (ÇEVRİMDIŞI) ===================== */
-let ambCtx = null;
-const ambNodes = {};
+// J2: Kilit Ekranı / Bildirim Medya Kontrolleri
+window.__onMediaAction = act => {
+  if(act === "toggle"){ if(R.ttsSpeaking) stopTts(); else startTtsFromChapter(); }
+  else if(act === "stop"){ stopTts(); }
+  else if(act === "next" && R.book && R.chapIdx < R.book.chapters.length - 1){ R.chapIdx++; renderCurrentChapter(); setTimeout(startTtsFromChapter, 400); }
+  else if(act === "prev" && R.book && R.chapIdx > 0){ R.chapIdx--; renderCurrentChapter(); setTimeout(startTtsFromChapter, 400); }
+};
+
+/* ===================== 10. AMBİYANS SES MİKSERİ ===================== */
+let ambCtx = null; const ambNodes = {};
 function setAmbienceLevel(kind, vol){
-  if(vol <= 0.01){
-    if(ambNodes[kind]){ try{ ambNodes[kind].src.stop(); }catch{} delete ambNodes[kind]; }
-    return;
-  }
+  if(vol <= 0.01){ if(ambNodes[kind]){ try{ ambNodes[kind].src.stop(); }catch{} delete ambNodes[kind]; } return; }
   if(!ambCtx) ambCtx = new (window.AudioContext || window.webkitAudioContext)();
   if(ambCtx.state === "suspended") ambCtx.resume();
   if(!ambNodes[kind]){
@@ -995,36 +752,130 @@ function setAmbienceLevel(kind, vol){
     const src = ambCtx.createBufferSource(); src.buffer = buf; src.loop = true;
     const filter = ambCtx.createBiquadFilter(); filter.type = "lowpass";
     filter.frequency.value = kind==="rain"?1400 : kind==="fire"?600 : kind==="wind"?450 : kind==="cafe"?950 : 320;
-    const gain = ambCtx.createGain();
-    src.connect(filter); filter.connect(gain); gain.connect(ambCtx.destination);
-    src.start();
+    const gain = ambCtx.createGain(); src.connect(filter); filter.connect(gain); gain.connect(ambCtx.destination); src.start();
     ambNodes[kind] = {src, gain};
   }
   ambNodes[kind].gain.gain.setTargetAtTime(vol * 0.45, ambCtx.currentTime, 0.05);
 }
 $$("#ambMixer [data-amb]").forEach(r => r.oninput = e => setAmbienceLevel(e.target.dataset.amb, Number(e.target.value)));
-$("#stopAmbBtn")?.addEventListener("click", () => {
-  $$("#ambMixer [data-amb]").forEach(r => { r.value = 0; setAmbienceLevel(r.dataset.amb, 0); });
-  toast("Ambiyans sesleri durduruldu");
-});
+$("#stopAmbBtn")?.addEventListener("click", () => { $$("#ambMixer [data-amb]").forEach(r => { r.value = 0; setAmbienceLevel(r.dataset.amb, 0); }); toast("Ambiyans sesleri durduruldu"); });
 $("#rAmbBtn")?.addEventListener("click", () => {
-  const rainEl = $('#ambMixer [data-amb="rain"]');
-  const cur = Number(rainEl?.value || 0);
-  const nxt = cur > 0 ? 0 : 0.45;
-  if(rainEl) rainEl.value = nxt;
-  setAmbienceLevel("rain", nxt);
+  const rainEl = $('#ambMixer [data-amb="rain"]'), cur = Number(rainEl?.value || 0), nxt = cur > 0 ? 0 : 0.45;
+  if(rainEl) rainEl.value = nxt; setAmbienceLevel("rain", nxt);
   toast(nxt > 0 ? "🌧️ Yağmur ambiyansı açıldı (Mikser için Stüdyo)" : "🔇 Ambiyans kapatıldı");
 });
 
-/* ===================== 11. OPDS KATALOG & VURGULAR LİSTESİ (D1) ===================== */
+/* ===================== 11. K1 ARALIKLI TEKRAR KELİME KARTLARI (FLASHCARDS SM-2) ===================== */
+function ensureFlashcards(){ const S = getS(); if(!Array.isArray(S.flashcards)) S.flashcards = []; return S.flashcards; }
+function updateFcBadge(){
+  const list = ensureFlashcards(), now = Date.now(), due = list.filter(c => (c.nextDue||0) <= now).length;
+  const b = $("#fcDueBadge"); if(b) b.textContent = `${due} bekliyor (${list.length})`;
+}
+window.CAI_updateFcBadge = updateFcBadge;
+window.CAI_addFlashcard = (front, back, book="") => {
+  const list = ensureFlashcards();
+  if(list.some(x => x.front.toLowerCase() === front.toLowerCase())) return toast("Bu kelime zaten kartlarda var");
+  list.unshift({id:uid(), front, back, book, reps:0, intervalDays:0, nextDue:Date.now()});
+  saveState(); updateFcBadge(); haptic("success"); toast(`🃏 "${front}" Flashcard'a eklendi!`);
+};
+
+let fcDueQueue = [], fcCurIdx = 0, fcFlipped = false;
+function renderFlashcardModal(){
+  const list = ensureFlashcards(), now = Date.now();
+  fcDueQueue = list.filter(c => (c.nextDue||0) <= now);
+  const stg = $("#fcStage"), acts = $("#fcActions"), prog = $("#fcProgressTxt");
+  if(!fcDueQueue.length){
+    prog.textContent = "Tamamlandı"; acts.style.display = "none";
+    stg.innerHTML = `<div class="fc-card"><div class="fc-word">🎉 Harika!</div><div class="meta">Bugün tekrar edilecek kart kalmadı. Toplam ${list.length} kartın var.</div></div>`;
+  } else {
+    if(fcCurIdx >= fcDueQueue.length) fcCurIdx = 0;
+    const c = fcDueQueue[fcCurIdx];
+    prog.textContent = `${fcCurIdx+1}/${fcDueQueue.length}`;
+    acts.style.display = fcFlipped ? "flex" : "none";
+    stg.innerHTML = `<div class="fc-card" id="fcFlipBox">
+      <div class="meta">${esc(c.book || "Kelime Kartı")} • Tekrar: ${c.reps||0}</div>
+      <div class="fc-word">${esc(c.front)}</div>
+      ${fcFlipped ? `<div class="fc-meaning">${esc(c.back)}</div>` : `<div class="meta">👆 Cevabı görmek için karta dokun</div>`}
+    </div>`;
+    $("#fcFlipBox").onclick = () => { fcFlipped = !fcFlipped; renderFlashcardModal(); };
+  }
+  $("#fcAllList").innerHTML = list.slice(0,25).map(c => `
+    <div class="item"><div class="item-body"><div class="item-title">${esc(c.front)}</div><div class="item-sub">${esc(c.back.slice(0,90))}</div></div>
+    <button class="btn small danger" data-fcdel="${c.id}">✕</button></div>`).join("");
+  $$("[data-fcdel]").forEach(b => b.onclick = () => { const S=getS(); S.flashcards=S.flashcards.filter(x=>x.id!==b.dataset.fcdel); saveState(); updateFcBadge(); renderFlashcardModal(); });
+}
+$("#openFcStudyBtn")?.addEventListener("click", () => { fcCurIdx = 0; fcFlipped = false; renderFlashcardModal(); openModal("flashcardModal"); });
+$("#addFcManualBtn")?.addEventListener("click", async () => {
+  const f = await showPromptSheet("🃏 Yeni Kelime Kartı", "Kelime / İfade (Ön Yüz):"); if(!f || !f.trim()) return;
+  const b = await showPromptSheet("🃏 Anlamı", `"${f.trim()}" anlamı (Arka Yüz):`); if(!b || !b.trim()) return;
+  window.CAI_addFlashcard(f.trim(), b.trim(), "Manuel");
+});
+$("#fcAgainBtn")?.addEventListener("click", () => {
+  const c = fcDueQueue[fcCurIdx]; if(!c) return;
+  c.reps = 0; c.intervalDays = 0; c.nextDue = Date.now() + 10*60000;
+  fcFlipped = false; fcCurIdx++; saveState(); updateFcBadge(); renderFlashcardModal();
+});
+$("#fcGoodBtn")?.addEventListener("click", () => {
+  const c = fcDueQueue[fcCurIdx]; if(!c) return;
+  c.reps = (c.reps||0) + 1;
+  c.intervalDays = c.reps === 1 ? 1 : c.reps === 2 ? 3 : Math.round((c.intervalDays||3) * 2.2);
+  c.nextDue = Date.now() + c.intervalDays * 86400000;
+  fcFlipped = false; saveState(); updateFcBadge(); renderFlashcardModal(); haptic("light");
+});
+
+/* ===================== 12. K3 GITHUB GIST BULUT SENKRONİZASYONU ===================== */
+$("#gistPushBtn")?.addEventListener("click", async () => {
+  const S = getS(), tok = (S.gist?.token || $("#setGistToken")?.value || "").trim(), st = $("#gistStatus");
+  if(!tok) return toast("Önce GitHub Gist Token gir");
+  st.className = "status"; st.textContent = "☁️ GitHub Gist'e yükleniyor…";
+  try{
+    const books = (await dbAll()).map(b => ({id:b.id, title:b.title, curChap:b.curChap, status:b.status, scrollMap:b.scrollMap, lastRead:b.lastRead}));
+    const payload = JSON.stringify({ver:"9.0", ts:Date.now(), state:S, bookProgress:books}, null, 2);
+    const gid = (S.gist?.id || $("#setGistId")?.value || "").trim();
+    const url = gid ? `https://api.github.com/gists/${gid}` : "https://api.github.com/gists";
+    const r = await fetch(url, {
+      method: gid ? "PATCH" : "POST",
+      headers: {"Authorization":"Bearer "+tok, "Content-Type":"application/json", "Accept":"application/vnd.github+json"},
+      body: JSON.stringify({description:"Çevirmen AI Bulut Yedeği", public:false, files:{"cevirmen-ai-sync.json":{content:payload}}})
+    });
+    if(!r.ok) throw new Error(`GitHub ${r.status}`);
+    const j = await r.json();
+    if(j.id){ S.gist.id = j.id; $("#setGistId").value = j.id; }
+    S.lastBackup = Date.now(); saveState();
+    st.className = "status ok"; st.textContent = `✅ Buluta yedeklendi! (Gist ID: ${S.gist.id})`; haptic("success");
+  }catch(e){ st.className = "status error"; st.textContent = "❌ " + e.message; }
+});
+
+$("#gistPullBtn")?.addEventListener("click", async () => {
+  const S = getS(), tok = (S.gist?.token || $("#setGistToken")?.value || "").trim(), gid = (S.gist?.id || $("#setGistId")?.value || "").trim(), st = $("#gistStatus");
+  if(!tok || !gid) return toast("Token ve Gist ID gerekli");
+  st.className = "status"; st.textContent = "⬇️ Buluttan geri yükleniyor…";
+  try{
+    const r = await fetch(`https://api.github.com/gists/${gid}`, {headers:{"Authorization":"Bearer "+tok, "Accept":"application/vnd.github+json"}});
+    if(!r.ok) throw new Error(`GitHub ${r.status}`);
+    const j = await r.json(), raw = j.files?.["cevirmen-ai-sync.json"]?.content;
+    if(!raw) throw new Error("Gist içinde yedek dosyası bulunamadı");
+    const d = JSON.parse(raw);
+    if(d.state){ d.state.gist = {token:tok, id:gid}; setS(d.state); saveState(true); }
+    if(Array.isArray(d.bookProgress)){
+      for(const bp of d.bookProgress){
+        const ex = await dbGet(bp.id);
+        if(ex){ ex.curChap = bp.curChap; ex.status = bp.status; ex.scrollMap = bp.scrollMap || ex.scrollMap; await dbPut(ex); }
+      }
+    }
+    applyThemeAndAnim(); renderLibrary(); renderSettingsUI(); updateFcBadge();
+    st.className = "status ok"; st.textContent = "✅ Bulut yedeği başarıyla geri yüklendi!"; haptic("success");
+  }catch(e){ st.className = "status error"; st.textContent = "❌ " + e.message; }
+});
+
+/* ===================== 13. OPDS & VURGULAR ===================== */
 $("#opdsBtn")?.addEventListener("click", () => openModal("opdsModal"));
 $("#opdsLoadBtn")?.addEventListener("click", async () => {
   const u = $("#opdsUrl").value.trim(); if(!u) return;
   $("#opdsList").innerHTML = `<div class="meta">⏳ Katalog yükleniyor…</div>`;
   const info = await fetchUrlInfo(u);
   if(!info.html) return $("#opdsList").innerHTML = `<div class="status error">Katalog alınamadı</div>`;
-  const doc = new DOMParser().parseFromString(info.html, "text/xml");
-  const entries = [...doc.querySelectorAll("entry")].slice(0,30);
+  const doc = new DOMParser().parseFromString(info.html, "text/xml"), entries = [...doc.querySelectorAll("entry")].slice(0,30);
   $("#opdsList").innerHTML = entries.map(e => {
     const title = e.querySelector("title")?.textContent || "Kitap";
     const epub = [...e.querySelectorAll("link")].find(l=>(l.getAttribute("type")||"").includes("epub"))?.getAttribute("href");
@@ -1036,16 +887,13 @@ $("#opdsLoadBtn")?.addEventListener("click", async () => {
 
 $("#rHlListBtn")?.addEventListener("click", () => {
   const hls = getS().highlights.filter(h=>h.bookId===R.book?.id);
-  const text = hls.length ? hls.map((h,i)=>`${i+1}. [Bölüm ${h.chapIdx+1}] "${h.text}"`).join("\n\n") : "Bu kitapta henüz vurgu yok.";
-  showInfoSheet("🖍️ Kitap Vurguları", text, hls.length ? text : null);
+  const txt = hls.length ? hls.map((h,i)=>`${i+1}. [Bölüm ${h.chapIdx+1}] "${h.text}"`).join("\n\n") : "Bu kitapta henüz vurgu yok.";
+  showInfoSheet("🖍️ Kitap Vurguları", txt, hls.length ? txt : null);
 });
 
-// İlk başlatma + C7 Otomatik Seri Takip Kontrolü (3 saatte bir)
-updateVpnBtn(); updateNotifBadge(); updateLrBadge(); renderFmhyQuick(); renderChatFull(); populateChatBooks();
-setTimeout(() => {
-  const S = ensureWatchData();
-  if(S.autoWatch && S.watchlist.length && (!S.lastAutoWatch || Date.now() - S.lastAutoWatch > 3 * 3600000)){
-    runWatchlistCheck(true);
-  }
-}, 4000);
+updateVpnBtn(null); updateNotifBadge(); updateLrBadge(); updateFcBadge(); renderFmhyQuick(); renderChatFull(); populateChatBooks();
+const initS = getS();
+if(initS.autoWatch && Array.isArray(initS.watchlist) && initS.watchlist.length && (Date.now() - (initS.lastAutoWatch||0) > 3*3600000)){
+  setTimeout(() => runWatchlistCheck(true), 4500);
+}
 })();
